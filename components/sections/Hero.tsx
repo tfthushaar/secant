@@ -15,7 +15,6 @@ export function Hero() {
     if (!wm || !sub) return
 
     gsap.set([wm, sub], { autoAlpha: 0 })
-
     const tl = gsap.timeline({ delay: 0.12 })
     tl
       .to(wm,  { autoAlpha: 1, duration: 1.0, ease: 'power3.out' }, 0)
@@ -25,32 +24,29 @@ export function Hero() {
   }, [])
 
   return (
-    <section
-      style={{
+    <section style={{
+      width: '100%',
+      height: '100dvh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: BG,
+      overflow: 'hidden',
+    }}>
+
+      {/* ── Video — fills 100% WIDTH (cover), no letterboxing, no overlays ── */}
+      <div style={{
+        position: 'relative',
         width: '100%',
-        height: '100dvh',
-        display: 'flex',
-        flexDirection: 'column',
+        flex: '0 0 65dvh',  /* fixed height so SECANT strip always fits below */
         background: BG,
         overflow: 'hidden',
-      }}
-    >
-      {/* ── Video — fixed at 62dvh, FULL content visible (contain) ── */}
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          flex: '0 0 62dvh',
-          background: BG,
-          overflow: 'hidden',
-        }}
-      >
+      }}>
         <video
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
-            objectPosition: 'center center',
+            objectFit: 'cover',         /* fills full width, clips top/bottom only */
+            objectPosition: 'center',
             display: 'block',
           }}
           autoPlay muted loop playsInline preload="auto"
@@ -65,17 +61,15 @@ export function Hero() {
           fontFamily: 'var(--font-jost), sans-serif',
           fontWeight: 300, fontSize: '0.52rem',
           letterSpacing: '0.42em', textTransform: 'uppercase',
-          color: 'oklch(60% 0.006 74)',
+          color: 'rgba(255,255,255,0.3)',
           pointerEvents: 'none',
-        }}>
-          01 / Home
-        </div>
+        }}>01 / Home</div>
 
-        {/* ⊕ crosshair at video bottom centre */}
+        {/* ⊕ crosshair at very bottom centre of video */}
         <div style={{
           position: 'absolute', bottom: '1rem', left: '50%',
           transform: 'translateX(-50%)',
-          color: 'oklch(58% 0.006 74)',
+          color: 'rgba(255,255,255,0.35)',
           pointerEvents: 'none',
         }} aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -87,17 +81,9 @@ export function Hero() {
               stroke="currentColor" strokeWidth="0.7" fill="none"/>
           </svg>
         </div>
-
-        {/* Smooth gradient fade into SECANT strip — no hard line */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: '4.5rem',
-          background: `linear-gradient(to bottom, transparent 0%, ${BG} 100%)`,
-          pointerEvents: 'none',
-        }} aria-hidden="true" />
       </div>
 
-      {/* ── SECANT strip — remaining 38dvh, same background ── */}
+      {/* ── SECANT strip — directly below the video, NO fade/overlay ── */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -112,32 +98,26 @@ export function Hero() {
             style={{
               fontFamily: 'var(--font-cormorant), Georgia, serif',
               fontWeight: 500,
-              fontSize: 'clamp(3.8rem, 10.5vw, 10.5rem)',
+              fontSize: 'clamp(3.8rem, 10vw, 10rem)',
               lineHeight: 0.92,
               letterSpacing: '0.01em',
               color: 'oklch(8.5% 0.007 72)',
               opacity: 0,
               userSelect: 'none',
             }}
-          >
-            SECANT
-          </h1>
+          >SECANT</h1>
           <div
             ref={subRef}
             style={{
               fontFamily: 'var(--font-jost), sans-serif',
-              fontWeight: 300,
-              fontSize: '0.55rem',
-              letterSpacing: '0.44em',
-              textTransform: 'uppercase',
-              color: 'oklch(52% 0.007 74)',
-              opacity: 0,
+              fontWeight: 300, fontSize: '0.55rem',
+              letterSpacing: '0.44em', textTransform: 'uppercase',
+              color: 'oklch(52% 0.007 74)', opacity: 0,
             }}
-          >
-            Architecture · Studio
-          </div>
+          >Architecture · Studio</div>
         </div>
       </div>
+
     </section>
   )
 }
