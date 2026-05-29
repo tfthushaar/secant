@@ -312,3 +312,59 @@ export const CATEGORIES: Array<{ label: string; value: Category | 'All' }> = [
   { label: 'Private',       value: 'Private'      },
   { label: 'Sketches',      value: 'Sketch'       },
 ]
+
+/* ── Category config for CircularGallery ─────────────────────────────────── */
+export interface CategoryConfig {
+  slug:       string
+  label:      string
+  value:      Category
+  heroImage:  string   /* best single render to represent the category */
+  description: string
+}
+
+export const CATEGORY_CONFIG: CategoryConfig[] = [
+  {
+    slug:        'residential',
+    label:       'Residential',
+    value:       'Residential',
+    heroImage:   '/assets/web/small/apartment-himagiri.jpg',
+    description: 'Multi-family complexes & apartment towers',
+  },
+  {
+    slug:        'commercial',
+    label:       'Commercial',
+    value:       'Commercial',
+    heroImage:   '/assets/web/small/commercial-clouds-wood.jpg',
+    description: 'Corporate campuses & commercial buildings',
+  },
+  {
+    slug:        'institutional',
+    label:       'Institutional',
+    value:       'Institutional',
+    heroImage:   '/assets/web/small/institution-arvind-college.jpg',
+    description: 'Schools, colleges & institutional complexes',
+  },
+  {
+    slug:        'private',
+    label:       'Private',
+    value:       'Private',
+    heroImage:   '/assets/web/small/bungalow-arshia-house-view.jpg',
+    description: 'Private residences & bungalows',
+  },
+  {
+    slug:        'sketches',
+    label:       'Sketches',
+    value:       'Sketch',
+    heroImage:   '/assets/web/small/sketches/sketch-pioneer-rehman.jpg',
+    description: 'Concept sketches & architectural studies',
+  },
+]
+
+/** Returns all workItems matching a category slug */
+export function getItemsByCategory(slug: string): WorkItem[] {
+  const config = CATEGORY_CONFIG.find(c => c.slug === slug)
+  if (!config) return []
+  return workItems.filter(w =>
+    config.value === 'Sketch' ? w.kind === 'sketch' : w.category === config.value
+  )
+}

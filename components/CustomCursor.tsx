@@ -33,7 +33,7 @@ export function CustomCursor() {
       if (initialized) {
         cx += (mx - cx) * 0.16
         cy += (my - cy) * 0.16
-        cursor.style.transform = `translate(${cx}px, ${cy}px)`
+        cursor!.style.transform = `translate(${cx}px, ${cy}px)`
       }
       raf = requestAnimationFrame(loop)
     }
