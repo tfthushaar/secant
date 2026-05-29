@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react'
    Matches the ⊕ survey marker in the reference image. */
 export function CustomCursor() {
   const cursorRef  = useRef<HTMLDivElement>(null)
-  const innerRef   = useRef<HTMLDivElement>(null) /* inner square that scales on hover */
+  const innerRef   = useRef<SVGGElement>(null) /* inner <g> element that scales on hover */
 
   useEffect(() => {
     const cursor = cursorRef.current
@@ -39,8 +39,8 @@ export function CustomCursor() {
     }
 
     /* Hover: scale the inner square, keep outer arms visible */
-    function onEnter() { inner.style.transform = 'scale(2.2)' }
-    function onLeave() { inner.style.transform = 'scale(1)' }
+    function onEnter() { inner!.style.transform = 'scale(2.2)' }
+    function onLeave() { inner!.style.transform = 'scale(1)' }
 
     document.querySelectorAll('a, button').forEach((el) => {
       el.addEventListener('mouseenter', onEnter)
