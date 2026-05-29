@@ -26,16 +26,20 @@ import { Navigator } from '@/components/Navigator'
 
 const COLS   = 7    /* must be odd so center column exists */
 const ROWS   = 7
-const CELL_W = 400
-const CELL_H = 300
 const CARD_W = 360
 const CARD_H = 270
+const GAP    = 40   /* equal gap on all sides → truly equidistant */
+const CELL_W = CARD_W + GAP   /* 400 */
+const CELL_H = CARD_H + GAP   /* 310 */
 
 const WORLD_W = COLS * CELL_W   /* 2800 */
 const WORLD_H = ROWS * CELL_H   /* 2100 */
 
 /* Seeded random — stable across renders */
 function sr(n: number) { const x = Math.sin(n + 1) * 1e4; return x - Math.floor(x) }
+
+/* Float durations: 8–12s, slow and smooth */
+const FLOAT_DURATION = (i: number) => 8 + sr(i) * 4
 
 /* ── Assign workItems to grid positions ────────────────────────────────────
    Cells are assigned in a Z-order that places the most important cards near
@@ -56,9 +60,9 @@ function buildGrid() {
     item: workItems[i],
     worldX: cell.col * CELL_W + CELL_W / 2,
     worldY: cell.row * CELL_H + CELL_H / 2,
-    floatVariant: (i % 3) + 1,
-    floatDuration: 3 + sr(i) * 2,
-    floatDelay:    sr(i * 2) * 4,
+    floatVariant:  (i % 3) + 1,
+    floatDuration: FLOAT_DURATION(i),   /* 8–12s — smooth, no bounce */
+    floatDelay:    sr(i * 2) * 8,
   }))
 }
 const GRID = buildGrid()
@@ -211,7 +215,7 @@ export default function WorkPage() {
             left: offX + worldX - CARD_W / 2,
             top:  offY + worldY - CARD_H / 2,
             width:  CARD_W,
-            height: isSketch ? CARD_W * 4 / 3 : CARD_H,
+            height: CARD_H,   /* uniform height — prevents sketch cards from overlapping adjacent rows */
             opacity: visible ? 1 : 0,
             pointerEvents: visible ? 'auto' : 'none',
             transition: 'opacity 0.3s, transform 0.22s cubic-bezier(0.16,1,0.3,1)',
@@ -229,14 +233,22 @@ export default function WorkPage() {
             width: '100%', height: '100%',
             animation: `map-float-${floatVariant} ${floatDuration}s ${floatDelay}s ease-in-out infinite`,
           }}>
-            <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+            {/*
+              objectFit:contain → full render always visible, no cropping.
+              Background fills the letterbox area cleanly.
+            */}
+            <div style={{
+              position: 'relative', width: '100%', height: '100%',
+              overflow: 'hidden',
+              background: isSketch ? '#f5f0e8' : '#0d0c0a',
+            }}>
               <Image
                 src={item.image}
                 alt={item.title}
                 fill
                 style={{
-                  objectFit: 'cover',
-                  objectPosition: isSketch ? 'center top' : 'center 30%',
+                  objectFit: 'contain',
+                  objectPosition: 'center center',
                   pointerEvents: 'none',
                 }}
                 unoptimized
