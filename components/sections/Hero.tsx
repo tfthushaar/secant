@@ -1,150 +1,194 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { gsap } from 'gsap'
 
-/*
-  Reference CSS:
-  .cover { position: relative; min-height: 100svh; background: var(--black); }
-  .cover__video { position: absolute; inset: 0; }
-  .cover__video video { width: 100%; height: 100%; object-fit: cover; }
-  .cover__video::after { height: clamp(100px,24svh,230px); gradient to paper bg }
-  .cover__copy { position: absolute; right: var(--x); top: 50%; transform: translateY(-50%); }
-  .cover h1 { font-size: clamp(90px,11.4vw,206px); font-weight: 300; line-height: 0.86; }
-*/
+/* Load the heavy 3D scene client-only (no SSR) */
+const Scene3D = dynamic(
+  () => import('@/components/Scene3D').then((m) => m.Scene3D),
+  { ssr: false, loading: () => null }
+)
 
-const BG    = 'oklch(97.2% 0.006 78)'   /* --black: #f7f4ef */
-const X     = 'clamp(18px, 3.7vw, 72px)' /* --x spacing */
+const X = 'clamp(18px, 3.7vw, 72px)'
 
 export function Hero() {
-  const copyRef = useRef<HTMLDivElement>(null)
-  const h1Ref   = useRef<HTMLHeadingElement>(null)
-  const subRef  = useRef<HTMLDivElement>(null)
+  const sectionRef  = useRef<HTMLElement>(null)
+  const titleRef    = useRef<HTMLDivElement>(null)
+  const subRef      = useRef<HTMLDivElement>(null)
+  const scatterRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const copy = copyRef.current
-    const h1   = h1Ref.current
-    const sub  = subRef.current
-    if (!copy || !h1 || !sub) return
-
-    gsap.set([h1, sub], { autoAlpha: 0 })
-
-    const tl = gsap.timeline({ delay: 0.1 })
+    const els = [titleRef.current, subRef.current, scatterRef.current].filter(Boolean)
+    gsap.set(els, { autoAlpha: 0 })
+    const tl = gsap.timeline({ delay: 0.15 })
     tl
-      .to(h1,  { autoAlpha: 1, duration: 1.0, ease: 'power3.out' }, 0)
-      .to(sub, { autoAlpha: 1, duration: 0.8, ease: 'power2.out' }, 0.4)
-
+      .to(titleRef.current,   { autoAlpha: 1, y: 0,  duration: 1.0, ease: 'power3.out' }, 0)
+      .to(subRef.current,     { autoAlpha: 1, y: 0,  duration: 0.8, ease: 'power3.out' }, 0.3)
+      .to(scatterRef.current, { autoAlpha: 1,        duration: 0.7, ease: 'power2.out' }, 0.7)
     return () => { tl.kill() }
   }, [])
 
   return (
-    <section style={{
-      position: 'relative',
-      minHeight: '100svh',
-      background: BG,
-      overflow: 'hidden',
-    }}>
+    /*
+      Monolith-style: tall section for scroll room.
+      SECANT stays pinned at top while 3D scene fills the viewport.
+      The 3D camera dolly-in is driven by scrolling through this section.
+    */
+    <section
+      ref={sectionRef}
+      id="hero-section"
+      style={{
+        position: 'relative',
+        height: '200vh',            /* tall — gives camera animation scroll room */
+        background: 'oklch(97.2% 0.006 78)',
+      }}
+    >
+      {/* Sticky viewport that contains the 3D scene + overlays */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        width: '100%',
+        height: '100svh',
+        overflow: 'hidden',
+      }}>
 
-      {/* ── Video: fills the entire section as background ── */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <video
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          autoPlay muted loop playsInline preload="auto"
-          aria-hidden="true"
-        >
-          <source src="/assets/video/hero.mp4" type="video/mp4" />
-        </video>
+        {/* ── 3D scene fills the sticky viewport ── */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+          <Scene3D heroRef={sectionRef} />
+        </div>
 
-        {/* Bottom gradient fades video into page background — from reference */}
+        {/* ── Typographic overlay — SECANT bold at top ── */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 2,
+          pointerEvents: 'none',
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: `clamp(4.5rem,8vh,6rem) ${X} clamp(1.5rem,3vh,2.5rem)`,
+        }}>
+
+          {/* Top: SECANT massive + subtitle */}
+          <div>
+            <div
+              ref={titleRef}
+              style={{ opacity: 0 }}
+            >
+              <h1 style={{
+                fontFamily: 'var(--font-cormorant), Georgia, serif',
+                fontWeight: 700,
+                fontSize: 'clamp(5rem, 14vw, 16rem)',
+                lineHeight: 0.88,
+                letterSpacing: '-0.01em',
+                textTransform: 'uppercase',
+                color: 'oklch(8.5% 0.007 72)',
+                margin: 0,
+                textShadow: '0 2px 28px rgba(247,244,239,0.9)',
+                userSelect: 'none',
+              }}>
+                SECANT
+              </h1>
+            </div>
+
+            <div
+              ref={subRef}
+              style={{
+                opacity: 0,
+                marginTop: 'clamp(0.6rem, 1.5vh, 1.2rem)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2rem',
+              }}
+            >
+              <span style={{
+                fontFamily: 'var(--font-jost), sans-serif',
+                fontWeight: 300,
+                fontSize: 'clamp(0.65rem, 1vw, 0.9rem)',
+                letterSpacing: '0.3em',
+                textTransform: 'uppercase',
+                color: 'oklch(44% 0.007 74)',
+              }}>Architecture Studio</span>
+              <span style={{ width: '3rem', height: '1px', background: 'oklch(82% 0.007 74)', display: 'block', flexShrink: 0 }} />
+              <span style={{
+                fontFamily: 'var(--font-jost), sans-serif',
+                fontWeight: 300,
+                fontSize: 'clamp(0.6rem, 0.9vw, 0.8rem)',
+                letterSpacing: '0.28em',
+                textTransform: 'uppercase',
+                color: 'oklch(52% 0.007 74)',
+              }}>Bengaluru · Est. 2003</span>
+            </div>
+          </div>
+
+          {/* Scattered details at bottom */}
+          <div
+            ref={scatterRef}
+            style={{ opacity: 0, position: 'relative' }}
+          >
+            {/* Bottom-left: coordinates */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0,
+              fontFamily: 'var(--font-jost), sans-serif',
+              fontWeight: 300, fontSize: '0.56rem',
+              letterSpacing: '0.38em', textTransform: 'uppercase',
+              color: 'oklch(48% 0.007 74)',
+            }}>
+              12°58&apos;N · 77°35&apos;E
+            </div>
+
+            {/* Bottom-center: crosshair */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: '50%',
+              transform: 'translateX(-50%)',
+              color: 'oklch(50% 0.007 74)',
+            }} aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <line x1="10" y1="0"  x2="10" y2="6"  stroke="currentColor" strokeWidth="0.7"/>
+                <line x1="10" y1="14" x2="10" y2="20" stroke="currentColor" strokeWidth="0.7"/>
+                <line x1="0"  y1="10" x2="6"  y2="10" stroke="currentColor" strokeWidth="0.7"/>
+                <line x1="14" y1="10" x2="20" y2="10" stroke="currentColor" strokeWidth="0.7"/>
+                <rect x="7.5" y="7.5" width="5" height="5"
+                  stroke="currentColor" strokeWidth="0.7" fill="none"/>
+              </svg>
+            </div>
+
+            {/* Bottom-right: SECANT repeated small */}
+            <div style={{
+              position: 'absolute', bottom: 0, right: 0,
+              fontFamily: 'var(--font-cormorant), Georgia, serif',
+              fontWeight: 400, fontSize: 'clamp(0.8rem, 1.2vw, 1.1rem)',
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: 'oklch(40% 0.007 74)',
+            }}>
+              Space · Composed
+            </div>
+
+            {/* Mid-right floating label */}
+            <div style={{
+              position: 'absolute', bottom: '2.5rem', right: 0,
+              fontFamily: 'var(--font-jost), sans-serif',
+              fontWeight: 300, fontSize: '0.54rem',
+              letterSpacing: '0.4em', textTransform: 'uppercase',
+              color: 'oklch(50% 0.007 74)',
+              writingMode: 'vertical-rl',
+              textOrientation: 'mixed',
+              transform: 'rotate(180deg)',
+              lineHeight: 1,
+            }}>
+              01 / Home
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom gradient blends scene into page */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: 'clamp(100px, 24svh, 230px)',
-          background: `linear-gradient(180deg, transparent 0%, ${BG} 100%)`,
-          pointerEvents: 'none',
-        }} aria-hidden="true" />
-      </div>
+          height: 'clamp(60px, 12svh, 120px)',
+          background: 'linear-gradient(to bottom, transparent, oklch(97.2% 0.006 78))',
+          zIndex: 3, pointerEvents: 'none',
+        }} />
 
-      {/* ── Section index — top right ── */}
-      <div style={{
-        position: 'absolute', top: '4.4rem', right: X,
-        zIndex: 2,
-        fontFamily: 'var(--font-jost), sans-serif',
-        fontWeight: 300, fontSize: '0.52rem',
-        letterSpacing: '0.42em', textTransform: 'uppercase',
-        color: 'rgba(30,30,28,0.38)',
-        textShadow: `0 1px 10px rgba(247,244,239,0.7)`,
-        pointerEvents: 'none',
-      }}>
-        01 / Home
       </div>
-
-      {/* ── ⊕ crosshair at bottom centre ── */}
-      <div style={{
-        position: 'absolute', bottom: 'clamp(24px, 4vh, 48px)',
-        left: '50%', transform: 'translateX(-50%)',
-        zIndex: 2, color: 'oklch(40% 0.006 74)',
-        pointerEvents: 'none',
-      }} aria-hidden="true">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <line x1="11" y1="0"  x2="11" y2="7"  stroke="currentColor" strokeWidth="0.7"/>
-          <line x1="11" y1="15" x2="11" y2="22" stroke="currentColor" strokeWidth="0.7"/>
-          <line x1="0"  y1="11" x2="7"  y2="11" stroke="currentColor" strokeWidth="0.7"/>
-          <line x1="15" y1="11" x2="22" y2="11" stroke="currentColor" strokeWidth="0.7"/>
-          <rect x="8" y="8" width="6" height="6"
-            stroke="currentColor" strokeWidth="0.7" fill="none"/>
-        </svg>
-      </div>
-
-      {/*
-        ── SECANT copy — right side, bottom-aligned (matches reference image).
-           Reference CSS: top: 50%; transform: translateY(-50%) → centred.
-           Reference IMAGE shows it at bottom-right. We match the image.
-      */}
-      <div
-        ref={copyRef}
-        style={{
-          position: 'absolute',
-          right: X,
-          bottom: 'clamp(20px, 3.2vh, 44px)',
-          zIndex: 2,
-          textAlign: 'right',
-          color: 'oklch(8.5% 0.007 72)',
-          textShadow: '0 2px 22px rgba(247,244,239,0.92)',
-        }}
-      >
-        <h1
-          ref={h1Ref}
-          style={{
-            fontFamily: 'var(--font-cormorant), Georgia, serif',
-            fontWeight: 300,
-            fontSize: 'clamp(90px, 11.4vw, 206px)',
-            lineHeight: 0.86,
-            textTransform: 'uppercase',
-            letterSpacing: '0.015em',
-            margin: 0,
-            opacity: 0,
-            userSelect: 'none',
-          }}
-        >
-          SECANT
-        </h1>
-        <div
-          ref={subRef}
-          style={{
-            fontFamily: 'var(--font-jost), sans-serif',
-            fontWeight: 300,
-            fontSize: 'clamp(10px, 0.9vw, 13px)',
-            letterSpacing: '0.32em',
-            textTransform: 'uppercase',
-            color: 'oklch(44% 0.007 74)',
-            marginTop: '0.55rem',
-            opacity: 0,
-          }}
-        >
-          Architecture · Studio
-        </div>
-      </div>
-
     </section>
   )
 }
