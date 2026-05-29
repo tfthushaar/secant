@@ -101,9 +101,9 @@ export function CategoryDomeView({ config, items }: Props) {
         <DomeGallery
           images={domeImages}
           onImageClick={handleImageClick}
-          fit={0.9}
-          minRadius={500}
-          segments={18}
+          fit={1.05}
+          minRadius={620}
+          segments={14}
           grayscale={false}
           overlayBlurColor="oklch(6.5% 0.007 72)"
           imageBorderRadius="8px"
