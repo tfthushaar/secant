@@ -98,7 +98,7 @@ export function Scene3D({ progressRef }: Scene3DProps) {
             vec2 sc=uv*resolution;
             float proj=sc.x*c-sc.y*s+noise(uv*120.0)*wb;
             float ln=mod(proj,sp)/sp;
-            float lw=0.004;
+            float lw=0.001;  /* absolute minimum — thinnest possible architectural line */
             return 1.0-smoothstep(lw-0.006,lw+0.006,ln)*(1.0-smoothstep(1.0-lw-0.006,1.0-lw+0.006,ln));
           }
 
@@ -122,13 +122,15 @@ export function Scene3D({ progressRef }: Scene3DProps) {
             float lum=dot(col.rgb,vec3(.299,.587,.114));
             float isG=1.0-smoothstep(0.88,0.94,lum);
             float h1=0.0,h2=0.0,h3=0.0;
-            if(lum<0.40){h1=hatch(vUv,45.0,9.0,2.5);h2=hatch(vUv,-45.0,9.0,2.0);h3=hatch(vUv,0.0,9.0,1.5)*0.5;}
-            if(lum<0.60){h1=max(h1,hatch(vUv,45.0,13.0,2.0));h2=max(h2,hatch(vUv,-45.0,16.0,1.5)*0.65);}
-            if(lum<0.78){h3=max(h3,hatch(vUv,45.0,20.0,1.5)*0.45);}
-            float hd=clamp(h1+h2+h3,0.0,1.0)*isG;
-            float fg=mix(0.97,mix(0.55,0.06,clamp((0.78-lum)/0.78,0.0,1.0)),hd);
-            fg=min(fg,mix(0.97,0.91,(1.0-lum)*isG*0.3));
-            fg=mix(fg,0.04,clamp(max(sobel(vUv),sobel(vUv+noise(vUv*300.0)*0.0012))*1.6,0.0,1.0));
+            /* Wider spacing = fewer, lighter, more architectural lines */
+            if(lum<0.35){h1=hatch(vUv,45.0,16.0,2.0);h2=hatch(vUv,-45.0,16.0,1.5)*0.7;}
+            if(lum<0.55){h1=max(h1,hatch(vUv,45.0,24.0,1.5));h2=max(h2,hatch(vUv,-45.0,28.0,1.2)*0.5);}
+            if(lum<0.72){h3=max(h3,hatch(vUv,45.0,36.0,1.0)*0.35);}
+            float hd=clamp(h1+h2+h3,0.0,1.0)*isG*0.85;
+            float fg=mix(0.97,mix(0.60,0.08,clamp((0.72-lum)/0.72,0.0,1.0)),hd);
+            fg=min(fg,mix(0.97,0.93,(1.0-lum)*isG*0.25));
+            /* Very fine Sobel edges — thin ink outline */
+            fg=mix(fg,0.06,clamp(max(sobel(vUv),sobel(vUv+noise(vUv*300.0)*0.0008))*0.9,0.0,1.0));
             fg=clamp(fg+(hash(vUv*900.0+time*0.1)-0.5)*0.016,0.0,1.0);
             gl_FragColor=vec4(vec3(fg),col.a);
           }
@@ -140,7 +142,7 @@ export function Scene3D({ progressRef }: Scene3DProps) {
       composer.addPass(new RenderPass(scene, camera))
 
       const outline = new OutlinePass(new THREE.Vector2(W, H), scene, camera)
-      outline.edgeStrength = 2.0; outline.edgeGlow = 0; outline.edgeThickness = 0.7
+      outline.edgeStrength = 0.8; outline.edgeGlow = 0; outline.edgeThickness = 0.4
       outline.visibleEdgeColor.set(0x111111); outline.hiddenEdgeColor.set(0x444444)
       composer.addPass(outline)
 

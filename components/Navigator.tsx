@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 
 const NAV_LINKS = [
-  { label: 'Work',    href: '/work',   num: '01' },
-  { label: 'Studio',  href: '/studio', num: '02' },
-  { label: 'Contact', href: '/studio#contact', num: '03' },
+  { label: 'Home',    href: '/',               num: '00' },
+  { label: 'Work',    href: '/work',            num: '01' },
+  { label: 'Studio',  href: '/studio',          num: '02' },
+  { label: 'Contact', href: '/studio#contact',  num: '03' },
 ]
 
 export function Navigator() {

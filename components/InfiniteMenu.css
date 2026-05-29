@@ -1,0 +1,86 @@
+/* InfiniteMenu — styled for SECANT's warm-monochrome aesthetic */
+
+#infinite-grid-menu-canvas {
+  cursor: grab;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  outline: none;
+}
+#infinite-grid-menu-canvas:active { cursor: grabbing; }
+
+/* Active item title — Cormorant, centred left of sphere */
+.face-title {
+  user-select: none;
+  position: absolute;
+  top: 50%;
+  left: 4%;
+  transform: translateY(-50%);
+  font-family: var(--font-cormorant, 'Georgia', serif);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 3vw, 2.8rem);
+  letter-spacing: 0.01em;
+  color: rgba(247, 244, 239, 0.92);
+  line-height: 1.1;
+  max-width: 18ch;
+  pointer-events: none;
+}
+.face-title.active  { opacity: 1; transition: opacity 0.5s ease; }
+.face-title.inactive { opacity: 0; transition: opacity 0.15s ease; }
+
+/* Description — small, right side */
+.face-description {
+  user-select: none;
+  position: absolute;
+  top: 50%;
+  right: 4%;
+  transform: translateY(-50%);
+  font-family: var(--font-jost, sans-serif);
+  font-weight: 300;
+  font-size: 0.56rem;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 239, 0.38);
+  max-width: 14ch;
+  text-align: right;
+  pointer-events: none;
+}
+.face-description.active  { opacity: 1; transition: opacity 0.5s ease; }
+.face-description.inactive { opacity: 0; transition: opacity 0.15s ease; }
+
+/* Action button — minimal, bottom centre */
+.action-button {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid rgba(247,244,239,0.45);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  z-index: 10;
+}
+.action-button:hover {
+  background: rgba(247,244,239,0.1);
+  border-color: rgba(247,244,239,0.75);
+}
+.action-button.active  { bottom: 3rem; opacity: 1; pointer-events: auto; transition: bottom 0.5s ease, opacity 0.5s ease; }
+.action-button.inactive { bottom: -80px; opacity: 0; pointer-events: none; transition: bottom 0.15s ease, opacity 0.15s ease; }
+
+.action-button-icon {
+  font-size: 18px;
+  color: rgba(247,244,239,0.85);
+  position: relative;
+  top: 1px;
+  user-select: none;
+  margin: 0; padding: 0;
+}
+
+@media (max-width: 900px) {
+  .face-title, .face-description { display: none; }
+}

@@ -8,8 +8,9 @@ import { gsap } from 'gsap'
 import { Navigator } from '@/components/Navigator'
 import type { CategoryConfig, WorkItem } from '@/lib/projects'
 
-const DomeGallery = dynamic(
-  () => import('@/components/DomeGallery'),
+/* InfiniteMenu is WebGL + browser-only */
+const InfiniteMenu = dynamic(
+  () => import('@/components/InfiniteMenu'),
   { ssr: false, loading: () => null }
 )
 
@@ -29,19 +30,23 @@ export function CategoryDomeView({ config, items }: Props) {
     gsap.fromTo(el, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' })
   }, [])
 
-  /* DomeGallery images — each item includes its id for navigation */
-  const domeImages = items.map(item => ({
-    src: item.image,
-    alt: item.title,
-    id:  item.id,
+  /* Items for InfiniteMenu */
+  const menuItems = items.map(item => ({
+    image:       item.image,
+    link:        `/work/render/${item.id}`,
+    title:       item.title,
+    description: item.kind === 'sketch'
+      ? 'Concept sketch'
+      : item.category,
   }))
 
-  const handleImageClick = useCallback(({ id }: { id: string; src: string }) => {
-    if (!id) return
+  /* Navigate to render detail on item click */
+  const handleItemClick = useCallback((activeItem: { link?: string }) => {
+    if (!activeItem?.link) return
     gsap.to(containerRef.current, {
       opacity: 0, y: -16,
-      duration: 0.38, ease: 'power2.in',
-      onComplete: () => router.push(`/work/render/${id}`),
+      duration: 0.35, ease: 'power2.in',
+      onComplete: () => router.push(activeItem.link!),
     })
   }, [router])
 
@@ -64,6 +69,7 @@ export function CategoryDomeView({ config, items }: Props) {
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         position: 'relative', zIndex: 10,
       }}>
+        {/* Back to work */}
         <Link href="/work" style={{
           fontFamily: 'var(--font-jost), sans-serif',
           fontWeight: 300, fontSize: '0.6rem', letterSpacing: '0.3em',
@@ -77,52 +83,33 @@ export function CategoryDomeView({ config, items }: Props) {
           Work
         </Link>
 
-        <div style={{ textAlign: 'center' }}>
-          <span style={{
-            fontFamily: 'var(--font-cormorant), Georgia, serif',
-            fontWeight: 400, fontSize: 'clamp(1rem, 2vw, 1.5rem)',
-            letterSpacing: '0.04em', color: 'rgba(255,255,255,0.82)',
-          }}>
-            {config.label}
-          </span>
-        </div>
-
+        {/* Category name */}
         <span style={{
-          fontFamily: 'var(--font-jost), sans-serif',
-          fontWeight: 300, fontSize: '0.52rem', letterSpacing: '0.38em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)',
+          fontFamily: 'var(--font-cormorant), Georgia, serif',
+          fontWeight: 400, fontSize: 'clamp(1rem, 2vw, 1.5rem)',
+          letterSpacing: '0.04em', color: 'rgba(255,255,255,0.82)',
         }}>
-          {items.length} items
+          {config.label}
         </span>
+
+        {/* Home link */}
+        <Link href="/" style={{
+          fontFamily: 'var(--font-jost), sans-serif',
+          fontWeight: 300, fontSize: '0.56rem', letterSpacing: '0.35em',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)',
+          textDecoration: 'none', transition: 'color 0.2s',
+        }}>
+          Home
+        </Link>
       </header>
 
-      {/* DomeGallery */}
+      {/* InfiniteMenu with rectangular cards */}
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-        <DomeGallery
-          images={domeImages}
-          onImageClick={handleImageClick}
-          fit={1.05}
-          minRadius={620}
-          segments={14}
-          grayscale={false}
-          overlayBlurColor="oklch(6.5% 0.007 72)"
-          imageBorderRadius="8px"
-          openedImageBorderRadius="8px"
-          dragSensitivity={18}
-          dragDampening={1.5}
+        <InfiniteMenu
+          items={menuItems}
+          scale={0.85}
+          onItemClick={handleItemClick}
         />
-      </div>
-
-      {/* Hint */}
-      <div style={{
-        position: 'absolute', bottom: '1rem', left: '50%',
-        transform: 'translateX(-50%)',
-        fontFamily: 'var(--font-jost), sans-serif',
-        fontWeight: 300, fontSize: '0.52rem', letterSpacing: '0.38em',
-        textTransform: 'uppercase', color: 'rgba(255,255,255,0.16)',
-        pointerEvents: 'none', zIndex: 5, whiteSpace: 'nowrap',
-      }}>
-        Drag to explore · Click to open
       </div>
 
       <Navigator />
