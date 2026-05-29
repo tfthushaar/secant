@@ -141,44 +141,61 @@ export function Navigator() {
           </button>
         </div>
 
-        {/* Navigation links */}
+        {/* Navigation links — full-width rows that turn white on hover */}
         <nav
           className="flex flex-col"
-          style={{ gap: 'clamp(0.5rem, 2vh, 1rem)', marginTop: 'auto', marginBottom: 'auto' }}
+          style={{ marginTop: 'auto', marginBottom: 'auto' }}
           aria-label="Site navigation"
         >
           {NAV_LINKS.map(({ label, href, num }, i) => (
             <div
               key={label}
               ref={(el) => { linksRef.current[i] = el }}
-              style={{ opacity: 0 }}
+              style={{
+                opacity: 0,
+                /* Extend to full overlay width — negative margin cancels overlay padding */
+                marginLeft:  'calc(-1 * clamp(2rem,8vw,7rem))',
+                marginRight: 'calc(-1 * clamp(2rem,8vw,7rem))',
+              }}
             >
               <Link
                 href={href}
                 onClick={() => setOpen(false)}
-                className="group flex items-baseline gap-6 transition-opacity duration-200 hover:opacity-40"
+                /* nav-row-link class adds full-row white hover via globals.css */
+                className="nav-row-link"
+                style={{
+                  paddingLeft:   'clamp(2rem,8vw,7rem)',
+                  paddingRight:  'clamp(2rem,8vw,7rem)',
+                  paddingTop:    'clamp(0.25rem,0.8vh,0.5rem)',
+                  paddingBottom: 'clamp(0.25rem,0.8vh,0.5rem)',
+                  gap: '1.5rem',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                }}
               >
                 <span
+                  className="nav-row-num"
                   style={{
                     fontFamily: 'var(--font-jost), sans-serif',
-                    fontWeight: 200,
-                    fontSize: '0.6rem',
+                    fontWeight: 300,
+                    fontSize: '0.56rem',
                     letterSpacing: '0.35em',
                     textTransform: 'uppercase',
-                    color: 'rgba(255,255,255,0.28)',
-                    minWidth: '2rem',
+                    color: 'rgba(255,255,255,0.24)',
+                    minWidth: '2.2rem',
+                    flexShrink: 0,
+                    transition: 'color 0.18s ease',
                   }}
                 >
                   {num}
                 </span>
                 <span
                   style={{
-                    fontFamily: 'var(--font-jost), sans-serif',
-                    fontWeight: 100,
-                    fontSize: 'clamp(3.5rem, 9vw, 9rem)',
+                    fontFamily: 'var(--font-cormorant), Georgia, serif',
+                    fontWeight: 300,
+                    fontSize: 'clamp(3rem, 8vw, 8.5rem)',
                     lineHeight: 1.0,
                     letterSpacing: '-0.01em',
-                    color: 'rgba(255,255,255,0.93)',
+                    fontFeatureSettings: '"kern" 1, "liga" 1',
                   }}
                 >
                   {label}

@@ -213,7 +213,7 @@ class ArcballControl {
   update(dt,tfd=16){
     const ts=dt/tfd+0.00001;let af=ts,sr=quat.create();
     if(this.isPointerDown){
-      const INT=0.3*ts,AA=5/ts;
+      const INT=0.10*ts,AA=2/ts;   /* reduced: ~67% less sensitive than default */
       const mp=vec2.sub(vec2.create(),this.pointerPos,this.previousPointerPos);
       vec2.scale(mp,mp,INT);
       if(vec2.sqrLen(mp)>this.EPSILON){
@@ -223,7 +223,8 @@ class ArcballControl {
         this.quatFromVectors(vec3.normalize(vec3.create(),p),vec3.normalize(vec3.create(),q),this.pointerRotation,af);
       }else quat.slerp(this.pointerRotation,this.pointerRotation,this.IDENTITY_QUAT,INT);
     }else{
-      quat.slerp(this.pointerRotation,this.pointerRotation,this.IDENTITY_QUAT,0.1*ts);
+      /* Faster damping when not dragging = motion stops sooner, feels less wild */
+      quat.slerp(this.pointerRotation,this.pointerRotation,this.IDENTITY_QUAT,0.18*ts);
       if(this.snapTargetDirection){
         const sd=0.2,a=this.snapTargetDirection,b=this.snapDirection;
         const df=Math.max(0.1,1-vec3.squaredDistance(a,b)*10);
@@ -350,7 +351,7 @@ class InfiniteGridMenu {
   }
   #animate(dt){
     const gl=this.gl;this.control.update(dt,this.TARGET_FRAME_DURATION);
-    const scale=0.42,SI=0.6;  /* 0.42 → ~1.7× bigger tiles than original 0.25 */
+    const scale=0.30,SI=0.6;  /* 0.30 → ~1.2× bigger than original 0.25, not overwhelming */
     this.instancePositions.map(p=>vec3.transformQuat(vec3.create(),p,this.control.orientation)).forEach((p,ndx)=>{
       const s=(Math.abs(p[2])/this.SPHERE_RADIUS)*SI+(1-SI),fs=s*scale,m=mat4.create();
       mat4.multiply(m,m,mat4.fromTranslation(mat4.create(),vec3.negate(vec3.create(),p)));

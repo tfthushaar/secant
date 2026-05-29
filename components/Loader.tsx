@@ -1,168 +1,101 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { gsap } from 'gsap'
+
+const TextType = dynamic(() => import('./TextType'), { ssr: false })
 
 interface LoaderProps { onComplete: () => void }
 
-const LETTERS = ['S', 'E', 'C', 'A', 'N', 'T']
+const TARGET      = 'SECANT.COM'   /* all-caps — architectural precision */
+const TYPING_SPEED = 110  /* ms per character — deliberate, unhurried */
+const POST_PAUSE   = 1400 /* ms after typing — let it breathe */
 
-/*
-  Exact implementation from the reference styles.css:
-  ─ Letters: translateY(112%) → translateY(0), opacity 0→1
-    920ms, cubic-bezier(0.22, 1, 0.36, 1), stagger 90ms, first delay 150ms
-  ─ Line below word: scaleX 0→1, 2200ms, same ease
-  ─ Exit: translateY(100%), 760ms, cubic-bezier(0.76, 0, 0.24, 1), after 2550ms
-*/
+/* Total visible duration = chars × speed + post-pause */
+const TOTAL_MS = TARGET.length * TYPING_SPEED + POST_PAUSE
+
 export function Loader({ onComplete }: LoaderProps) {
-  const rootRef    = useRef<HTMLDivElement>(null)
-  const letterRefs = useRef<(HTMLSpanElement | null)[]>([])
-  const lineRef    = useRef<HTMLSpanElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const root = rootRef.current
-    if (!root) return
-
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduced) {
-      gsap.set(root, { yPercent: -100 })
+      gsap.set(rootRef.current, { yPercent: -100 })
       onComplete()
       return
     }
 
-    /* Set initial states */
-    gsap.set(letterRefs.current.filter(Boolean), {
-      opacity: 0,
-      y: '112%',
-    })
-    gsap.set(lineRef.current, { scaleX: 0, transformOrigin: 'left center' })
-
-    const tl = gsap.timeline({
-      onComplete,
-      defaults: { ease: 'cubic.out' },
-    })
-
-    /* Letters rise — matching reference timing exactly */
-    LETTERS.forEach((_, i) => {
-      tl.to(
-        letterRefs.current[i],
-        {
-          opacity: 1,
-          y: '0%',
-          duration: 0.92,
-          ease: 'cubic.out',
-        },
-        0.15 + i * 0.09   /* 150ms + i*90ms in seconds */
-      )
-    })
-
-    /* Line draws */
-    tl.to(
-      lineRef.current,
-      { scaleX: 1, duration: 2.2, ease: 'cubic.out' },
-      0.15   /* starts same time as first letter */
-    )
-
-    /* Hold, then exit */
-    tl.to(
-      root,
-      {
+    /* After typing finishes, slide the whole loader DOWN */
+    const timer = setTimeout(() => {
+      gsap.to(rootRef.current, {
         yPercent: 100,
-        duration: 0.76,
-        ease: 'power2.inOut',   /* approximates cubic-bezier(0.76,0,0.24,1) */
-      },
-      2.55   /* 2550ms */
-    )
+        duration: 0.85,
+        ease: 'power3.inOut',
+        onComplete,
+      })
+    }, TOTAL_MS)
 
-    return () => { tl.kill() }
+    return () => clearTimeout(timer)
   }, [onComplete])
 
   return (
     <div
       ref={rootRef}
-      className="fixed inset-0 z-[200] grid place-items-center"
-      style={{ background: '#000000', color: '#ffffff' }}
+      className="fixed inset-0 z-[200] flex items-center justify-center"
+      style={{ background: '#0D0C0A' }}
       aria-hidden="true"
     >
       {/* Corner labels */}
-      <div className="absolute top-6 left-7" style={{
+      <div className="absolute top-7 left-8" style={{
         fontFamily: 'var(--font-jost), sans-serif',
-        fontWeight: 400, fontSize: '0.56rem',
+        fontWeight: 300, fontSize: '0.55rem',
         letterSpacing: '0.38em', textTransform: 'uppercase',
-        color: 'rgba(255,255,255,0.2)',
+        color: 'rgba(255,255,255,0.18)',
       }}>
         12°58&apos;N · 77°35&apos;E
       </div>
-      <div className="absolute bottom-6 right-7" style={{
+      <div className="absolute bottom-7 right-8" style={{
         fontFamily: 'var(--font-jost), sans-serif',
-        fontWeight: 400, fontSize: '0.56rem',
+        fontWeight: 300, fontSize: '0.55rem',
         letterSpacing: '0.35em', textTransform: 'uppercase',
-        color: 'rgba(255,255,255,0.2)',
+        color: 'rgba(255,255,255,0.18)',
       }}>
         Est. 2003 · BLR
       </div>
 
-      {/* Word + line — matching reference structure */}
-      <div style={{
-        width: 'min(82vw, 940px)',
-        display: 'grid',
-        gap: 'clamp(18px, 3vw, 38px)',
-        justifyItems: 'center',
-      }}>
-
-        {/* SECANT — each letter rises from below */}
-        <div
+      {/* Centred typing text */}
+      <div style={{ textAlign: 'center' }}>
+        <TextType
+          text={TARGET}
+          loop={false}
+          typingSpeed={TYPING_SPEED}
+          initialDelay={180}
+          pauseDuration={999999}   /* never delete — we slide down instead */
+          showCursor={true}
+          cursorCharacter="_"
+          cursorBlinkDuration={0.45}
           style={{
-            display: 'flex',
-            justifyContent: 'center',
-            overflow: 'hidden',                        /* clip the rising letters */
-            paddingBottom: '0.08em',                   /* prevent clip of descenders */
             fontFamily: 'var(--font-cormorant), Georgia, serif',
             fontWeight: 400,
-            fontSize: 'clamp(54px, 12vw, 176px)',
-            lineHeight: 0.86,
-            textTransform: 'uppercase',
+            fontSize: 'clamp(2.2rem, 6vw, 5.5rem)',
             letterSpacing: '0.06em',
-            color: '#ffffff',
+            color: 'rgba(255,255,255,0.92)',
+            lineHeight: 1,
+            userSelect: 'none',
           }}
-          aria-label="SECANT"
-        >
-          {LETTERS.map((letter, i) => (
-            <span
-              key={i}
-              ref={(el) => { letterRefs.current[i] = el }}
-              style={{
-                display: 'inline-block',
-                opacity: 0,
-                transform: 'translateY(112%)',
-                userSelect: 'none',
-              }}
-            >
-              {letter}
-            </span>
-          ))}
-        </div>
-
-        {/* Drawing line — matches reference loader__line */}
+        />
         <div style={{
-          width: 'min(420px, 64vw)',
-          height: '1px',
-          overflow: 'hidden',
-          background: 'rgba(255,255,255,0.22)',
+          fontFamily: 'var(--font-jost), sans-serif',
+          fontWeight: 300,
+          fontSize: '0.56rem',
+          letterSpacing: '0.48em',
+          textTransform: 'uppercase',
+          color: 'rgba(255,255,255,0.22)',
+          marginTop: '1.4rem',
         }}>
-          <span
-            ref={lineRef}
-            style={{
-              display: 'block',
-              width: '100%',
-              height: '100%',
-              background: '#ffffff',
-              transformOrigin: 'left center',
-              transform: 'scaleX(0)',
-            }}
-          />
+          Architecture Studio
         </div>
-
       </div>
     </div>
   )

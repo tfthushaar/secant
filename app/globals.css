@@ -26,7 +26,10 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  font-feature-settings: "kern" 1, "liga" 1;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  font-optical-sizing: auto;   /* optical sizing for Cormorant at large sizes */
+  font-kerning: normal;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -34,7 +37,18 @@ body {
   background: oklch(97.2% 0.006 78);
   color: oklch(8.5% 0.007 72);
   overflow-x: hidden;
-  line-height: 1.6;
+  line-height: 1.65;
+  /* Fluid base type: never too small on mobile, never too large on desktop */
+  font-size: clamp(15px, 1vw + 10px, 17px);
+  font-weight: 300;
+}
+
+/* Cormorant display: apply optical features at any size */
+[style*="--font-cormorant"],
+.font-display,
+h1, h2, h3 {
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "onum" 1;
+  font-optical-sizing: auto;
 }
 
 body.is-loading { overflow: hidden; }
@@ -44,6 +58,27 @@ a, button {
   transition: opacity 0.22s cubic-bezier(0.16,1,0.3,1);
 }
 a:hover, button:hover { opacity: 0.6; }
+
+/* ─── Navigator full-row hover — overrides the default opacity rule ─────────── */
+.nav-row-link {
+  display: flex !important;
+  align-items: baseline;
+  text-decoration: none;
+  color: rgba(255,255,255,0.88);
+  transition: background 0.18s cubic-bezier(0.16,1,0.3,1),
+              color 0.18s cubic-bezier(0.16,1,0.3,1) !important;
+}
+/* Override: nav rows must NOT fade via the global a:hover rule */
+.nav-row-link:hover,
+.nav-row-link:focus-visible {
+  opacity: 1 !important;
+  background: oklch(97.2% 0.006 78) !important;  /* warm paper white */
+  color: oklch(8.5% 0.007 72) !important;
+  outline: none;
+}
+.nav-row-link:hover .nav-row-num {
+  color: oklch(44% 0.007 74) !important;
+}
 
 /* ─── Cursor ───────────────────────────────────────────────────────────────── */
 @media (hover: hover) and (pointer: fine) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -8,36 +8,108 @@ import { gsap } from 'gsap'
 import { Navigator } from '@/components/Navigator'
 import { CATEGORY_CONFIG, getItemsByCategory } from '@/lib/projects'
 
-/* TiltedCard needs motion/react — client-only */
-const TiltedCard = dynamic(
-  () => import('@/components/TiltedCard'),
-  { ssr: false, loading: () => null }
-)
+const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
+  ssr: false, loading: () => null,
+})
 
 /*
-  Merged CircularGallery + TiltedCards:
-  ──────────────────────────────────────
-  The five category cards are arranged on a CSS 3D arc (rotateY + translateZ).
-  This reproduces the curved "circular stack" visual of CircularGallery while
-  keeping TiltedCard's spring-physics 3D tilt on hover.
-  Each card rotates away from center on the Y axis with a shared vanishing point.
-  Clicking any card navigates to that category's page.
+  Merged CircularStack + TiltedCard:
+  ─────────────────────────────────
+  • 5 TiltedCards arranged on a CSS 3D cylinder (rotateY + translateZ)
+  • Pointer drag / scroll wheel rotates the whole cylinder (CircularGallery UX)
+  • TiltedCard spring-physics tilt fires on hover within each card's own space
+  • Inertia decay + snap-to-nearest-item on release
 */
 
-const ARC_ANGLES  = [-34, -17, 0, 17, 34]   /* degrees Y-rotation for each card */
-const ARC_RADIUS  = 480                       /* px — radius of the arc circle     */
+const N      = CATEGORY_CONFIG.length   /* 5 */
+const STEP   = 360 / N                  /* 72° between items */
+const RADIUS = 440                      /* cylinder radius in px */
+const DAMPEN = 0.88                     /* inertia friction */
 
 export default function WorkPage() {
   const router       = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
+  const cylinderRef  = useRef<HTMLDivElement>(null)
 
-  const handleCategoryClick = useCallback((slug: string) => {
+  /* Rotation state — kept in refs to avoid re-renders in the RAF loop */
+  const rotY    = useRef(0)
+  const targetY = useRef(0)
+  const vel     = useRef(0)
+  const down    = useRef(false)
+  const startX  = useRef(0)
+  const rafId   = useRef(0)
+  const dragged = useRef(false)   /* distinguishes click vs drag */
+
+  const [activeIdx, setActiveIdx] = useState(0)
+
+  /* ── Animation loop ─────────────────────────────────────────────── */
+  useEffect(() => {
+    const step = () => {
+      if (!down.current) {
+        vel.current *= DAMPEN
+        if (Math.abs(vel.current) > 0.02) targetY.current += vel.current
+      }
+      rotY.current += (targetY.current - rotY.current) * 0.1
+
+      if (cylinderRef.current) {
+        cylinderRef.current.style.transform = `rotateY(${rotY.current}deg)`
+      }
+
+      /* Which item faces front? normalise rotation to find closest index */
+      const norm = ((-rotY.current % 360) + 360) % 360
+      const idx  = Math.round(norm / STEP) % N
+      setActiveIdx(idx)
+
+      rafId.current = requestAnimationFrame(step)
+    }
+    rafId.current = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(rafId.current)
+  }, [])
+
+  /* ── Pointer handlers ────────────────────────────────────────────── */
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    down.current    = true
+    dragged.current = false
+    startX.current  = e.clientX
+    vel.current     = 0
+    ;(e.target as Element).setPointerCapture?.(e.pointerId)
+  }, [])
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!down.current) return
+    const dx = e.clientX - startX.current
+    if (Math.abs(dx) > 4) dragged.current = true
+    targetY.current += dx * 0.35
+    vel.current      = dx * 0.35
+    startX.current   = e.clientX
+  }, [])
+
+  const onPointerUp = useCallback(() => {
+    down.current = false
+    /* Snap to nearest item */
+    const snap = Math.round(targetY.current / STEP) * STEP
+    targetY.current = snap
+  }, [])
+
+  /* ── Scroll-wheel rotation ───────────────────────────────────────── */
+  const onWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault()
+    vel.current     += e.deltaY * 0.12
+    targetY.current += e.deltaY * 0.12
+  }, [])
+
+  /* ── Navigation ─────────────────────────────────────────────────── */
+  const handleClick = useCallback((slug: string, idx: number) => {
+    if (dragged.current) return        /* was a drag, not a click */
+    if (idx !== activeIdx) {           /* snap to this item first */
+      targetY.current = -idx * STEP
+      return
+    }
     gsap.to(containerRef.current, {
-      opacity: 0, y: -14,
-      duration: 0.4, ease: 'power2.in',
+      opacity: 0, y: -16, duration: 0.4, ease: 'power2.in',
       onComplete: () => router.push(`/work/${slug}`),
     })
-  }, [router])
+  }, [activeIdx, router])
 
   return (
     <div
@@ -54,119 +126,125 @@ export default function WorkPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 clamp(1.2rem,4vw,2.5rem)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
-        position: 'sticky', top: 0, zIndex: 20,
         background: 'oklch(6.5% 0.007 72)',
+        position: 'sticky', top: 0, zIndex: 10,
       }}>
         <Link href="/" style={{
           fontFamily: 'var(--font-jost), sans-serif',
           fontWeight: 400, fontSize: '0.68rem', letterSpacing: '0.28em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.38)',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)',
           textDecoration: 'none',
         }}>SECANT</Link>
         <span style={{
           fontFamily: 'var(--font-jost), sans-serif',
           fontWeight: 300, fontSize: '0.52rem', letterSpacing: '0.42em',
           textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)',
-        }}>Selected Work</span>
+        }}>Drag to explore · Click to enter</span>
       </header>
 
-      {/* Page title */}
-      <div style={{ paddingTop: 'clamp(3rem,6vh,5rem)', paddingBottom: '1rem', textAlign: 'center', flexShrink: 0 }}>
+      {/* Title */}
+      <div style={{ paddingTop: 'clamp(2rem,5vh,4rem)', paddingBottom: '0.5rem', textAlign: 'center', flexShrink: 0 }}>
         <p style={{
           fontFamily: 'var(--font-cormorant), Georgia, serif',
-          fontWeight: 400, fontSize: 'clamp(1.4rem,3vw,2.6rem)',
+          fontWeight: 400, fontSize: 'clamp(1.3rem,2.8vw,2.4rem)',
           letterSpacing: '0.02em', color: 'rgba(255,255,255,0.82)', margin: 0,
-        }}>Choose a category</p>
-        <p style={{
-          fontFamily: 'var(--font-jost), sans-serif',
-          fontWeight: 300, fontSize: '0.54rem', letterSpacing: '0.4em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.24)',
-          marginTop: '0.6rem',
-        }}>Hover to explore · Click to enter</p>
+          fontFeatureSettings: '"kern" 1, "liga" 1',
+        }}>
+          Select a category
+        </p>
       </div>
 
       {/*
-        ── Merged arc: CSS 3D circular arrangement + TiltedCard hover effect ──
-        perspective-origin is set slightly above centre so front card reads large.
-        Each card sits at rotateY(angle) translateZ(radius) — standard CSS carousel.
-        The TiltedCard handles mouse-tracking tilt within its own local 3D space.
+        ── CSS 3D Cylinder Carousel ──────────────────────────────────
+        perspective on the outer div creates depth.
+        The inner div (cylinder) holds all 5 TiltedCards at rotateY angles.
+        Dragging rotates the cylinder; TiltedCard handles per-card hover tilt.
       */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        perspective: '1400px',
-        perspectiveOrigin: '50% 38%',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'relative',
-          transformStyle: 'preserve-3d',
-          width: '300px',   /* the rotation origin — cards arc around this point */
-          height: '380px',
-        }}>
+      <div
+        style={{
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          perspective: '1300px', perspectiveOrigin: '50% 45%',
+          overflow: 'hidden',
+          cursor: down.current ? 'grabbing' : 'grab',
+          userSelect: 'none',
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onWheel={onWheel}
+      >
+        {/* The cylinder — all cards are children, rotateY applied each RAF */}
+        <div
+          ref={cylinderRef}
+          style={{
+            position: 'relative',
+            transformStyle: 'preserve-3d',
+            width: 0, height: 0,
+          }}
+        >
           {CATEGORY_CONFIG.map((cat, i) => {
-            const angle    = ARC_ANGLES[i]
+            const angle    = i * STEP
+            const isActive = i === activeIdx
             const count    = getItemsByCategory(cat.slug).length
-            /* Cards further from centre are slightly smaller */
-            const proximity = 1 - Math.abs(i - 2) * 0.08
+            /* Cards further from front are slightly less opaque */
+            const opacity  = isActive ? 1 : 0.68
 
             return (
               <div
                 key={cat.slug}
                 style={{
                   position: 'absolute',
-                  top: '50%', left: '50%',
-                  /* rotateY places the card on the arc, translateZ moves it forward */
-                  transform: `translate(-50%,-50%) rotateY(${angle}deg) translateZ(${ARC_RADIUS}px)`,
-                  transformOrigin: `50% 50% -${ARC_RADIUS}px`,
-                  cursor: 'pointer',
-                  /* depth fade: side cards softer */
-                  opacity: proximity,
-                  zIndex: 5 - Math.abs(i - 2),
+                  /* Place this card at its angle on the cylinder */
+                  transform: `rotateY(${angle}deg) translateZ(${RADIUS}px)`,
+                  /* Centre the card on its position */
+                  top: 0, left: 0,
+                  translate: '-50% -50%',
+                  opacity,
                   transition: 'opacity 0.3s ease',
+                  /* Allow TiltedCard to receive mouse events */
+                  pointerEvents: 'auto',
                 }}
-                onClick={() => handleCategoryClick(cat.slug)}
+                onClick={() => handleClick(cat.slug, i)}
               >
                 <TiltedCard
                   imageSrc={cat.heroImage}
                   altText={cat.label}
                   captionText={`${count} works`}
-                  containerWidth={`${Math.round(240 * proximity)}px`}
-                  containerHeight={`${Math.round(320 * proximity)}px`}
-                  imageWidth={`${Math.round(240 * proximity)}px`}
-                  imageHeight={`${Math.round(320 * proximity)}px`}
-                  rotateAmplitude={9}
-                  scaleOnHover={1.06}
+                  containerWidth="clamp(180px,17vw,250px)"
+                  containerHeight="clamp(240px,22vw,330px)"
+                  imageWidth="clamp(180px,17vw,250px)"
+                  imageHeight="clamp(240px,22vw,330px)"
+                  /* Tilt intensity: full on active, reduced on side cards */
+                  rotateAmplitude={isActive ? 10 : 3}
+                  scaleOnHover={isActive ? 1.07 : 1.03}
                   showMobileWarning={false}
-                  showTooltip={true}
+                  showTooltip={isActive}
                   displayOverlayContent={true}
                   overlayContent={
                     <div style={{
                       position: 'absolute', bottom: 0, left: 0, right: 0,
-                      padding: '16px',
-                      background: 'linear-gradient(to top, rgba(8,7,6,0.85) 0%, transparent 100%)',
+                      padding: 'clamp(12px,1.5vw,18px)',
+                      background: 'linear-gradient(to top, rgba(8,7,6,0.88) 0%, transparent 100%)',
                       borderRadius: '0 0 12px 12px',
                     }}>
                       <p style={{
                         fontFamily: 'var(--font-cormorant), Georgia, serif',
                         fontWeight: 400,
-                        fontSize: `${Math.round(20 * proximity)}px`,
+                        fontSize: 'clamp(1.1rem,1.8vw,1.55rem)',
                         lineHeight: 1.1,
-                        color: 'rgba(255,255,255,0.95)',
+                        color: 'rgba(255,255,255,0.96)',
                         margin: 0,
+                        fontFeatureSettings: '"kern" 1',
                       }}>
                         {cat.label}
                       </p>
                       <p style={{
                         fontFamily: 'var(--font-jost), sans-serif',
-                        fontWeight: 300,
-                        fontSize: '9px',
-                        letterSpacing: '0.32em',
-                        textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.45)',
-                        margin: '4px 0 0',
+                        fontWeight: 300, fontSize: '8px',
+                        letterSpacing: '0.32em', textTransform: 'uppercase',
+                        color: 'rgba(255,255,255,0.45)', margin: '4px 0 0',
                       }}>
                         {count} works
                       </p>

@@ -304,16 +304,7 @@ export const workItems: WorkItem[] = [
   },
 ]
 
-export const CATEGORIES: Array<{ label: string; value: Category | 'All' }> = [
-  { label: 'All',           value: 'All'          },
-  { label: 'Residential',   value: 'Residential'  },
-  { label: 'Commercial',    value: 'Commercial'   },
-  { label: 'Institutional', value: 'Institutional'},
-  { label: 'Private',       value: 'Private'      },
-  { label: 'Sketches',      value: 'Sketch'       },
-]
-
-/* ── Category config for CircularGallery ─────────────────────────────────── */
+/* ── Category config ─────────────────────────────────────────────────────── */
 export interface CategoryConfig {
   slug:       string
   label:      string
