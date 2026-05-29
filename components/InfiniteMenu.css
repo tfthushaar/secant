@@ -1,4 +1,4 @@
-/* InfiniteMenu — styled for SECANT's warm-monochrome aesthetic */
+/* InfiniteMenu — SECANT brand, improved visibility */
 
 #infinite-grid-menu-canvas {
   cursor: grab;
@@ -7,10 +7,11 @@
   overflow: hidden;
   position: relative;
   outline: none;
+  background: transparent;  /* alpha:true — page background shows through */
 }
 #infinite-grid-menu-canvas:active { cursor: grabbing; }
 
-/* Active item title — Cormorant, centred left of sphere */
+/* ── Active item title — large Cormorant, left ── */
 .face-title {
   user-select: none;
   position: absolute;
@@ -19,17 +20,18 @@
   transform: translateY(-50%);
   font-family: var(--font-cormorant, 'Georgia', serif);
   font-weight: 400;
-  font-size: clamp(1.4rem, 3vw, 2.8rem);
+  font-size: clamp(1.6rem, 3.5vw, 3.2rem);
   letter-spacing: 0.01em;
-  color: rgba(247, 244, 239, 0.92);
   line-height: 1.1;
-  max-width: 18ch;
+  color: rgba(247, 244, 239, 0.95);   /* near-white */
+  max-width: 16ch;
   pointer-events: none;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
-.face-title.active  { opacity: 1; transition: opacity 0.5s ease; }
-.face-title.inactive { opacity: 0; transition: opacity 0.15s ease; }
+.face-title.active  { opacity: 1; transform: translateY(-50%) translateX(0);   transition: opacity 0.5s ease, transform 0.5s ease; }
+.face-title.inactive { opacity: 0; transform: translateY(-50%) translateX(-8px); transition: opacity 0.12s ease, transform 0.12s ease; }
 
-/* Description — small, right side */
+/* ── Description — right side ── */
 .face-description {
   user-select: none;
   position: absolute;
@@ -38,47 +40,72 @@
   transform: translateY(-50%);
   font-family: var(--font-jost, sans-serif);
   font-weight: 300;
-  font-size: 0.56rem;
-  letter-spacing: 0.38em;
+  font-size: 0.58rem;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: rgba(247, 244, 239, 0.38);
+  color: rgba(247, 244, 239, 0.6);   /* more visible than before */
   max-width: 14ch;
   text-align: right;
   pointer-events: none;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
 }
 .face-description.active  { opacity: 1; transition: opacity 0.5s ease; }
-.face-description.inactive { opacity: 0; transition: opacity 0.15s ease; }
+.face-description.inactive { opacity: 0; transition: opacity 0.12s ease; }
 
-/* Action button — minimal, bottom centre */
+/* ── Action button — pill shape, clearly visible ── */
 .action-button {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: transparent;
-  border: 1px solid rgba(247,244,239,0.45);
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 28px;
+  border-radius: 40px;
+  background: rgba(247, 244, 239, 0.14);
+  border: 1.5px solid rgba(247, 244, 239, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
   z-index: 10;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
 }
 .action-button:hover {
-  background: rgba(247,244,239,0.1);
-  border-color: rgba(247,244,239,0.75);
+  background: rgba(247, 244, 239, 0.22);
+  border-color: rgba(247, 244, 239, 0.9);
 }
-.action-button.active  { bottom: 3rem; opacity: 1; pointer-events: auto; transition: bottom 0.5s ease, opacity 0.5s ease; }
-.action-button.inactive { bottom: -80px; opacity: 0; pointer-events: none; transition: bottom 0.15s ease, opacity 0.15s ease; }
+.action-button.active {
+  bottom: 2.8rem;
+  opacity: 1;
+  pointer-events: auto;
+  transition: bottom 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease, background 0.2s ease;
+}
+.action-button.inactive {
+  bottom: -80px;
+  opacity: 0;
+  pointer-events: none;
+  transition: bottom 0.12s ease, opacity 0.12s ease;
+}
 
+.action-button-text {
+  font-family: var(--font-jost, sans-serif);
+  font-weight: 400;
+  font-size: 0.62rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 239, 0.92);
+  user-select: none;
+  margin: 0;
+}
 .action-button-icon {
-  font-size: 18px;
-  color: rgba(247,244,239,0.85);
+  font-size: 16px;
+  color: rgba(247, 244, 239, 0.85);
   position: relative;
-  top: 1px;
+  top: 0;
   user-select: none;
   margin: 0; padding: 0;
+  line-height: 1;
 }
 
 @media (max-width: 900px) {

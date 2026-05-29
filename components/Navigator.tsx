@@ -82,11 +82,11 @@ export function Navigator() {
           style={{
             fontFamily: 'var(--font-jost), sans-serif',
             fontWeight: 500,
-            fontSize: '0.68rem',
-            letterSpacing: '0.2em',
+            fontSize: '0.72rem',
+            letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            color: 'oklch(14% 0.007 72)',
-            transition: 'color 0.2s',
+            color: open ? 'rgba(247,244,239,0.85)' : 'oklch(22% 0.007 72)',
+            transition: 'color 0.25s',
           }}
         >
           {open ? 'Close' : 'Menu'}

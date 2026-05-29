@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { workItems, CATEGORY_CONFIG } from '@/lib/projects'
 import { Navigator } from '@/components/Navigator'
+import { PageTransition } from '@/components/PageTransition'
 
 export function generateStaticParams() {
   return workItems.map((item) => ({ slug: item.id }))
@@ -30,7 +31,7 @@ export default async function RenderDetailPage({ params }: Props) {
   const LINE  = 'oklch(88% 0.006 76)'
 
   return (
-    <div style={{ minHeight: '100dvh', background: BG, fontFamily: 'var(--font-jost), sans-serif' }}>
+    <PageTransition style={{ minHeight: '100dvh', background: BG, fontFamily: 'var(--font-jost), sans-serif' }}>
 
       {/* Fixed top bar */}
       <header style={{
@@ -143,6 +144,6 @@ export default async function RenderDetailPage({ params }: Props) {
       </div>
 
       <Navigator />
-    </div>
+    </PageTransition>
   )
 }

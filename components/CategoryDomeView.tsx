@@ -72,13 +72,14 @@ export function CategoryDomeView({ config, items }: Props) {
         {/* Back to work */}
         <Link href="/work" style={{
           fontFamily: 'var(--font-jost), sans-serif',
-          fontWeight: 300, fontSize: '0.6rem', letterSpacing: '0.3em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.38)',
+          fontWeight: 400, fontSize: '0.62rem', letterSpacing: '0.28em',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.65)',
           textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem',
+          transition: 'color 0.2s',
         }}>
           <svg width="14" height="7" viewBox="0 0 14 7" fill="none">
-            <line x1="14" y1="3.5" x2="0" y2="3.5" stroke="currentColor" strokeWidth="0.8"/>
-            <polyline points="4,1 1,3.5 4,6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+            <line x1="14" y1="3.5" x2="0" y2="3.5" stroke="currentColor" strokeWidth="0.9"/>
+            <polyline points="4,1 1,3.5 4,6" stroke="currentColor" strokeWidth="0.9" fill="none"/>
           </svg>
           Work
         </Link>
@@ -86,8 +87,8 @@ export function CategoryDomeView({ config, items }: Props) {
         {/* Category name */}
         <span style={{
           fontFamily: 'var(--font-cormorant), Georgia, serif',
-          fontWeight: 400, fontSize: 'clamp(1rem, 2vw, 1.5rem)',
-          letterSpacing: '0.04em', color: 'rgba(255,255,255,0.82)',
+          fontWeight: 400, fontSize: 'clamp(1.1rem, 2.2vw, 1.7rem)',
+          letterSpacing: '0.03em', color: 'rgba(255,255,255,0.92)',
         }}>
           {config.label}
         </span>
@@ -95,8 +96,8 @@ export function CategoryDomeView({ config, items }: Props) {
         {/* Home link */}
         <Link href="/" style={{
           fontFamily: 'var(--font-jost), sans-serif',
-          fontWeight: 300, fontSize: '0.56rem', letterSpacing: '0.35em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)',
+          fontWeight: 400, fontSize: '0.6rem', letterSpacing: '0.28em',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)',
           textDecoration: 'none', transition: 'color 0.2s',
         }}>
           Home
@@ -107,7 +108,7 @@ export function CategoryDomeView({ config, items }: Props) {
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         <InfiniteMenu
           items={menuItems}
-          scale={0.85}
+          scale={0.6}    /* smaller scale = camera closer = tiles appear bigger */
           onItemClick={handleItemClick}
         />
       </div>
