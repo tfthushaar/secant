@@ -1,4 +1,4 @@
-# Monochrome 3D minimal entity design
+# Sketchy shadows for 3D entity
 
 Created with [Omma](https://omma.build)
 
