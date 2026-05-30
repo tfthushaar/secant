@@ -15,11 +15,11 @@ import { useEffect, useRef } from 'react'
 */
 
 const CAM_STOPS = [
-  { pos: [0,    3.5, 14.0], look: [0, 2.0, 0] },  /* front elevation      */
-  { pos: [8.0,  4.0, 11.0], look: [0, 2.0, 0] },  /* three-quarter entry  */
-  { pos: [12.0, 4.0,  2.5], look: [0, 2.0, 0] },  /* side elevation       */
-  { pos: [6.0,  11.0, 7.0], look: [0, 1.0, 0] },  /* aerial three-quarter */
-  { pos: [0.5,  14.0, 0.5], look: [0, 0.0, 0] },  /* plan / top-down      */
+  { pos: [0,    4.0, 11.5], look: [0, 1.5, 0] },  /* front elevation      */
+  { pos: [7.0,  4.5,  9.5], look: [0, 1.5, 0] },  /* three-quarter entry  */
+  { pos: [11.0, 4.5,  2.0], look: [0, 1.5, 0] },  /* side elevation       */
+  { pos: [5.5,  10.0, 6.5], look: [0, 0.8, 0] },  /* aerial three-quarter */
+  { pos: [0.5,  13.0, 0.5], look: [0, 0.0, 0] },  /* plan / top-down      */
 ]
 
 interface Props { progressRef: React.MutableRefObject<number> }
@@ -84,8 +84,8 @@ export function Scene3D({ progressRef }: Props) {
 
       /* ── Edge material ─────────────────────────────────────────── */
       const lineMat = new LineMaterial({
-        color: 0x111111,          /* near-black for clean look */
-        linewidth: 0.5,
+        color: 0x1a1a1a,
+        linewidth: 0.4,            /* thinner = cleaner at high density */
         resolution: new THREE.Vector2(W * dpr, H * dpr),
         dashed: false,
       })
@@ -104,13 +104,13 @@ export function Scene3D({ progressRef }: Props) {
         const centre = box.getCenter(new THREE.Vector3())
         const size   = box.getSize(new THREE.Vector3())
         const maxDim = Math.max(size.x, size.y, size.z)
-        const scale  = 8.0 / maxDim   /* bigger than before */
+        const scale  = 10.0 / maxDim  /* larger — fills more of the hero */
 
         model.position.sub(centre)
         model.scale.setScalar(scale)
 
-        /* Pull model DOWN so it sits below the SECANT wordmark */
-        model.position.y -= size.y * scale * 0.28
+        /* Pull model down so it clears the SECANT wordmark at top */
+        model.position.y -= size.y * scale * 0.35
 
         model.updateMatrixWorld(true)
 
@@ -137,7 +137,9 @@ export function Scene3D({ progressRef }: Props) {
           try { cleanGeo = mergeVertices(worldGeo, 1e-4) }
           catch { cleanGeo = worldGeo }
 
-          const edges = new THREE.EdgesGeometry(cleanGeo, 20)
+          /* 35° crease removes micro-surface noise (tree bark, rocks, furniture
+             surface facets) while keeping all structural architectural edges */
+          const edges = new THREE.EdgesGeometry(cleanGeo, 35)
           const linesGeo = new LineSegmentsGeometry()
           linesGeo.setPositions(Array.from(edges.attributes.position.array as Float32Array))
 

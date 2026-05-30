@@ -108,7 +108,7 @@ export function CategoryDomeView({ config, items }: Props) {
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         <InfiniteMenu
           items={menuItems}
-          scale={0.80}   /* balanced — tiles readable, sphere has depth */
+          scale={0.95}   /* camera close to sphere surface — fills viewport */
           onItemClick={handleItemClick}
         />
       </div>

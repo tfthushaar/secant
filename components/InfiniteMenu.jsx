@@ -267,11 +267,13 @@ class InfiniteGridMenu{
   #animate(dt){
     const gl=this.gl;this.control.update(dt,this.TARGET_FRAME_DURATION);
     /*
-      scale=0.85: front (snapped) card is large — nearly fills viewport.
-      SI=0.92:   extreme depth falloff — cards behind the front shrink fast,
-                 giving a dense sphere-surface texture in the background.
+      scale=0.52: uniform card size large enough to fill gaps between cards.
+      SI=0.08:   nearly no depth variation — all cards similar size so the
+                 sphere surface looks like a consistent wall, not a spotlight.
+      The "half globe" feel comes from camera distance (sphere extends past
+      viewport edges) + perspective curvature, not from scale difference.
     */
-    const scale=0.85,SI=0.92;
+    const scale=0.52,SI=0.08;
     this.instancePositions.map(p=>vec3.transformQuat(vec3.create(),p,this.control.orientation)).forEach((p,ndx)=>{
       const s=(Math.abs(p[2])/this.SPHERE_RADIUS)*SI+(1-SI);
       const fs=s*scale;
@@ -308,8 +310,12 @@ class InfiniteGridMenu{
   #upCam(){mat4.targetTo(this.camera.matrix,this.camera.position,[0,0,0],this.camera.up);mat4.invert(this.camera.matrices.view,this.camera.matrix);}
   #upProj(gl){
     this.camera.aspect=gl.canvas.clientWidth/gl.canvas.clientHeight;
-    /* h=0.65 → wide enough to see the dense sphere behind the front card */
-    const h=this.SPHERE_RADIUS*.65,d=this.camera.position[2];
+    /*
+      h=0.95 * SPHERE_RADIUS → very wide FOV.
+      The sphere subtends ~2×atan(R / camDist) ≈ 82° on a screen ~70° wide.
+      Sphere extends beyond viewport edges → fills screen like a curved wall.
+    */
+    const h=this.SPHERE_RADIUS*.95,d=this.camera.position[2];
     this.camera.fov=this.camera.aspect>1?2*Math.atan(h/d):2*Math.atan(h/this.camera.aspect/d);
     mat4.perspective(this.camera.matrices.projection,this.camera.fov,this.camera.aspect,this.camera.near,this.camera.far);
     mat4.invert(this.camera.matrices.inversProjection,this.camera.matrices.projection);
