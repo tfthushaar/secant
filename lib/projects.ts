@@ -6,11 +6,18 @@ export interface WorkItem {
   title: string
   category: Category
   kind: ItemKind
-  image: string   /* path served from /public */
+  image: string         /* small/ — used for gallery sphere atlas (fast load)    */
+  detailImage?: string  /* large/ — full-quality for the detail page, if present */
 }
 
-/* ── Every render and sketch is its own entity with its own detail page ──────
-   Images served from /assets/web/small/ for consistent naming + performance  */
+/*
+  image:       /assets/web/small/  — web-optimised (120–280 KB). Used by the
+               InfiniteMenu sphere gallery which loads many images at once.
+  detailImage: /assets/web/large/  — best available quality (300 KB–1.5 MB).
+               Only exists for files ≤ 2 MB; larger originals (10–37 MB) stay
+               on small/ to keep page loads fast.
+               Detail page: uses detailImage when present, falls back to image.
+*/
 
 export const workItems: WorkItem[] = [
   /* ── RESIDENTIAL ─────────────────────────────────────────────────────────── */
@@ -20,6 +27,7 @@ export const workItems: WorkItem[] = [
     category: 'Residential',
     kind: 'render',
     image: '/assets/web/small/apartment-himagiri.jpg',
+    /* original 4 MB — small is better for web */
   },
   {
     id: 'apartment-east-wood',
@@ -27,6 +35,7 @@ export const workItems: WorkItem[] = [
     category: 'Residential',
     kind: 'render',
     image: '/assets/web/small/apartment-east-wood.jpg',
+    detailImage: '/assets/web/large/apartment-east-wood.jpg',  /* 949 KB */
   },
   {
     id: 'apartment-krs',
@@ -34,6 +43,7 @@ export const workItems: WorkItem[] = [
     category: 'Residential',
     kind: 'render',
     image: '/assets/web/small/apartment-krs.jpg',
+    /* original 10.5 MB — small is better for web */
   },
   {
     id: 'apartment-krs-02',
@@ -41,6 +51,7 @@ export const workItems: WorkItem[] = [
     category: 'Residential',
     kind: 'render',
     image: '/assets/web/small/apartment-krs-02.jpg',
+    /* original 7 MB — small is better for web */
   },
   {
     id: 'apartment-park-avenue',
@@ -48,6 +59,7 @@ export const workItems: WorkItem[] = [
     category: 'Residential',
     kind: 'render',
     image: '/assets/web/small/apartment-park-avenue.jpg',
+    /* original 23 MB — small is better for web */
   },
   {
     id: 'apartment-pioneer',
@@ -55,6 +67,7 @@ export const workItems: WorkItem[] = [
     category: 'Residential',
     kind: 'render',
     image: '/assets/web/small/apartment-pioneer.jpg',
+    detailImage: '/assets/web/large/apartment-pioneer.jpg',    /* 1.5 MB */
   },
   {
     id: 'apartment-pioneers-kengari',
@@ -62,6 +75,7 @@ export const workItems: WorkItem[] = [
     category: 'Residential',
     kind: 'render',
     image: '/assets/web/small/apartment-pioneers-kengari.jpg',
+    /* original 21 MB — small is better for web */
   },
   {
     id: 'apartment-side-view',
@@ -69,6 +83,7 @@ export const workItems: WorkItem[] = [
     category: 'Residential',
     kind: 'render',
     image: '/assets/web/small/apartment-side-view.jpg',
+    /* original 37 MB — small is better for web */
   },
 
   /* ── COMMERCIAL ───────────────────────────────────────────────────────────── */
@@ -78,6 +93,7 @@ export const workItems: WorkItem[] = [
     category: 'Commercial',
     kind: 'render',
     image: '/assets/web/small/commercial-clouds-wood.jpg',
+    /* original 17 MB — small is better for web */
   },
   {
     id: 'commercial-c1',
@@ -85,6 +101,7 @@ export const workItems: WorkItem[] = [
     category: 'Commercial',
     kind: 'render',
     image: '/assets/web/small/commercial-c1.jpg',
+    /* original 5.3 MB — small is better for web */
   },
   {
     id: 'commercial-c8',
@@ -92,6 +109,7 @@ export const workItems: WorkItem[] = [
     category: 'Commercial',
     kind: 'render',
     image: '/assets/web/small/commercial-c8.jpg',
+    /* original 46 KB — same size, small is fine */
   },
   {
     id: 'commercial-gangaiah',
@@ -99,6 +117,7 @@ export const workItems: WorkItem[] = [
     category: 'Commercial',
     kind: 'render',
     image: '/assets/web/small/commercial-gangaiah.jpg',
+    detailImage: '/assets/web/large/commercial-gangaiah.jpg',  /* 754 KB */
   },
   {
     id: 'commercial-marbel',
@@ -106,6 +125,7 @@ export const workItems: WorkItem[] = [
     category: 'Commercial',
     kind: 'render',
     image: '/assets/web/small/commercial-marbel.jpg',
+    /* original 5.6 MB — small is better for web */
   },
   {
     id: 'commercial-nagraj',
@@ -113,6 +133,7 @@ export const workItems: WorkItem[] = [
     category: 'Commercial',
     kind: 'render',
     image: '/assets/web/small/commercial-nagraj.jpg',
+    detailImage: '/assets/web/large/commercial-nagraj.jpg',    /* 972 KB */
   },
   {
     id: 'commercial-sahara',
@@ -120,6 +141,7 @@ export const workItems: WorkItem[] = [
     category: 'Commercial',
     kind: 'render',
     image: '/assets/web/small/commercial-sahara.jpg',
+    /* original 3.7 MB — small is better for web */
   },
 
   /* ── INSTITUTIONAL ────────────────────────────────────────────────────────── */
@@ -129,6 +151,7 @@ export const workItems: WorkItem[] = [
     category: 'Institutional',
     kind: 'render',
     image: '/assets/web/small/institution-arvind-college.jpg',
+    /* original 6.4 MB — small is better for web */
   },
   {
     id: 'institution-arvind-hostel',
@@ -136,6 +159,7 @@ export const workItems: WorkItem[] = [
     category: 'Institutional',
     kind: 'render',
     image: '/assets/web/small/institution-arvind-hostel.jpg',
+    /* original 10.5 MB — small is better for web */
   },
   {
     id: 'institution-nallur-school',
@@ -143,6 +167,7 @@ export const workItems: WorkItem[] = [
     category: 'Institutional',
     kind: 'render',
     image: '/assets/web/small/institution-nallur-school.jpg',
+    /* original 33 MB — small is better for web */
   },
   {
     id: 'school-arvind',
@@ -150,6 +175,7 @@ export const workItems: WorkItem[] = [
     category: 'Institutional',
     kind: 'render',
     image: '/assets/web/small/school-arvind.jpg',
+    detailImage: '/assets/web/large/school-arvind.jpg',        /* 809 KB */
   },
   {
     id: 'school-mahavidyalaya',
@@ -157,6 +183,7 @@ export const workItems: WorkItem[] = [
     category: 'Institutional',
     kind: 'render',
     image: '/assets/web/small/school-mahavidyalaya.jpg',
+    detailImage: '/assets/web/large/school-mahavidyalaya.jpg', /* 291 KB */
   },
 
   /* ── PRIVATE ──────────────────────────────────────────────────────────────── */
@@ -166,6 +193,7 @@ export const workItems: WorkItem[] = [
     category: 'Private',
     kind: 'render',
     image: '/assets/web/small/bungalow-arshia-house-view.jpg',
+    detailImage: '/assets/web/large/bungalow-arshia-house-view.jpg', /* 873 KB */
   },
   {
     id: 'bungalow-lokesh-cm',
@@ -173,6 +201,7 @@ export const workItems: WorkItem[] = [
     category: 'Private',
     kind: 'render',
     image: '/assets/web/small/bungalow-lokesh-cm.jpg',
+    detailImage: '/assets/web/large/bungalow-lokesh-cm.jpg',   /* 367 KB */
   },
   {
     id: 'bungalow-munirathna',
@@ -180,6 +209,7 @@ export const workItems: WorkItem[] = [
     category: 'Private',
     kind: 'render',
     image: '/assets/web/small/bungalow-munirathna.jpg',
+    /* original 3.6 MB — small is better for web */
   },
   {
     id: 'residence-chandrashekar',
@@ -187,6 +217,7 @@ export const workItems: WorkItem[] = [
     category: 'Private',
     kind: 'render',
     image: '/assets/web/small/residence-chandrashekar.jpg',
+    /* original 6.7 MB — small is better for web */
   },
   {
     id: 'residence-deepak',
@@ -194,6 +225,7 @@ export const workItems: WorkItem[] = [
     category: 'Private',
     kind: 'render',
     image: '/assets/web/small/residence-deepak.jpg',
+    /* original 10.5 MB — small is better for web */
   },
   {
     id: 'residence-kumar',
@@ -201,6 +233,7 @@ export const workItems: WorkItem[] = [
     category: 'Private',
     kind: 'render',
     image: '/assets/web/small/residence-kumar.jpg',
+    /* original 10 MB — small is better for web */
   },
   {
     id: 'residence-nagaraj',
@@ -208,15 +241,17 @@ export const workItems: WorkItem[] = [
     category: 'Private',
     kind: 'render',
     image: '/assets/web/small/residence-nagaraj.jpg',
+    /* original 16.8 MB — small is better for web */
   },
 
-  /* ── SKETCHES ─────────────────────────────────────────────────────────────── */
+  /* ── SKETCHES — all originals ≤ 1.7 MB, fine for detail pages ──────────── */
   {
     id: 'sketch-ashok-kumar',
     title: 'Ashok Kumar — Study I',
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-ashok-kumar.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-ashok-kumar.jpg',
   },
   {
     id: 'sketch-ashok-kumar-02',
@@ -224,6 +259,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-ashok-kumar-02.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-ashok-kumar-02.jpg',
   },
   {
     id: 'sketch-mahaveer',
@@ -231,6 +267,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-mahaveer.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-mahaveer.jpg',
   },
   {
     id: 'sketch-mahaveer-02',
@@ -238,6 +275,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-mahaveer-02.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-mahaveer-02.jpg',
   },
   {
     id: 'sketch-mahaveer-rehman',
@@ -245,6 +283,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-mahaveer-rehman.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-mahaveer-rehman.jpg',
   },
   {
     id: 'sketch-nanda-comm',
@@ -252,6 +291,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-nanda-comm.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-nanda-comm.jpg',
   },
   {
     id: 'sketch-pioneer-rehman',
@@ -259,6 +299,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-pioneer-rehman.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-pioneer-rehman.jpg',
   },
   {
     id: 'sketch-prabhakar',
@@ -266,6 +307,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-prabhakar.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-prabhakar.jpg',
   },
   {
     id: 'sketch-prashant',
@@ -273,6 +315,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-prashant.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-prashant.jpg',
   },
   {
     id: 'sketch-ramesh',
@@ -280,6 +323,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-ramesh.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-ramesh.jpg',
   },
   {
     id: 'sketch-school',
@@ -287,6 +331,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-school.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-school.jpg',
   },
   {
     id: 'sketch-sukesh',
@@ -294,6 +339,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-sukesh.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-sukesh.jpg',
   },
   {
     id: 'sketch-venugopal',
@@ -301,6 +347,7 @@ export const workItems: WorkItem[] = [
     category: 'Sketch',
     kind: 'sketch',
     image: '/assets/web/small/sketches/sketch-venugopal.jpg',
+    detailImage: '/assets/web/large/sketches/sketch-venugopal.jpg',
   },
 ]
 

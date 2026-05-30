@@ -129,8 +129,9 @@ export default async function RenderDetailPage({ params }: Props) {
           minHeight: 'calc(100dvh - 3.2rem)',
         }}>
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            {/* Use detailImage (full-quality) when present, fall back to small/ */}
             <Image
-              src={item.image}
+              src={item.detailImage ?? item.image}
               alt={item.title}
               fill
               style={{ objectFit: 'contain', objectPosition: 'center' }}
