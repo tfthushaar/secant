@@ -1,0 +1,5 @@
+# Cloudflare Pages — SPA fallback
+# Because this is a static export with trailingSlash:true, Next.js generates
+# individual .html files for every route, so no catch-all redirect is needed.
+# Keeping this file here in case Cloudflare needs a 404 fallback.
+/404  /404.html  404

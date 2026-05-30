@@ -1,0 +1,26 @@
+# Cloudflare Pages — HTTP headers
+# This file is placed in /public so it ends up at the root of the static output.
+
+# Security headers on every page
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Immutable cache on all static assets (fonts, images, JS chunks)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The GLB model — immutable (content-hashed filename in practice)
+/assets/base.glb
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: model/gltf-binary
+
+# Next.js static chunks — these are content-hashed, safe to cache forever
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML pages — short cache so deploys propagate quickly
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
