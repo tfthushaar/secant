@@ -51,7 +51,7 @@ export function Scene3D({ progressRef }: Props) {
       const PH  = Math.floor(H * dpr)
 
       /* ── Renderer ───────────────────────────────────────────────── */
-      const renderer = new THREE.WebGLRenderer({ antialias: false })
+      const renderer = new THREE.WebGLRenderer({ antialias: true })
       renderer.setSize(W, H)
       renderer.setPixelRatio(dpr)
       renderer.setClearColor(0xffffff, 1)
@@ -100,7 +100,8 @@ export function Scene3D({ progressRef }: Props) {
           varying vec3 vWorldNormal;
           void main() {
             float d    = max(dot(normalize(vWorldNormal), uLight), 0.0);
-            float toon = d > 0.62 ? 1.0 : (d > 0.28 ? 0.87 : 0.74);
+            /* Subtle 3-step shading — light contrast keeps organic blobs pale */
+            float toon = d > 0.60 ? 1.0 : (d > 0.25 ? 0.93 : 0.84);
             gl_FragColor = vec4(vec3(toon), 1.0);
           }
         `,
@@ -157,13 +158,20 @@ export function Scene3D({ progressRef }: Props) {
               dMax = max(dMax, abs(d2 - d0));
             }
 
-            float ne   = smoothstep(0.10, 0.45, nMax);
-            float de   = smoothstep(0.012, 0.07, dMax);
+            /*
+              High threshold (0.35) = only show 50°+ angular changes.
+              Architectural 90° corners: always above threshold → always solid.
+              Organic rock facets (30-45°): below threshold → invisible.
+              Narrow range (0.15) = near-binary output, crisp not blurry.
+            */
+            float ne   = smoothstep(0.35, 0.50, nMax);
+            float de   = smoothstep(0.020, 0.045, dMax);
             float edge = max(ne, de);
 
-            /* Composite: toon shading base darkened to black at edges */
-            vec3 base  = texture2D(tColor, vUv).rgb;
-            vec3 color = mix(base, vec3(0.05), edge);
+            /* Hard composite — no blending at edges, purely toon or purely black */
+            vec3  base  = texture2D(tColor, vUv).rgb;
+            float mask  = step(0.5, edge);           /* binary: edge or not */
+            vec3  color = mix(base, vec3(0.0), mask);
             gl_FragColor = vec4(color, 1.0);
           }
         `,
@@ -208,7 +216,9 @@ export function Scene3D({ progressRef }: Props) {
       function animate() {
         rafId = requestAnimationFrame(animate)
 
-        const p  = Math.max(0, Math.min(1, progressRef.current))
+        /* Quantize to 0.1% steps — eliminates Lenis momentum drift from
+           updating progressRef by tiny amounts after user stops scrolling */
+        const p  = Math.round(Math.max(0, Math.min(1, progressRef.current)) * 1000) / 1000
         const N  = CAM_STOPS.length
         const fp = p * (N - 1)
         const i0 = Math.floor(fp), i1 = Math.min(i0 + 1, N - 1)
