@@ -32,8 +32,8 @@ function Rule() {
 }
 
 /* Gradient backdrop so text is legible over the model */
-const LEFT_FADE  = 'linear-gradient(to right, rgba(255,255,255,0.92) 55%, transparent 100%)'
-const RIGHT_FADE = 'linear-gradient(to left,  rgba(255,255,255,0.92) 55%, transparent 100%)'
+const LEFT_FADE  = 'linear-gradient(to right, rgba(255,255,255,0.82) 48%, transparent 100%)'
+const RIGHT_FADE = 'linear-gradient(to left,  rgba(255,255,255,0.82) 48%, transparent 100%)'
 
 /* ── Section 1: Manifesto — left content, model right ──────────── */
 function Manifesto() {

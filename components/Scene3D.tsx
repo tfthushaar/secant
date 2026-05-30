@@ -98,7 +98,7 @@ export function Scene3D({ progressRef }: Props) {
       /* ── Edge material ─────────────────────────────────────────── */
       const lineMat = new LineMaterial({
         color: 0x000000,
-        linewidth: 1.5,
+        linewidth: 2.0,
         resolution: new THREE.Vector2(W * dpr, H * dpr),
         dashed: false,
       })
@@ -128,65 +128,75 @@ export function Scene3D({ progressRef }: Props) {
         model.updateMatrixWorld(true)
 
         /*
-          Keywords that identify organic / landscape meshes in the GLB.
-          These meshes render as flat white (invisible against background)
-          but produce NO edge lines — eliminating rock dots, tree noise etc.
+          Name-based skip: if the GLB exports organic props with readable names
+          they get flat-white material only (invisible on white bg, no edges).
+          Most exports use generic names (Mesh.001) so this is a best-effort layer.
         */
         const ORGANIC_KEYS = [
           'tree', 'palm', 'plant', 'bush', 'shrub', 'flower', 'grass',
           'rock', 'stone', 'boulder', 'pebble', 'gravel',
-          'leaf', 'leaves', 'foliage', 'vegetation', 'nature',
-          'landscape', 'terrain', 'ground_cover', 'topogr',
-          'bench', 'furniture', 'chair', 'table', 'lamp', 'light',
+          'leaf', 'foliage', 'vegetation', 'landscape', 'terrain',
           'car', 'vehicle', 'human', 'person', 'figure',
         ]
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function isOrganic(mesh: any): boolean {
+        const namedOrganic = (mesh: any) => {
           const n = ((mesh.name ?? '') + ' ' + (mesh.parent?.name ?? '')).toLowerCase()
-          /* High vertex density in a small bounding box → likely organic prop */
-          const box = new THREE.Box3().setFromObject(mesh)
-          const vol = box.getSize(new THREE.Vector3())
-          const vol3 = vol.x * vol.y * vol.z
-          const density = (mesh.geometry?.attributes?.position?.count ?? 0) / Math.max(vol3, 0.001)
-          const highDensity = density > 8000  /* architectural walls are low-density */
-          return ORGANIC_KEYS.some(k => n.includes(k)) || highDensity
+          return ORGANIC_KEYS.some(k => n.includes(k))
         }
+
+        /*
+          MIN_EDGE_LEN — world-space length threshold after model scale is applied.
+          Architectural edges (walls, beams, roof planes) are typically ≥ 0.08 units.
+          Organic noise edges (rock facets, bark detail, leaf veins) are << 0.08 units.
+          This single filter reliably separates structural lines from surface texture
+          without needing to know mesh names.
+        */
+        const MIN_EDGE_LEN_SQ = 0.08 * 0.08
 
         model.traverse((obj) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const mesh = obj as any
           if (!mesh.isMesh) return
 
-          /* All meshes: flat white so they read as solid walls */
-          mesh.material = new THREE.MeshBasicMaterial({
-            color: 0xffffff, side: THREE.FrontSide,
-          })
-          mesh.castShadow    = false
-          mesh.receiveShadow = false
+          /* Flat white on every mesh — walls visible as solid, organic blends with bg */
+          mesh.material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.FrontSide })
+          mesh.castShadow = mesh.receiveShadow = false
 
-          /* Organic / landscape meshes: white silhouette only, no edges */
-          if (isOrganic(mesh)) return
+          /* Named organic props: white silhouette only */
+          if (namedOrganic(mesh)) return
 
-          /* ── Architectural edges only ───────────────────────────── */
+          /* ── Edge lines for everything else ─────────────────────── */
           const worldGeo = mesh.geometry.clone()
           worldGeo.applyMatrix4(mesh.matrixWorld)
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let cleanGeo: any
-          try { cleanGeo = mergeVertices(worldGeo, 1e-4) }
+          try { cleanGeo = mergeVertices(worldGeo, 1e-3) }
           catch { cleanGeo = worldGeo }
 
           /*
-            65° crease: only show edges where adjacent faces meet at angle > 65°.
-            This keeps hard architectural corners (walls, roofs, slabs = 90°)
-            while eliminating surface texture from any remaining organic geometry.
+            35° crease catches all architectural corners (90° walls, window reveals,
+            slab edges) while missing smooth organic faces (< 15° between polys).
+            The MIN_EDGE_LEN filter below handles the remaining rock/foliage dots.
           */
-          const edges = new THREE.EdgesGeometry(cleanGeo, 65)
+          const edges = new THREE.EdgesGeometry(cleanGeo, 35)
           if (edges.attributes.position.count === 0) return
 
-          const linesGeo = new LineSegmentsGeometry()
-          linesGeo.setPositions(Array.from(edges.attributes.position.array as Float32Array))
+          /* Filter short edge segments — organic surface noise = very short lines */
+          const raw = edges.attributes.position.array as Float32Array
+          const kept: number[] = []
+          for (let i = 0; i < raw.length; i += 6) {
+            const dx = raw[i+3] - raw[i]
+            const dy = raw[i+4] - raw[i+1]
+            const dz = raw[i+5] - raw[i+2]
+            if (dx*dx + dy*dy + dz*dz >= MIN_EDGE_LEN_SQ) {
+              kept.push(raw[i], raw[i+1], raw[i+2], raw[i+3], raw[i+4], raw[i+5])
+            }
+          }
+          if (kept.length === 0) return
 
+          const linesGeo = new LineSegmentsGeometry()
+          linesGeo.setPositions(kept)
           const lineSegs = new LineSegments2(linesGeo, lineMat)
           lineSegs.computeLineDistances()
           scene.add(lineSegs)
