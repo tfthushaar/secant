@@ -32,8 +32,8 @@ function Rule() {
 }
 
 /* Gradient backdrop so text is legible over the model */
-const LEFT_FADE  = 'linear-gradient(to right, rgba(255,255,255,0.82) 48%, transparent 100%)'
-const RIGHT_FADE = 'linear-gradient(to left,  rgba(255,255,255,0.82) 48%, transparent 100%)'
+const LEFT_FADE  = 'linear-gradient(to right, rgba(255,255,255,0.88) 52%, transparent 100%)'
+const RIGHT_FADE = 'linear-gradient(to left,  rgba(255,255,255,0.88) 52%, transparent 100%)'
 
 /* ── Section 1: Manifesto — left content, model right ──────────── */
 function Manifesto() {
@@ -137,9 +137,12 @@ function Stats() {
         background: RIGHT_FADE, pointerEvents: 'none',
       }} />
 
+      {/* Right padding ensures content doesn't reach MENU button area (top-right) */}
       <div ref={contentRef} style={{
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-        right: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 560px)',
+        right: 'clamp(1.5rem, 7vw, 7rem)',
+        paddingRight: 'clamp(0rem, 1vw, 0.5rem)',  /* extra clearance from MENU */
+        width: 'clamp(260px, 40vw, 520px)',
         opacity: 0,
       }}>
         <p style={{
@@ -150,27 +153,29 @@ function Stats() {
 
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr',
-          gap: '0', borderTop: '1px solid oklch(87% 0.006 76)',
+          borderTop: '1px solid oklch(87% 0.006 76)',
         }}>
           {items.map(({ n, label, sub }) => (
             <div key={n} style={{
-              padding: 'clamp(1.4rem, 2.5vh, 2rem) clamp(0.5rem, 1.5vw, 1.2rem) clamp(1.4rem, 2.5vh, 2rem) 0',
+              padding: 'clamp(1.2rem, 2vh, 1.8rem) 0',
               borderBottom: '1px solid oklch(87% 0.006 76)',
+              paddingRight: 'clamp(0.8rem, 2vw, 1.5rem)',
             }}>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 100,
-                fontSize: 'clamp(2.4rem, 5vw, 4rem)', lineHeight: 1,
-                color: 'oklch(8.5% 0.007 72)', margin: '0 0 0.4rem',
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 200,
+                fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1,
+                color: 'oklch(8% 0.007 72)', margin: '0 0 0.45rem',
+                letterSpacing: '-0.02em',
               }}>{n}</p>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
-                fontSize: '0.72rem', letterSpacing: '0.06em',
-                color: 'oklch(28% 0.007 72)', margin: '0 0 0.2rem',
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
+                fontSize: 'clamp(0.7rem, 0.85vw, 0.82rem)', letterSpacing: '0.05em',
+                color: 'oklch(22% 0.007 72)', margin: '0 0 0.18rem',
               }}>{label}</p>
               <p style={{
                 fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
-                fontSize: '0.62rem', letterSpacing: '0.04em',
-                color: 'oklch(58% 0.007 74)', margin: 0,
+                fontSize: '0.6rem', letterSpacing: '0.03em',
+                color: 'oklch(56% 0.007 74)', margin: 0,
               }}>{sub}</p>
             </div>
           ))}
@@ -284,7 +289,8 @@ function Contact() {
 
       <div ref={contentRef} style={{
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-        right: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 540px)',
+        right: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(260px, 40vw, 520px)',
+        paddingRight: 'clamp(0rem, 1vw, 0.5rem)',
         opacity: 0,
       }}>
         <p style={{

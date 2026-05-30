@@ -3,36 +3,32 @@
 import { useEffect, useRef } from 'react'
 
 /*
-  Scene3D — clean white-wall + black-edge architectural model
-  ────────────────────────────────────────────────────────────
-  • Pure white background (#ffffff), model surfaces: MeshBasicMaterial
-    white → walls disappear against background, edges carry all depth.
-    Tiny ambient-only light is added as a fallback for GPUs that need it.
-  • Black LineSegments2 edges (linewidth 0.5 px, screen-accurate).
-  • Model scale 8.0 (fills viewport, pulled slightly downward so it sits
-    below the SECANT wordmark at the top of the hero).
-  • 5 camera presets, scroll-driven via progressRef.
+  Scene3D — depth + normal edge detection pipeline
+  ──────────────────────────────────────────────────
+  The GLB is one single merged mesh (building + rocks + trees all fused).
+  EdgesGeometry on this mesh is unusable — it generates edges on EVERY
+  polygon junction including organic surfaces.
+
+  Solution: two-pass GPU rendering.
+    Pass 1 → render scene with MeshNormalMaterial into normalTarget
+    Pass 2 → render scene with white MeshBasicMaterial into depthTarget
+    Pass 3 → fullscreen Sobel shader reads normal + depth buffers
+              and outputs: black lines where normals or depth change sharply.
+
+  Why this works for architecture:
+    • Architectural corners (90° walls meeting) → large normal change → black line
+    • Rock surfaces (gradual 20-30° facets) → small normal change → invisible
+    • Silhouette edges → large depth change → black line
+    • Flat ground / walls → no change → white (blend with background)
 */
 
-/*
-  Six camera positions tuned to the landing page content sections.
-  Progress 0→1 spreads across 5 × 100vh of content (500vh total).
-  Each stop corresponds roughly to one content section.
-
-  0 — front elevation     (hero section)
-  1 — zoom-in close       (manifesto — camera moves in as text appears left)
-  2 — three-quarter right (stats — model swings right, text sits left)
-  3 — aerial three-quarter (services — elevated, overview feeling)
-  4 — three-quarter left  (contact — symmetrical, draws eye right)
-  5 — top-down plan       (final — contemplative, architectural plan view)
-*/
 const CAM_STOPS = [
-  { pos: [ 0,    4.0, 11.5], look: [0, 1.5, 0] },  /* 0 — front elevation      */
-  { pos: [ 0,    3.0,  7.5], look: [0, 2.5, 0] },  /* 1 — zoom in, slight up   */
-  { pos: [ 8.5,  4.5,  8.5], look: [0, 1.2, 0] },  /* 2 — three-quarter right  */
-  { pos: [ 7.0, 10.5,  5.0], look: [0, 0.2, 0] },  /* 3 — aerial right         */
-  { pos: [-7.5,  4.5,  9.0], look: [0, 1.2, 0] },  /* 4 — three-quarter left   */
-  { pos: [ 0.5, 14.0,  0.5], look: [0, 0.0, 0] },  /* 5 — top-down plan        */
+  { pos: [ 0,    4.0, 11.5], look: [0, 1.5, 0] },  /* front elevation      */
+  { pos: [ 0,    3.0,  7.5], look: [0, 2.5, 0] },  /* zoom in front        */
+  { pos: [ 8.5,  4.5,  8.5], look: [0, 1.2, 0] },  /* three-quarter right  */
+  { pos: [ 7.0, 10.5,  5.0], look: [0, 0.2, 0] },  /* aerial right         */
+  { pos: [-7.5,  4.5,  9.0], look: [0, 1.2, 0] },  /* three-quarter left   */
+  { pos: [ 0.5, 14.0,  0.5], look: [0, 0.0, 0] },  /* top-down plan        */
 ]
 
 interface Props { progressRef: React.MutableRefObject<number> }
@@ -44,211 +40,215 @@ export function Scene3D({ progressRef }: Props) {
     const mount = mountRef.current
     if (!mount) return
     let rafId = 0
-    let idleTimer = 0
 
     ;(async () => {
       const THREE = await import('three')
-      const { LineSegments2 }       = await import('three/addons/lines/LineSegments2.js')
-      const { LineSegmentsGeometry }= await import('three/addons/lines/LineSegmentsGeometry.js')
-      const { LineMaterial }        = await import('three/addons/lines/LineMaterial.js')
-      const { GLTFLoader }   = await import('three/examples/jsm/loaders/GLTFLoader.js')
-      const { DRACOLoader }  = await import('three/examples/jsm/loaders/DRACOLoader.js')
-      const { OrbitControls }= await import('three/examples/jsm/controls/OrbitControls.js')
-      const { mergeVertices }= await import('three/addons/utils/BufferGeometryUtils.js')
+      const { GLTFLoader }  = await import('three/examples/jsm/loaders/GLTFLoader.js')
+      const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js')
 
-      const W = mount.clientWidth || window.innerWidth
-      const H = mount.clientHeight || window.innerHeight
+      const W   = mount.clientWidth  || window.innerWidth
+      const H   = mount.clientHeight || window.innerHeight
       const dpr = Math.min(window.devicePixelRatio, 2)
+      const PW  = Math.floor(W * dpr)
+      const PH  = Math.floor(H * dpr)
 
-      /* ── Renderer — pure white ────────────────────────────────── */
-      const renderer = new THREE.WebGLRenderer({ antialias: true })
+      /* ── Renderer ───────────────────────────────────────────────── */
+      const renderer = new THREE.WebGLRenderer({ antialias: false })
       renderer.setSize(W, H)
       renderer.setPixelRatio(dpr)
-      renderer.setClearColor(0xffffff, 1)   /* pure white */
-      renderer.shadowMap.enabled = false
+      renderer.setClearColor(0xffffff, 1)
       mount.appendChild(renderer.domElement)
 
-      const scene = new THREE.Scene()
+      /* ── Scene + Camera ─────────────────────────────────────────── */
+      const scene  = new THREE.Scene()
       scene.background = new THREE.Color(0xffffff)
+      const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 400)
+      const p0 = CAM_STOPS[0]
+      camera.position.set(p0.pos[0], p0.pos[1], p0.pos[2])
+      camera.lookAt(p0.look[0], p0.look[1], p0.look[2])
 
-      /* Minimal ambient — just enough so MeshBasicMaterial-white is visible */
-      scene.add(new THREE.AmbientLight(0xffffff, 1))
+      /* ── Render targets ─────────────────────────────────────────── */
+      const rtOpts = { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter }
 
-      /* ── Camera ────────────────────────────────────────────────── */
-      const camera = new THREE.PerspectiveCamera(45, W / H, 0.01, 1000)
-      const p0 = CAM_STOPS[0].pos, l0 = CAM_STOPS[0].look
-      camera.position.set(p0[0], p0[1], p0[2])
-      camera.lookAt(l0[0], l0[1], l0[2])
-      const camTarget = { x:p0[0],y:p0[1],z:p0[2], lx:l0[0],ly:l0[1],lz:l0[2] }
+      /* Normal buffer — stores camera-space normals (R,G,B ↔ X,Y,Z) */
+      const normalTarget = new THREE.WebGLRenderTarget(PW, PH, rtOpts)
 
-      /* ── OrbitControls ─────────────────────────────────────────── */
-      const controls = new OrbitControls(camera, renderer.domElement)
-      controls.enableDamping = true; controls.dampingFactor = 0.06
-      controls.enabled = false
-      let userInteracting = false
-      renderer.domElement.addEventListener('pointerdown', () => {
-        userInteracting = true; controls.enabled = true; clearTimeout(idleTimer)
-      })
-      renderer.domElement.addEventListener('pointerup', () => {
-        idleTimer = window.setTimeout(() => {
-          userInteracting = false; controls.enabled = false
-        }, 2000) as unknown as number
+      /* Depth buffer — depth texture for silhouette edges */
+      const depthTarget = new THREE.WebGLRenderTarget(PW, PH, {
+        ...rtOpts,
+        depthBuffer: true,
+        depthTexture: new THREE.DepthTexture(PW, PH),
       })
 
-      /* ── Edge material ─────────────────────────────────────────── */
-      const lineMat = new LineMaterial({
-        color: 0x000000,
-        linewidth: 2.0,
-        resolution: new THREE.Vector2(W * dpr, H * dpr),
-        dashed: false,
+      /* ── Override materials (no per-mesh traversal each frame) ──── */
+      const whiteMat  = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.FrontSide })
+      const normalMat = new THREE.MeshNormalMaterial({ side: THREE.FrontSide })
+
+      /* ── Edge detection fullscreen shader ───────────────────────── */
+      const edgeMat = new THREE.ShaderMaterial({
+        uniforms: {
+          tNormal: { value: normalTarget.texture },
+          tDepth:  { value: depthTarget.depthTexture },
+          res:     { value: new THREE.Vector2(PW, PH) },
+          near:    { value: camera.near },
+          far:     { value: camera.far },
+        },
+        vertexShader: /* glsl */`
+          varying vec2 vUv;
+          void main() { vUv = uv; gl_Position = vec4(position, 1.0); }
+        `,
+        fragmentShader: /* glsl */`
+          uniform sampler2D tNormal;
+          uniform sampler2D tDepth;
+          uniform vec2 res;
+          uniform float near;
+          uniform float far;
+          varying vec2 vUv;
+
+          /* Normalized linear depth in [0, 1] — 0=near, 1=far */
+          float linDepth(vec2 uv) {
+            float d = texture2D(tDepth, uv).r;
+            float z = d * 2.0 - 1.0;
+            float lin = (2.0 * near * far) / (far + near - z * (far - near));
+            return lin / far;
+          }
+
+          void main() {
+            vec2 t = 1.0 / res;
+
+            /* ── Normal edge detection (interior architectural edges) */
+            vec3 n  = normalize(texture2D(tNormal, vUv                ).rgb * 2.0 - 1.0);
+            vec3 nN = normalize(texture2D(tNormal, vUv + vec2(0, t.y) ).rgb * 2.0 - 1.0);
+            vec3 nS = normalize(texture2D(tNormal, vUv - vec2(0, t.y) ).rgb * 2.0 - 1.0);
+            vec3 nE = normalize(texture2D(tNormal, vUv + vec2(t.x, 0) ).rgb * 2.0 - 1.0);
+            vec3 nW = normalize(texture2D(tNormal, vUv - vec2(t.x, 0) ).rgb * 2.0 - 1.0);
+
+            /* 1 - dot: 0 for parallel normals, 1 for perpendicular (90° corners) */
+            float normalEdge = (1.0 - dot(n, nN)) + (1.0 - dot(n, nS))
+                             + (1.0 - dot(n, nE)) + (1.0 - dot(n, nW));
+
+            /* smoothstep thresholds — tuned for the model's geometry:
+               40° angle change → dot ≈ 0.77 → (1-dot)=0.23 per neighbor
+               Two neighbors at corner: sum ≈ 0.46, × 0.5 = 0.23 → below lower bound
+               90° angle change (architectural) → (1-dot)=1.0 × 2 = 2.0 × 0.5 = 1.0 → black */
+            float ne = smoothstep(0.35, 0.85, normalEdge * 0.5);
+
+            /* ── Depth edge detection (silhouettes) ─────────────── */
+            float d  = linDepth(vUv);
+            float dN = linDepth(vUv + vec2(0,  t.y));
+            float dS = linDepth(vUv - vec2(0,  t.y));
+            float dE = linDepth(vUv + vec2(t.x, 0));
+            float dW = linDepth(vUv - vec2(t.x, 0));
+
+            float depthEdge = abs(dN - d) + abs(dS - d) + abs(dE - d) + abs(dW - d);
+            float de = smoothstep(0.04, 0.18, depthEdge);
+
+            float edge = max(ne, de);
+            gl_FragColor = vec4(vec3(1.0 - edge), 1.0);
+          }
+        `,
+        depthTest: false,
+        depthWrite: false,
       })
+
+      /* Fullscreen quad in its own scene */
+      const fsScene  = new THREE.Scene()
+      const fsMesh   = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), edgeMat)
+      fsMesh.frustumCulled = false
+      fsScene.add(fsMesh)
+      const fsCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
 
       /* ── Load GLB ──────────────────────────────────────────────── */
       const draco = new DRACOLoader()
       draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
-      const loader = new GLTFLoader(); loader.setDRACOLoader(draco)
+      const loader = new GLTFLoader()
+      loader.setDRACOLoader(draco)
 
       loader.load('/assets/base.glb', (gltf) => {
         const model = gltf.scene
         scene.add(model)
 
-        /* ── Fit & position — big model that fills hero below SECANT ── */
         const box    = new THREE.Box3().setFromObject(model)
         const centre = box.getCenter(new THREE.Vector3())
         const size   = box.getSize(new THREE.Vector3())
         const maxDim = Math.max(size.x, size.y, size.z)
-        const scale  = 10.0 / maxDim  /* larger — fills more of the hero */
-
         model.position.sub(centre)
-        model.scale.setScalar(scale)
-
-        /* Pull model down so it clears the SECANT wordmark at top */
-        model.position.y -= size.y * scale * 0.35
-
+        model.scale.setScalar(10.0 / maxDim)
+        model.position.y -= size.y * (10.0 / maxDim) * 0.35
         model.updateMatrixWorld(true)
+      }, undefined, (e) => console.error('GLB load error:', e))
 
-        /*
-          Name-based skip: if the GLB exports organic props with readable names
-          they get flat-white material only (invisible on white bg, no edges).
-          Most exports use generic names (Mesh.001) so this is a best-effort layer.
-        */
-        const ORGANIC_KEYS = [
-          'tree', 'palm', 'plant', 'bush', 'shrub', 'flower', 'grass',
-          'rock', 'stone', 'boulder', 'pebble', 'gravel',
-          'leaf', 'foliage', 'vegetation', 'landscape', 'terrain',
-          'car', 'vehicle', 'human', 'person', 'figure',
-        ]
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const namedOrganic = (mesh: any) => {
-          const n = ((mesh.name ?? '') + ' ' + (mesh.parent?.name ?? '')).toLowerCase()
-          return ORGANIC_KEYS.some(k => n.includes(k))
-        }
-
-        /*
-          MIN_EDGE_LEN — world-space length threshold after model scale is applied.
-          Architectural edges (walls, beams, roof planes) are typically ≥ 0.08 units.
-          Organic noise edges (rock facets, bark detail, leaf veins) are << 0.08 units.
-          This single filter reliably separates structural lines from surface texture
-          without needing to know mesh names.
-        */
-        const MIN_EDGE_LEN_SQ = 0.08 * 0.08
-
-        model.traverse((obj) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const mesh = obj as any
-          if (!mesh.isMesh) return
-
-          /* Flat white on every mesh — walls visible as solid, organic blends with bg */
-          mesh.material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.FrontSide })
-          mesh.castShadow = mesh.receiveShadow = false
-
-          /* Named organic props: white silhouette only */
-          if (namedOrganic(mesh)) return
-
-          /* ── Edge lines for everything else ─────────────────────── */
-          const worldGeo = mesh.geometry.clone()
-          worldGeo.applyMatrix4(mesh.matrixWorld)
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let cleanGeo: any
-          try { cleanGeo = mergeVertices(worldGeo, 1e-3) }
-          catch { cleanGeo = worldGeo }
-
-          /*
-            35° crease catches all architectural corners (90° walls, window reveals,
-            slab edges) while missing smooth organic faces (< 15° between polys).
-            The MIN_EDGE_LEN filter below handles the remaining rock/foliage dots.
-          */
-          const edges = new THREE.EdgesGeometry(cleanGeo, 35)
-          if (edges.attributes.position.count === 0) return
-
-          /* Filter short edge segments — organic surface noise = very short lines */
-          const raw = edges.attributes.position.array as Float32Array
-          const kept: number[] = []
-          for (let i = 0; i < raw.length; i += 6) {
-            const dx = raw[i+3] - raw[i]
-            const dy = raw[i+4] - raw[i+1]
-            const dz = raw[i+5] - raw[i+2]
-            if (dx*dx + dy*dy + dz*dz >= MIN_EDGE_LEN_SQ) {
-              kept.push(raw[i], raw[i+1], raw[i+2], raw[i+3], raw[i+4], raw[i+5])
-            }
-          }
-          if (kept.length === 0) return
-
-          const linesGeo = new LineSegmentsGeometry()
-          linesGeo.setPositions(kept)
-          const lineSegs = new LineSegments2(linesGeo, lineMat)
-          lineSegs.computeLineDistances()
-          scene.add(lineSegs)
-        })
-      }, undefined, (e) => console.error('GLB error:', e))
-
-      /* ── Animate ───────────────────────────────────────────────── */
+      /* ── Camera lerp ────────────────────────────────────────────── */
       const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+      const cam  = { x: p0.pos[0], y: p0.pos[1], z: p0.pos[2], lx: p0.look[0], ly: p0.look[1], lz: p0.look[2] }
 
       function animate() {
         rafId = requestAnimationFrame(animate)
 
-        if (!userInteracting) {
-          const p  = Math.max(0, Math.min(1, progressRef.current))
-          const fp = p * (CAM_STOPS.length - 1)
-          const i0 = Math.floor(fp), i1 = Math.min(i0 + 1, CAM_STOPS.length - 1)
-          const t  = fp - i0
-          const ease = t < 0.5 ? 2*t*t : 1 - 2*(1-t)*(1-t)
+        const p  = Math.max(0, Math.min(1, progressRef.current))
+        const N  = CAM_STOPS.length
+        const fp = p * (N - 1)
+        const i0 = Math.floor(fp)
+        const i1 = Math.min(i0 + 1, N - 1)
+        const t  = fp - i0
+        const e  = t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t)
+        const a  = CAM_STOPS[i0], b = CAM_STOPS[i1]
 
-          const a = CAM_STOPS[i0], b = CAM_STOPS[i1]
-          camTarget.x  = lerp(a.pos[0],  b.pos[0],  ease)
-          camTarget.y  = lerp(a.pos[1],  b.pos[1],  ease)
-          camTarget.z  = lerp(a.pos[2],  b.pos[2],  ease)
-          camTarget.lx = lerp(a.look[0], b.look[0], ease)
-          camTarget.ly = lerp(a.look[1], b.look[1], ease)
-          camTarget.lz = lerp(a.look[2], b.look[2], ease)
+        cam.x  = lerp(a.pos[0],  b.pos[0],  e)
+        cam.y  = lerp(a.pos[1],  b.pos[1],  e)
+        cam.z  = lerp(a.pos[2],  b.pos[2],  e)
+        cam.lx = lerp(a.look[0], b.look[0], e)
+        cam.ly = lerp(a.look[1], b.look[1], e)
+        cam.lz = lerp(a.look[2], b.look[2], e)
 
-          camera.position.x += (camTarget.x - camera.position.x) * 0.04
-          camera.position.y += (camTarget.y - camera.position.y) * 0.04
-          camera.position.z += (camTarget.z - camera.position.z) * 0.04
-          camera.lookAt(camTarget.lx, camTarget.ly, camTarget.lz)
-        }
+        camera.position.x += (cam.x - camera.position.x) * 0.04
+        camera.position.y += (cam.y - camera.position.y) * 0.04
+        camera.position.z += (cam.z - camera.position.z) * 0.04
+        camera.lookAt(cam.lx, cam.ly, cam.lz)
 
-        controls.update()
+        /* Pass 1 — Normals */
+        scene.overrideMaterial = normalMat
+        renderer.setRenderTarget(normalTarget)
         renderer.render(scene, camera)
+
+        /* Pass 2 — Depth (white material writes correct depth) */
+        scene.overrideMaterial = whiteMat
+        renderer.setRenderTarget(depthTarget)
+        renderer.render(scene, camera)
+
+        /* Pass 3 — Edge detection → screen */
+        scene.overrideMaterial = null
+        renderer.setRenderTarget(null)
+        renderer.render(fsScene, fsCamera)
       }
       animate()
 
       /* ── Resize ─────────────────────────────────────────────────── */
       function onResize() {
-        const nW = mount!.clientWidth, nH = mount!.clientHeight
+        const nW  = mount!.clientWidth
+        const nH  = mount!.clientHeight
         const nDPR = Math.min(window.devicePixelRatio, 2)
-        camera.aspect = nW / nH; camera.updateProjectionMatrix()
-        renderer.setSize(nW, nH); renderer.setPixelRatio(nDPR)
-        lineMat.resolution.set(nW * nDPR, nH * nDPR)
+        const nPW = Math.floor(nW * nDPR)
+        const nPH = Math.floor(nH * nDPR)
+        camera.aspect = nW / nH
+        camera.updateProjectionMatrix()
+        renderer.setSize(nW, nH)
+        renderer.setPixelRatio(nDPR)
+        normalTarget.setSize(nPW, nPH)
+        depthTarget.setSize(nPW, nPH)
+        edgeMat.uniforms.res.value.set(nPW, nPH)
       }
       window.addEventListener('resize', onResize)
 
       ;(mount as any)._cleanup3D = () => {
-        cancelAnimationFrame(rafId); clearTimeout(idleTimer)
+        cancelAnimationFrame(rafId)
         window.removeEventListener('resize', onResize)
-        controls.dispose(); renderer.dispose()
+        normalTarget.dispose()
+        depthTarget.dispose()
+        whiteMat.dispose()
+        normalMat.dispose()
+        edgeMat.dispose()
+        renderer.dispose()
         if (mount!.contains(renderer.domElement)) mount!.removeChild(renderer.domElement)
       }
     })()

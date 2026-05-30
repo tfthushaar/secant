@@ -116,18 +116,19 @@ export default async function RenderDetailPage({ params }: Props) {
           })()}
         </div>
 
-        {/* Right: full-quality image, contain — no crop */}
+        {/* Right: fast-loading web image */}
         <div style={{
           position: 'relative',
           background: isSketch ? '#f5f0e8' : BG,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 'clamp(1.5rem,3vh,2.5rem)',
           minHeight: 'calc(100dvh - 3.2rem)',
+          flexDirection: 'column', gap: '1rem',
         }}>
-          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            {/* Use detailImage (full-quality) when present, fall back to small/ */}
+          <div style={{ position: 'relative', width: '100%', flex: 1 }}>
+            {/* Small web-optimised image loads fast */}
             <Image
-              src={item.detailImage ?? item.image}
+              src={item.image}
               alt={item.title}
               fill
               style={{ objectFit: 'contain', objectPosition: 'center' }}
@@ -136,6 +137,22 @@ export default async function RenderDetailPage({ params }: Props) {
               sizes="62vw"
             />
           </div>
+          {/* Link to original quality */}
+          {item.detailImage && (
+            <a
+              href={item.detailImage}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontFamily: 'var(--font-sans), sans-serif',
+                fontWeight: 300, fontSize: '0.56rem',
+                letterSpacing: '0.35em', textTransform: 'uppercase',
+                color: FAINT, textDecoration: 'none', flexShrink: 0,
+              }}
+            >
+              View full quality ↗
+            </a>
+          )}
         </div>
 
       </div>

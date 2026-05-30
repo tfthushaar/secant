@@ -13,6 +13,12 @@ import { StudioIntro }  from '@/components/sections/StudioIntro'
 
 gsap.registerPlugin(ScrollTrigger)
 
+/*
+  Scene3D is loaded AFTER the loader animation completes.
+  This prevents the Draco decompression from blocking the JS thread
+  and freezing the typed-text animation.
+  The model is 2MB + fast Draco decode → appears within ~0.3s of mount.
+*/
 const Scene3D = dynamic(
   () => import('@/components/Scene3D').then((m) => m.Scene3D),
   { ssr: false, loading: () => null }
@@ -21,17 +27,13 @@ const Scene3D = dynamic(
 export default function Home() {
   const [loaderDone, setLoaderDone] = useState(false)
   const progressRef = useRef(0)
-  const mainRef     = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     document.body.classList.add('is-loading')
   }, [])
 
-  /* Camera is driven by total page scroll — starts as soon as loader finishes */
   useEffect(() => {
     if (!loaderDone) return
-
-    /* Small delay lets ScrollTrigger pick up the full page height after render */
     const id = setTimeout(() => {
       const st = ScrollTrigger.create({
         trigger:  document.documentElement,
@@ -40,8 +42,7 @@ export default function Home() {
         onUpdate: (self) => { progressRef.current = self.progress },
       })
       return () => st.kill()
-    }, 120)
-
+    }, 100)
     return () => clearTimeout(id)
   }, [loaderDone])
 
@@ -54,18 +55,21 @@ export default function Home() {
     <>
       <Loader onComplete={handleLoaderComplete} />
 
-      {/* Fixed 3D model — always behind all content */}
+      {/* Fixed 3D background — mounted AFTER loader to avoid freeze */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 0,
         background: '#ffffff', pointerEvents: 'none',
+        /* Fade in once the model is mounted */
+        opacity: loaderDone ? 1 : 0,
+        transition: 'opacity 0.6s ease',
       }}>
-        <Scene3D progressRef={progressRef} />
+        {loaderDone && <Scene3D progressRef={progressRef} />}
       </div>
 
       <SmoothScroll enabled={loaderDone}>
         <Navigation />
         <Navigator />
-        <div ref={mainRef} style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ position: 'relative', zIndex: 1 }}>
           <Hero />
           <StudioIntro />
         </div>
