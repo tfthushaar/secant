@@ -47,6 +47,7 @@ export default function Home() {
   }, [loaderDone])
 
   function handleLoaderComplete() {
+    window.scrollTo(0, 0)
     document.body.classList.remove('is-loading')
     setLoaderDone(true)
   }
