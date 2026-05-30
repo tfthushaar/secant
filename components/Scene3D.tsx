@@ -3,26 +3,23 @@
 import { useEffect, useRef } from 'react'
 
 /*
-  Scene3D — solid white architectural model + black edge lines
-  ─────────────────────────────────────────────────────────────
-  Rendering approach:
-  • Meshes stay VISIBLE with flat white MeshPhongMaterial.
-    A soft directional light + ambient gives just enough shading to
-    read the 3D form (bright tops, slightly darker sides).
-  • Black LineSegments2 edges overlay the surfaces for architectural
-    line quality. LineMaterial linewidth 0.5 px (screen-accurate, GPU
-    ignores LineBasicMaterial above 1px).
-  • Background #f5f0e8 (warm off-white). No shadows, no PBR.
-  • Model scaled to 6 units so it fills the viewport generously.
+  Scene3D — clean white-wall + black-edge architectural model
+  ────────────────────────────────────────────────────────────
+  • Pure white background (#ffffff), model surfaces: MeshBasicMaterial
+    white → walls disappear against background, edges carry all depth.
+    Tiny ambient-only light is added as a fallback for GPUs that need it.
+  • Black LineSegments2 edges (linewidth 0.5 px, screen-accurate).
+  • Model scale 8.0 (fills viewport, pulled slightly downward so it sits
+    below the SECANT wordmark at the top of the hero).
   • 5 camera presets, scroll-driven via progressRef.
 */
 
 const CAM_STOPS = [
-  { pos: [0,    2.5, 10.5], look: [0, 1.2, 0] },  /* front elevation          */
-  { pos: [5.5,  3.0,  8.5], look: [0, 1.2, 0] },  /* three-quarter entry      */
-  { pos: [8.0,  3.0,  2.0], look: [0, 1.2, 0] },  /* side elevation           */
-  { pos: [4.5,  7.5,  5.5], look: [0, 0.8, 0] },  /* aerial three-quarter     */
-  { pos: [0.5,  9.0,  0.5], look: [0, 0.0, 0] },  /* plan / top-down          */
+  { pos: [0,    3.5, 14.0], look: [0, 2.0, 0] },  /* front elevation      */
+  { pos: [8.0,  4.0, 11.0], look: [0, 2.0, 0] },  /* three-quarter entry  */
+  { pos: [12.0, 4.0,  2.5], look: [0, 2.0, 0] },  /* side elevation       */
+  { pos: [6.0,  11.0, 7.0], look: [0, 1.0, 0] },  /* aerial three-quarter */
+  { pos: [0.5,  14.0, 0.5], look: [0, 0.0, 0] },  /* plan / top-down      */
 ]
 
 interface Props { progressRef: React.MutableRefObject<number> }
@@ -46,42 +43,32 @@ export function Scene3D({ progressRef }: Props) {
       const { OrbitControls }= await import('three/examples/jsm/controls/OrbitControls.js')
       const { mergeVertices }= await import('three/addons/utils/BufferGeometryUtils.js')
 
-      const W   = mount.clientWidth  || window.innerWidth
-      const H   = mount.clientHeight || window.innerHeight
+      const W = mount.clientWidth || window.innerWidth
+      const H = mount.clientHeight || window.innerHeight
       const dpr = Math.min(window.devicePixelRatio, 2)
 
-      /* ── Renderer ─────────────────────────────────────────────────── */
+      /* ── Renderer — pure white ────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({ antialias: true })
       renderer.setSize(W, H)
       renderer.setPixelRatio(dpr)
-      renderer.setClearColor(0xf5f0e8, 1)   /* warm off-white — model pops */
+      renderer.setClearColor(0xffffff, 1)   /* pure white */
       renderer.shadowMap.enabled = false
       mount.appendChild(renderer.domElement)
 
-      /* ── Scene ────────────────────────────────────────────────────── */
       const scene = new THREE.Scene()
-      scene.background = new THREE.Color(0xf5f0e8)
+      scene.background = new THREE.Color(0xffffff)
 
-      /* ── Lighting — soft, enough to read 3D form, no drama ────────── */
-      const ambient = new THREE.AmbientLight(0xffffff, 2.0)
-      scene.add(ambient)
-      const sun = new THREE.DirectionalLight(0xffffff, 1.2)
-      sun.position.set(5, 10, 8)
-      sun.castShadow = false
-      scene.add(sun)
-      const fill = new THREE.DirectionalLight(0xffffff, 0.4)
-      fill.position.set(-4, 2, -4)
-      scene.add(fill)
+      /* Minimal ambient — just enough so MeshBasicMaterial-white is visible */
+      scene.add(new THREE.AmbientLight(0xffffff, 1))
 
-      /* ── Camera ────────────────────────────────────────────────────── */
+      /* ── Camera ────────────────────────────────────────────────── */
       const camera = new THREE.PerspectiveCamera(45, W / H, 0.01, 1000)
       const p0 = CAM_STOPS[0].pos, l0 = CAM_STOPS[0].look
       camera.position.set(p0[0], p0[1], p0[2])
       camera.lookAt(l0[0], l0[1], l0[2])
-      const camTarget = { x: p0[0], y: p0[1], z: p0[2],
-                          lx: l0[0], ly: l0[1], lz: l0[2] }
+      const camTarget = { x:p0[0],y:p0[1],z:p0[2], lx:l0[0],ly:l0[1],lz:l0[2] }
 
-      /* ── OrbitControls ─────────────────────────────────────────────── */
+      /* ── OrbitControls ─────────────────────────────────────────── */
       const controls = new OrbitControls(camera, renderer.domElement)
       controls.enableDamping = true; controls.dampingFactor = 0.06
       controls.enabled = false
@@ -95,32 +82,36 @@ export function Scene3D({ progressRef }: Props) {
         }, 2000) as unknown as number
       })
 
-      /* ── Edge line material ────────────────────────────────────────── */
+      /* ── Edge material ─────────────────────────────────────────── */
       const lineMat = new LineMaterial({
-        color: 0x1a1a1a,
+        color: 0x111111,          /* near-black for clean look */
         linewidth: 0.5,
         resolution: new THREE.Vector2(W * dpr, H * dpr),
         dashed: false,
       })
 
-      /* ── Load GLB ──────────────────────────────────────────────────── */
+      /* ── Load GLB ──────────────────────────────────────────────── */
       const draco = new DRACOLoader()
       draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
       const loader = new GLTFLoader(); loader.setDRACOLoader(draco)
 
       loader.load('/assets/base.glb', (gltf) => {
         const model = gltf.scene
-
-        /* ── Fit model to fill the hero — scale = 6 units ──────────── */
         scene.add(model)
+
+        /* ── Fit & position — big model that fills hero below SECANT ── */
         const box    = new THREE.Box3().setFromObject(model)
         const centre = box.getCenter(new THREE.Vector3())
         const size   = box.getSize(new THREE.Vector3())
         const maxDim = Math.max(size.x, size.y, size.z)
-        const scale  = 6.0 / maxDim   /* bigger than before — fills the canvas */
+        const scale  = 8.0 / maxDim   /* bigger than before */
 
         model.position.sub(centre)
         model.scale.setScalar(scale)
+
+        /* Pull model DOWN so it sits below the SECANT wordmark */
+        model.position.y -= size.y * scale * 0.28
+
         model.updateMatrixWorld(true)
 
         model.traverse((obj) => {
@@ -128,19 +119,16 @@ export function Scene3D({ progressRef }: Props) {
           const mesh = obj as any
           if (!mesh.isMesh) return
 
-          /* ── Solid white surface — gives depth via directional light ─
-             Meshes stay VISIBLE. Without this the model is transparent. */
-          mesh.material = new THREE.MeshPhongMaterial({
-            color:    0xfafafa,   /* near-white, light will shade it softly */
-            specular: new THREE.Color(0x111111),
-            shininess: 5,
+          /* ── Clean white MeshBasicMaterial — zero shading / texture ─
+             White walls blend with white background; edges carry depth. */
+          mesh.material = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
             side: THREE.FrontSide,
           })
           mesh.castShadow    = false
           mesh.receiveShadow = false
 
-          /* ── Black edge lines on top ────────────────────────────────
-             World-space geometry so nested transforms are handled.      */
+          /* ── Black edge lines ───────────────────────────────────── */
           const worldGeo = mesh.geometry.clone()
           worldGeo.applyMatrix4(mesh.matrixWorld)
 
@@ -159,7 +147,7 @@ export function Scene3D({ progressRef }: Props) {
         })
       }, undefined, (e) => console.error('GLB error:', e))
 
-      /* ── Animate ───────────────────────────────────────────────────── */
+      /* ── Animate ───────────────────────────────────────────────── */
       const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
       function animate() {
@@ -191,7 +179,7 @@ export function Scene3D({ progressRef }: Props) {
       }
       animate()
 
-      /* ── Resize ─────────────────────────────────────────────────────── */
+      /* ── Resize ─────────────────────────────────────────────────── */
       function onResize() {
         const nW = mount!.clientWidth, nH = mount!.clientHeight
         const nDPR = Math.min(window.devicePixelRatio, 2)

@@ -179,7 +179,7 @@ export function Hero() {
       <div style={{
         position:'absolute', bottom:0, left:0, right:0,
         height:'clamp(40px,8svh,80px)',
-        background:'linear-gradient(to bottom, transparent, oklch(97.2% 0.006 78))',
+        background:'linear-gradient(to bottom, transparent, #ffffff)',
         zIndex:3, pointerEvents:'none',
       }} />
     </section>

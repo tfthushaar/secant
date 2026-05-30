@@ -53,11 +53,12 @@ void main(){
   vec2 st=vec2(vUvs.x,1.-vUvs.y)*cs+co;
   outColor=texture(uTex,st);
 
-  /* Rounded corners — works correctly because cards are square (UV is square) */
-  float r=0.08;
+  /* Rounded corners — square UV [0,1]² → circular corners on square cards */
+  float r=0.10;                               /* slightly larger radius = softer corners */
   vec2 p=vUvs-0.5;
   float d=roundedBoxSDF(p,vec2(0.5-r),r);
-  outColor.a*=vAlpha*(1.-smoothstep(-0.015,0.015,d));
+  float aa=fwidth(d)*1.5;                     /* anti-alias width from screen derivative */
+  outColor.a*=vAlpha*(1.-smoothstep(-aa,aa,d));
 }`;
 
 /* ── Geometry ─────────────────────────────────────────────────────────────── */
@@ -265,8 +266,12 @@ class InfiniteGridMenu{
   }
   #animate(dt){
     const gl=this.gl;this.control.update(dt,this.TARGET_FRAME_DURATION);
-    /* Bigger tiles + less depth falloff → dense surface-of-globe look */
-    const scale=0.38,SI=0.50;
+    /*
+      scale=0.85: front (snapped) card is large — nearly fills viewport.
+      SI=0.92:   extreme depth falloff — cards behind the front shrink fast,
+                 giving a dense sphere-surface texture in the background.
+    */
+    const scale=0.85,SI=0.92;
     this.instancePositions.map(p=>vec3.transformQuat(vec3.create(),p,this.control.orientation)).forEach((p,ndx)=>{
       const s=(Math.abs(p[2])/this.SPHERE_RADIUS)*SI+(1-SI);
       const fs=s*scale;
@@ -303,8 +308,8 @@ class InfiniteGridMenu{
   #upCam(){mat4.targetTo(this.camera.matrix,this.camera.position,[0,0,0],this.camera.up);mat4.invert(this.camera.matrices.view,this.camera.matrix);}
   #upProj(gl){
     this.camera.aspect=gl.canvas.clientWidth/gl.canvas.clientHeight;
-    /* h=0.50 → wider FOV, shows more of the sphere surface (was 0.35) */
-    const h=this.SPHERE_RADIUS*.50,d=this.camera.position[2];
+    /* h=0.65 → wide enough to see the dense sphere behind the front card */
+    const h=this.SPHERE_RADIUS*.65,d=this.camera.position[2];
     this.camera.fov=this.camera.aspect>1?2*Math.atan(h/d):2*Math.atan(h/this.camera.aspect/d);
     mat4.perspective(this.camera.matrices.projection,this.camera.fov,this.camera.aspect,this.camera.near,this.camera.far);
     mat4.invert(this.camera.matrices.inversProjection,this.camera.matrices.projection);
