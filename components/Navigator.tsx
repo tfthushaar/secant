@@ -176,11 +176,11 @@ export function Navigator() {
                   className="nav-row-num"
                   style={{
                     fontFamily: 'var(--font-sans), sans-serif',
-                    fontWeight: 300,
+                    fontWeight: 200,
                     fontSize: '0.56rem',
                     letterSpacing: '0.35em',
                     textTransform: 'uppercase',
-                    color: 'rgba(255,255,255,0.24)',
+                    color: 'rgba(255,255,255,0.32)',   /* white, not warm */
                     minWidth: '2.2rem',
                     flexShrink: 0,
                     transition: 'color 0.18s ease',
@@ -190,11 +190,11 @@ export function Navigator() {
                 </span>
                 <span
                   style={{
-                    fontFamily: 'var(--font-display), Georgia, serif',
-                    fontWeight: 300,
+                    fontFamily: 'var(--font-sans), sans-serif',  /* Raleway — clean white */
+                    fontWeight: 100,
                     fontSize: 'clamp(3rem, 8vw, 8.5rem)',
                     lineHeight: 1.0,
-                    letterSpacing: '-0.01em',
+                    letterSpacing: '0.02em',
                     fontFeatureSettings: '"kern" 1, "liga" 1',
                   }}
                 >

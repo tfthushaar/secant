@@ -13,60 +13,84 @@ const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
 })
 
 /*
-  Merged CircularStack + TiltedCard:
-  ─────────────────────────────────
-  • 5 TiltedCards arranged on a CSS 3D cylinder (rotateY + translateZ)
-  • Pointer drag / scroll wheel rotates the whole cylinder (CircularGallery UX)
-  • TiltedCard spring-physics tilt fires on hover within each card's own space
-  • Inertia decay + snap-to-nearest-item on release
+  Arched coverflow formation — matches the reference image.
+  Cards are arranged on a gentle 3D arc:
+    • Centre card closest to viewer (z = 0, scale = 1)
+    • Adjacent cards recede in depth, rotate slightly toward centre
+    • Edge cards further back, smaller, more transparent
+  Drag/scroll shifts which card is centred.
+  TiltedCard hover tilt active on every card independently.
 */
 
-const N      = CATEGORY_CONFIG.length   /* 5 */
-const STEP   = 360 / N                  /* 72° between items */
-const RADIUS = 360                      /* closer cards — tighter ring */
-const DAMPEN = 0.90                     /* inertia friction */
+const N        = CATEGORY_CONFIG.length   /* 5 */
+const CARD_W   = 300                      /* px — landscape card width  */
+const CARD_H   = 190                      /* px — landscape card height  */
+const SPACING  = 350                      /* px — centre-to-centre gap   */
 
 export default function WorkPage() {
   const router       = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
-  const cylinderRef  = useRef<HTMLDivElement>(null)
+  const trackRef     = useRef<HTMLDivElement>(null)
 
-  /* Rotation state — kept in refs to avoid re-renders in the RAF loop */
-  const rotY    = useRef(0)
-  const targetY = useRef(0)
-  const vel     = useRef(0)
-  const down    = useRef(false)
-  const startX  = useRef(0)
-  const rafId   = useRef(0)
-  const dragged = useRef(false)   /* distinguishes click vs drag */
+  /* Continuous centre position — fractional between cards during drag */
+  const centreF  = useRef(Math.floor(N / 2))  /* start centred on card 2 */
+  const vel      = useRef(0)
+  const down     = useRef(false)
+  const dragged  = useRef(false)
+  const startX   = useRef(0)
+  const rafId    = useRef(0)
 
-  const [activeIdx, setActiveIdx] = useState(0)
+  const [snapIdx, setSnapIdx] = useState(Math.floor(N / 2))
 
-  /* ── Animation loop ─────────────────────────────────────────────── */
+  /* ── Apply arch transforms directly to DOM (no re-renders) ───────────── */
+  const applyArch = useCallback((centre: number) => {
+    const track = trackRef.current
+    if (!track) return
+    const cards = track.querySelectorAll<HTMLElement>('.arch-item')
+    cards.forEach((el, i) => {
+      const off = i - centre            /* signed offset from centre */
+      const abs = Math.abs(off)
+      const sig = off >= 0 ? 1 : -1
+
+      const x       =  off * SPACING          /* horizontal spread      */
+      const y       =  abs * abs * 8           /* gentle upward arch     */
+      const z       = -abs * 130              /* depth recession         */
+      const rotY    =  sig * abs * 12         /* rotation toward centre  */
+      const scale   =  1 - abs * 0.12         /* centre largest          */
+      const opacity =  Math.max(0.28, 1 - abs * 0.22)
+
+      el.style.transform = `translateX(${x}px) translateY(${y}px) translateZ(${z}px) rotateY(${rotY}deg) scale(${scale})`
+      el.style.opacity   = String(opacity)
+      el.style.zIndex    = String(Math.round(10 - abs * 3))
+    })
+    setSnapIdx(Math.round(centre))
+  }, [])
+
+  /* ── RAF loop — momentum + snap ──────────────────────────────────────── */
   useEffect(() => {
+    applyArch(centreF.current)
+
     const step = () => {
       if (!down.current) {
-        vel.current *= DAMPEN
-        if (Math.abs(vel.current) > 0.02) targetY.current += vel.current
+        vel.current *= 0.86
+        centreF.current += vel.current
+
+        /* Clamp */
+        centreF.current = Math.max(0, Math.min(N - 1, centreF.current))
+
+        /* Snap to nearest card */
+        const snap = Math.max(0, Math.min(N - 1, Math.round(centreF.current)))
+        centreF.current += (snap - centreF.current) * 0.10
       }
-      rotY.current += (targetY.current - rotY.current) * 0.1
 
-      if (cylinderRef.current) {
-        cylinderRef.current.style.transform = `rotateY(${rotY.current}deg)`
-      }
-
-      /* Which item faces front? normalise rotation to find closest index */
-      const norm = ((-rotY.current % 360) + 360) % 360
-      const idx  = Math.round(norm / STEP) % N
-      setActiveIdx(idx)
-
+      applyArch(centreF.current)
       rafId.current = requestAnimationFrame(step)
     }
     rafId.current = requestAnimationFrame(step)
     return () => cancelAnimationFrame(rafId.current)
-  }, [])
+  }, [applyArch])
 
-  /* ── Pointer handlers ────────────────────────────────────────────── */
+  /* ── Pointer ─────────────────────────────────────────────────────────── */
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     down.current    = true
     dragged.current = false
@@ -78,38 +102,37 @@ export default function WorkPage() {
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!down.current) return
     const dx = e.clientX - startX.current
-    if (Math.abs(dx) > 4) dragged.current = true
-    targetY.current += dx * 0.22
-    vel.current      = dx * 0.22
-    startX.current   = e.clientX
+    if (Math.abs(dx) > 5) dragged.current = true
+    /* Drag left = increase index (next card), drag right = decrease */
+    const delta = -dx / SPACING * 0.55
+    centreF.current = Math.max(0, Math.min(N - 1, centreF.current + delta))
+    vel.current     = delta
+    startX.current  = e.clientX
   }, [])
 
-  const onPointerUp = useCallback(() => {
-    down.current = false
-    /* Snap to nearest item */
-    const snap = Math.round(targetY.current / STEP) * STEP
-    targetY.current = snap
-  }, [])
+  const onPointerUp = useCallback(() => { down.current = false }, [])
 
-  /* ── Scroll-wheel rotation ───────────────────────────────────────── */
+  /* Scroll wheel */
   const onWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
-    vel.current     += e.deltaY * 0.12
-    targetY.current += e.deltaY * 0.12
+    centreF.current = Math.max(0, Math.min(N - 1, centreF.current + e.deltaY * 0.004))
   }, [])
 
-  /* ── Navigation ─────────────────────────────────────────────────── */
-  const handleClick = useCallback((slug: string, idx: number) => {
-    if (dragged.current) return        /* was a drag, not a click */
-    if (idx !== activeIdx) {           /* snap to this item first */
-      targetY.current = -idx * STEP
+  /* ── Click → navigate (only on centred card) ─────────────────────────── */
+  const handleClick = useCallback((idx: number) => {
+    if (dragged.current) return
+    if (idx !== snapIdx) {
+      /* Jump to this card first */
+      centreF.current = idx; vel.current = 0
       return
     }
+    const cat = CATEGORY_CONFIG[idx]
+    if (!cat) return
     gsap.to(containerRef.current, {
       opacity: 0, y: -16, duration: 0.4, ease: 'power2.in',
-      onComplete: () => router.push(`/work/${slug}`),
+      onComplete: () => router.push(`/work/${cat.slug}`),
     })
-  }, [activeIdx, router])
+  }, [snapIdx, router])
 
   return (
     <div
@@ -132,38 +155,41 @@ export default function WorkPage() {
         <Link href="/" style={{
           fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.68rem', letterSpacing: '0.28em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)',
           textDecoration: 'none',
         }}>SECANT</Link>
         <span style={{
           fontFamily: 'var(--font-sans), sans-serif',
-          fontWeight: 300, fontSize: '0.52rem', letterSpacing: '0.42em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)',
-        }}>Drag to explore · Click to enter</span>
+          fontWeight: 300, fontSize: '0.5rem', letterSpacing: '0.42em',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)',
+        }}>Drag or scroll to browse</span>
       </header>
 
       {/* Title */}
-      <div style={{ paddingTop: 'clamp(2rem,5vh,4rem)', paddingBottom: '0.5rem', textAlign: 'center', flexShrink: 0 }}>
+      <div style={{
+        paddingTop: 'clamp(2rem,5vh,4rem)', paddingBottom: '0.5rem',
+        textAlign: 'center', flexShrink: 0,
+      }}>
         <p style={{
           fontFamily: 'var(--font-display), Georgia, serif',
-          fontWeight: 400, fontSize: 'clamp(1.3rem,2.8vw,2.4rem)',
-          letterSpacing: '0.02em', color: 'rgba(255,255,255,0.82)', margin: 0,
-          fontFeatureSettings: '"kern" 1, "liga" 1',
+          fontWeight: 400, fontSize: 'clamp(1.2rem,2.5vw,2.2rem)',
+          letterSpacing: '0.02em', color: 'rgba(255,255,255,0.88)', margin: 0,
         }}>
           Select a category
         </p>
       </div>
 
       {/*
-        ── CSS 3D Cylinder Carousel ──────────────────────────────────
-        perspective on the outer div creates depth.
-        The inner div (cylinder) holds all 5 TiltedCards at rotateY angles.
-        Dragging rotates the cylinder; TiltedCard handles per-card hover tilt.
+        ── Arched coverflow gallery ──────────────────────────────────────────
+        perspective + preserve-3d: the arch curves cards into the screen.
+        Each .arch-item receives transform from applyArch() each RAF tick.
+        TiltedCard hover tilt operates in each card's local coordinate space.
       */}
       <div
         style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          perspective: '1300px', perspectiveOrigin: '50% 45%',
+          perspective: '1100px',
+          perspectiveOrigin: '50% 52%',
           overflow: 'hidden',
           cursor: down.current ? 'grabbing' : 'grab',
           userSelect: 'none',
@@ -175,9 +201,9 @@ export default function WorkPage() {
         onPointerCancel={onPointerUp}
         onWheel={onWheel}
       >
-        {/* The cylinder — all cards are children, rotateY applied each RAF */}
+        {/* Track — all cards are absolute children centred at 0,0 */}
         <div
-          ref={cylinderRef}
+          ref={trackRef}
           style={{
             position: 'relative',
             transformStyle: 'preserve-3d',
@@ -185,66 +211,58 @@ export default function WorkPage() {
           }}
         >
           {CATEGORY_CONFIG.map((cat, i) => {
-            const angle    = i * STEP
-            const isActive = i === activeIdx
-            const count    = getItemsByCategory(cat.slug).length
-            /* Cards further from front are slightly less opaque */
-            const opacity  = isActive ? 1 : 0.68
+            const count = getItemsByCategory(cat.slug).length
+            const isActive = i === snapIdx
 
             return (
               <div
                 key={cat.slug}
+                className="arch-item"
                 style={{
                   position: 'absolute',
-                  /* Place this card at its angle on the cylinder */
-                  transform: `rotateY(${angle}deg) translateZ(${RADIUS}px)`,
-                  /* Centre the card on its position */
                   top: 0, left: 0,
-                  translate: '-50% -50%',
-                  opacity,
-                  transition: 'opacity 0.3s ease',
-                  /* Allow TiltedCard to receive mouse events */
+                  /* Centre each card on its position */
+                  translate: `-50% -50%`,
+                  transformStyle: 'preserve-3d',
+                  willChange: 'transform, opacity',
+                  transition: 'none',
                   pointerEvents: 'auto',
                 }}
-                onClick={() => handleClick(cat.slug, i)}
+                onClick={() => handleClick(i)}
               >
                 <TiltedCard
                   imageSrc={cat.heroImage}
                   altText={cat.label}
                   captionText={`${count} works`}
-                  containerWidth="clamp(260px,22vw,340px)"
-                  containerHeight="clamp(165px,14vw,215px)"
-                  imageWidth="clamp(260px,22vw,340px)"
-                  imageHeight="clamp(165px,14vw,215px)"
-                  /* Tilt intensity: full on active, reduced on side cards */
-                  rotateAmplitude={isActive ? 10 : 3}
-                  scaleOnHover={isActive ? 1.07 : 1.03}
+                  containerWidth={`${CARD_W}px`}
+                  containerHeight={`${CARD_H}px`}
+                  imageWidth={`${CARD_W}px`}
+                  imageHeight={`${CARD_H}px`}
+                  rotateAmplitude={isActive ? 9 : 2}
+                  scaleOnHover={isActive ? 1.06 : 1.02}
                   showMobileWarning={false}
                   showTooltip={isActive}
                   displayOverlayContent={true}
                   overlayContent={
                     <div style={{
                       position: 'absolute', bottom: 0, left: 0, right: 0,
-                      padding: 'clamp(12px,1.5vw,18px)',
-                      background: 'linear-gradient(to top, rgba(8,7,6,0.88) 0%, transparent 100%)',
+                      padding: '14px 16px',
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, transparent 100%)',
                       borderRadius: '0 0 12px 12px',
                     }}>
                       <p style={{
                         fontFamily: 'var(--font-display), Georgia, serif',
                         fontWeight: 400,
-                        fontSize: 'clamp(1.1rem,1.8vw,1.55rem)',
-                        lineHeight: 1.1,
-                        color: 'rgba(255,255,255,0.96)',
-                        margin: 0,
-                        fontFeatureSettings: '"kern" 1',
+                        fontSize: '1.3rem',
+                        lineHeight: 1.1, color: '#ffffff', margin: 0,
                       }}>
                         {cat.label}
                       </p>
                       <p style={{
                         fontFamily: 'var(--font-sans), sans-serif',
-                        fontWeight: 300, fontSize: '8px',
+                        fontWeight: 300, fontSize: '9px',
                         letterSpacing: '0.32em', textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.45)', margin: '4px 0 0',
+                        color: 'rgba(255,255,255,0.5)', margin: '4px 0 0',
                       }}>
                         {count} works
                       </p>

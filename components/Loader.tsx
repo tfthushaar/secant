@@ -76,11 +76,11 @@ export function Loader({ onComplete }: LoaderProps) {
           cursorCharacter="_"
           cursorBlinkDuration={0.45}
           style={{
-            fontFamily: 'var(--font-display), Georgia, serif',
-            fontWeight: 400,
+            fontFamily: 'var(--font-sans), sans-serif',   /* Raleway — pure white, no warm cast */
+            fontWeight: 200,
             fontSize: 'clamp(2.2rem, 6vw, 5.5rem)',
-            letterSpacing: '0.06em',
-            color: 'rgba(255,255,255,0.92)',
+            letterSpacing: '0.38em',
+            color: '#ffffff',
             lineHeight: 1,
             userSelect: 'none',
           }}
