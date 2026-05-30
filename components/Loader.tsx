@@ -39,8 +39,10 @@ export function Loader({ onComplete }: LoaderProps) {
 
     const tl = gsap.timeline()
 
+    /* GLB is now 2MB — downloads in <0.5s even on slow connections.
+       Keep the animation timing aesthetic, not perf-driven.          */
     const TYPE_SPEED = 0.12   /* s per letter forward */
-    const DEL_SPEED  = 0.065  /* s per letter backward — faster feels intentional */
+    const DEL_SPEED  = 0.065  /* s per letter backward */
 
     /* ── TYPE forward ─────────────────────────────────────────── */
     WORD.split('').forEach((char, i) => {
