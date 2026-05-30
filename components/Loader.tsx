@@ -8,9 +8,11 @@ const TextType = dynamic(() => import('./TextType'), { ssr: false })
 
 interface LoaderProps { onComplete: () => void }
 
-const TARGET      = 'SECANT.COM'   /* all-caps — architectural precision */
-const TYPING_SPEED = 110  /* ms per character — deliberate, unhurried */
-const POST_PAUSE   = 1400 /* ms after typing — let it breathe */
+const TARGET      = 'SECANT.COM'
+const TYPING_SPEED = 120  /* ms per character — deliberate */
+const POST_PAUSE   = 2900 /* ms hold after typing → total ~4.1s
+                             This gives the 26 MB GLB time to download
+                             in the background before the loader slides away. */
 
 /* Total visible duration = chars × speed + post-pause */
 const TOTAL_MS = TARGET.length * TYPING_SPEED + POST_PAUSE
