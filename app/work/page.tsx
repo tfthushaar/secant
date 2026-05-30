@@ -22,10 +22,10 @@ const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
   TiltedCard hover tilt active on every card independently.
 */
 
-const N        = CATEGORY_CONFIG.length   /* 5 */
-const CARD_W   = 420                      /* px — bigger landscape card  */
-const CARD_H   = 265                      /* px — 16:10 aspect           */
-const SPACING  = 460                      /* px — wider gap for bigger cards */
+const N        = CATEGORY_CONFIG.length
+const CARD_W   = 500
+const CARD_H   = 316
+const SPACING  = 520
 
 export default function WorkPage() {
   const router       = useRouter()

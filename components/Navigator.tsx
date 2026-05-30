@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 
@@ -16,6 +17,10 @@ export function Navigator() {
   const overlayRef = useRef<HTMLDivElement>(null)
   const linksRef   = useRef<(HTMLDivElement | null)[]>([])
   const metaRef    = useRef<HTMLDivElement>(null)
+  const pathname   = usePathname()
+
+  /* Work pages, category pages have dark backgrounds — use light icon */
+  const isDark = pathname === '/work' || pathname.startsWith('/work/')
 
   /* Animate open/close */
   useEffect(() => {
@@ -71,11 +76,17 @@ export function Navigator() {
         aria-label={open ? 'Close menu' : 'Open menu'}
         aria-expanded={open}
       >
-        {/* Minimal three-line icon */}
+        {/* Minimal two-line icon */}
         {!open && (
           <div className="flex flex-col gap-[5px]" aria-hidden="true">
-            <span style={{ display: 'block', width: '18px', height: '1px', background: 'oklch(26% 0.007 72)' }} />
-            <span style={{ display: 'block', width: '12px', height: '1px', background: 'oklch(26% 0.007 72)' }} />
+            <span style={{
+              display: 'block', width: '18px', height: '1px',
+              background: isDark ? 'rgba(255,255,255,0.75)' : 'oklch(26% 0.007 72)',
+            }} />
+            <span style={{
+              display: 'block', width: '12px', height: '1px',
+              background: isDark ? 'rgba(255,255,255,0.75)' : 'oklch(26% 0.007 72)',
+            }} />
           </div>
         )}
         <span
@@ -85,7 +96,11 @@ export function Navigator() {
             fontSize: '0.72rem',
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            color: open ? 'rgba(247,244,239,0.85)' : 'oklch(22% 0.007 72)',
+            color: open
+              ? 'rgba(247,244,239,0.85)'
+              : isDark
+                ? 'rgba(255,255,255,0.75)'
+                : 'oklch(22% 0.007 72)',
             transition: 'color 0.25s',
           }}
         >

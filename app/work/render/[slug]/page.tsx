@@ -20,9 +20,7 @@ export default async function RenderDetailPage({ params }: Props) {
 
   const item      = workItems[idx]
   const isSketch  = item.kind === 'sketch'
-  const catConfig = CATEGORY_CONFIG.find(c =>
-    c.value === 'Sketch' ? isSketch : c.value === item.category
-  )
+  const catConfig = CATEGORY_CONFIG.find(c => c.value === item.category)
 
   const BG    = 'oklch(97.2% 0.006 78)'
   const INK   = 'oklch(8.5% 0.007 72)'
@@ -99,9 +97,7 @@ export default async function RenderDetailPage({ params }: Props) {
 
           {/* Prev / Next within the same category */}
           {(() => {
-            const catItems = workItems.filter(w =>
-              isSketch ? w.kind === 'sketch' : w.category === item.category
-            )
+            const catItems = workItems.filter(w => w.category === item.category)
             const ci  = catItems.findIndex(w => w.id === slug)
             const prev = catItems[(ci - 1 + catItems.length) % catItems.length]
             const next = catItems[(ci + 1) % catItems.length]

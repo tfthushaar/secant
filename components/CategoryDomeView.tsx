@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -8,11 +8,7 @@ import { gsap } from 'gsap'
 import { Navigator } from '@/components/Navigator'
 import type { CategoryConfig, WorkItem } from '@/lib/projects'
 
-/* InfiniteMenu is WebGL + browser-only */
-const InfiniteMenu = dynamic(
-  () => import('@/components/InfiniteMenu'),
-  { ssr: false, loading: () => null }
-)
+const Masonry = dynamic(() => import('@/components/Masonry'), { ssr: false, loading: () => null })
 
 interface Props {
   config: CategoryConfig
@@ -23,32 +19,19 @@ export function CategoryDomeView({ config, items }: Props) {
   const router       = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
 
-  /* Fade in on mount */
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
-    gsap.fromTo(el, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' })
+    gsap.fromTo(el, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' })
   }, [])
 
-  /* Items for InfiniteMenu */
-  const menuItems = items.map(item => ({
-    image:       item.image,
-    link:        `/work/render/${item.id}`,
-    title:       item.title,
-    description: item.kind === 'sketch'
-      ? 'Concept sketch'
-      : item.category,
+  /* Use original-quality images for masonry; thumbnail as fallback */
+  const masonryItems = items.map(item => ({
+    id:    item.id,
+    img:   item.detailImage ?? item.image,
+    link:  `/work/render/${item.id}`,
+    title: item.title,
   }))
-
-  /* Navigate to render detail on item click */
-  const handleItemClick = useCallback((activeItem: { link?: string }) => {
-    if (!activeItem?.link) return
-    gsap.to(containerRef.current, {
-      opacity: 0, y: -16,
-      duration: 0.35, ease: 'power2.in',
-      onComplete: () => router.push(activeItem.link!),
-    })
-  }, [router])
 
   return (
     <div
@@ -69,7 +52,6 @@ export function CategoryDomeView({ config, items }: Props) {
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         position: 'relative', zIndex: 10,
       }}>
-        {/* Back to work */}
         <Link href="/work" style={{
           fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.62rem', letterSpacing: '0.28em',
@@ -84,7 +66,6 @@ export function CategoryDomeView({ config, items }: Props) {
           Work
         </Link>
 
-        {/* Category name */}
         <span style={{
           fontFamily: 'var(--font-display), Georgia, serif',
           fontWeight: 400, fontSize: 'clamp(1.1rem, 2.2vw, 1.7rem)',
@@ -93,23 +74,19 @@ export function CategoryDomeView({ config, items }: Props) {
           {config.label}
         </span>
 
-        {/* Home link */}
-        <Link href="/" style={{
-          fontFamily: 'var(--font-sans), sans-serif',
-          fontWeight: 400, fontSize: '0.6rem', letterSpacing: '0.28em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)',
-          textDecoration: 'none', transition: 'color 0.2s',
-        }}>
-          Home
-        </Link>
+        {/* right side intentionally empty — Navigator MENU button is here */}
+        <span />
       </header>
 
-      {/* InfiniteMenu with rectangular cards */}
+      {/* Masonry gallery — fills remaining viewport */}
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-        <InfiniteMenu
-          items={menuItems}
-          scale={0.95}   /* camera close to sphere surface — fills viewport */
-          onItemClick={handleItemClick}
+        <Masonry
+          items={masonryItems}
+          animateFrom="bottom"
+          blurToFocus={true}
+          scaleOnHover={true}
+          hoverScale={0.97}
+          stagger={0.04}
         />
       </div>
 

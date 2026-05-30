@@ -1,37 +1,22 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import dynamic from 'next/dynamic'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/*
-  Hero — scroll-pinned 3D wireframe viewer
-  ─────────────────────────────────────────
-  • Section height: 100svh. GSAP `pin:true` adds 500% extra scroll space
-    so the camera travels through 5 presets before the pin releases.
-  • progressRef is written 0→1 by the ScrollTrigger onUpdate callback.
-    Scene3D reads it every frame to drive the camera position.
-  • Typography overlay sits above the canvas at z-index 2.
-*/
-
-const Scene3D = dynamic(
-  () => import('@/components/Scene3D').then((m) => m.Scene3D),
-  { ssr: false, loading: () => null }
-)
+interface HeroProps {
+  progressRef: React.MutableRefObject<number>
+}
 
 const X = 'clamp(18px, 3.7vw, 72px)'
 
-export function Hero() {
+export function Hero({ progressRef }: HeroProps) {
   const sectionRef = useRef<HTMLElement>(null)
   const titleRef   = useRef<HTMLDivElement>(null)
   const subRef     = useRef<HTMLDivElement>(null)
   const scatterRef = useRef<HTMLDivElement>(null)
-
-  /* Shared scroll progress for Scene3D camera animation */
-  const progressRef = useRef(0)
 
   useEffect(() => {
     const section = sectionRef.current
@@ -42,7 +27,6 @@ export function Hero() {
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    /* Text entrance */
     gsap.set([title, sub, scatter], { autoAlpha: 0 })
     const reveal = gsap.timeline({ delay: 0.15 })
     reveal
@@ -53,15 +37,13 @@ export function Hero() {
     if (reduced) return () => { reveal.kill() }
 
     /*
-      GSAP pin — keeps the hero in the viewport while the user scrolls
-      through all 5 camera angles (one viewport-height per angle = 500%).
-      After the pin releases, the philosophy section scrolls in naturally.
-      pinSpacing:true adds a spacer so layout below is not disrupted.
+      GSAP pin — keeps hero in viewport while scroll drives camera through
+      all 5 presets. progressRef is read by the fixed Scene3D every frame.
     */
     const st = ScrollTrigger.create({
       trigger:    section,
       start:      'top top',
-      end:        '+=500%',
+      end:        '+=900%',
       pin:        true,
       pinSpacing: true,
       scrub:      1.8,
@@ -69,7 +51,7 @@ export function Hero() {
     })
 
     return () => { reveal.kill(); st.kill() }
-  }, [])
+  }, [progressRef])
 
   return (
     <section
@@ -77,12 +59,7 @@ export function Hero() {
       id="hero-section"
       style={{ position: 'relative', width: '100%', height: '100svh', overflow: 'hidden' }}
     >
-      {/* ── 3D canvas — fills the full section ── */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <Scene3D progressRef={progressRef} />
-      </div>
-
-      {/* ── Typography overlay ── */}
+      {/* Typography overlay — transparent, 3D model shows through from fixed bg */}
       <div style={{
         position:       'absolute', inset: 0, zIndex: 2,
         pointerEvents:  'none',
@@ -90,20 +67,15 @@ export function Hero() {
         justifyContent: 'space-between',
         padding:        `clamp(4.5rem,8vh,6rem) ${X} clamp(1.5rem,3vh,2.5rem)`,
       }}>
-        {/* SECANT + subtitle */}
+        {/* SECANT wordmark + subtitle */}
         <div>
           <div ref={titleRef} style={{ opacity: 0 }}>
             <h1 style={{
-              /*
-                Raleway weight 100 — ultra-thin geometric sans.
-                Transforms the wordmark from heavy editorial serif
-                to clean, architectural minimalism.
-              */
               fontFamily:    'var(--font-sans), "Helvetica Neue", Arial, sans-serif',
-              fontWeight:    200,  /* slightly bolder than 100 — still minimal */
+              fontWeight:    200,
               fontSize:      'clamp(5rem, 14vw, 16rem)',
               lineHeight:    0.88,
-              letterSpacing: '0.06em',     /* slight tracking suits thin weight */
+              letterSpacing: '0.06em',
               textTransform: 'uppercase',
               color:         'oklch(8.5% 0.007 72)',
               margin:        0,
@@ -132,7 +104,7 @@ export function Hero() {
               fontSize:      'clamp(0.6rem,0.9vw,0.8rem)',
               letterSpacing: '0.28em', textTransform: 'uppercase',
               color:         'oklch(52% 0.007 74)',
-            }}>Bengaluru · Est. 2003</span>
+            }}>Bengaluru · Est. 1999</span>
           </div>
         </div>
 
@@ -175,11 +147,11 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Bottom fade into next section */}
+      {/* Soft bottom edge — fades into content below */}
       <div style={{
         position:'absolute', bottom:0, left:0, right:0,
         height:'clamp(40px,8svh,80px)',
-        background:'linear-gradient(to bottom, transparent, #ffffff)',
+        background:'linear-gradient(to bottom, transparent, rgba(255,255,255,0.95))',
         zIndex:3, pointerEvents:'none',
       }} />
     </section>

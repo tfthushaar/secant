@@ -15,11 +15,16 @@ import { useEffect, useRef } from 'react'
 */
 
 const CAM_STOPS = [
-  { pos: [0,    4.0, 11.5], look: [0, 1.5, 0] },  /* front elevation      */
-  { pos: [7.0,  4.5,  9.5], look: [0, 1.5, 0] },  /* three-quarter entry  */
-  { pos: [11.0, 4.5,  2.0], look: [0, 1.5, 0] },  /* side elevation       */
-  { pos: [5.5,  10.0, 6.5], look: [0, 0.8, 0] },  /* aerial three-quarter */
-  { pos: [0.5,  13.0, 0.5], look: [0, 0.0, 0] },  /* plan / top-down      */
+  { pos: [ 0,    4.0, 11.5], look: [0, 1.5, 0] },  /* 0 — front elevation         */
+  { pos: [ 0,    1.2, 10.5], look: [0, 4.0, 0] },  /* 1 — low dramatic angle      */
+  { pos: [ 7.0,  4.5,  9.5], look: [0, 1.5, 0] },  /* 2 — three-quarter right     */
+  { pos: [11.0,  3.5,  1.5], look: [0, 2.0, 0] },  /* 3 — side elevation right    */
+  { pos: [ 8.0, 10.0, -5.0], look: [0, 0.8, 0] },  /* 4 — aerial rear right       */
+  { pos: [ 0.5, 13.5,  0.5], look: [0, 0.0, 0] },  /* 5 — plan / top-down         */
+  { pos: [-8.0, 10.0, -5.0], look: [0, 0.8, 0] },  /* 6 — aerial rear left        */
+  { pos: [-11.0, 3.5,  1.5], look: [0, 2.0, 0] },  /* 7 — side elevation left     */
+  { pos: [-7.0,  4.5,  9.5], look: [0, 1.5, 0] },  /* 8 — three-quarter left      */
+  { pos: [ 0,    4.0, 11.5], look: [0, 1.5, 0] },  /* 9 — return to front         */
 ]
 
 interface Props { progressRef: React.MutableRefObject<number> }
@@ -84,8 +89,8 @@ export function Scene3D({ progressRef }: Props) {
 
       /* ── Edge material ─────────────────────────────────────────── */
       const lineMat = new LineMaterial({
-        color: 0x1a1a1a,
-        linewidth: 0.4,            /* thinner = cleaner at high density */
+        color: 0x000000,
+        linewidth: 1.5,
         resolution: new THREE.Vector2(W * dpr, H * dpr),
         dashed: false,
       })

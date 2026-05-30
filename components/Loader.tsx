@@ -15,7 +15,7 @@ interface LoaderProps { onComplete: () => void }
   3.0s  – whole loader slides down (0.85s)
   3.85s – hero is fully revealed, onComplete fires
 */
-const WORD = 'SECANT.COM'
+const WORD = 'SECANT'
 
 export function Loader({ onComplete }: LoaderProps) {
   const rootRef   = useRef<HTMLDivElement>(null)
