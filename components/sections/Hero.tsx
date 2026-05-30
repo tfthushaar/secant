@@ -99,7 +99,7 @@ export function Hero() {
         <div>
           <div ref={titleRef} style={{ opacity: 0 }}>
             <h1 style={{
-              fontFamily: 'var(--font-cormorant), Georgia, serif',
+              fontFamily: 'var(--font-display), Georgia, serif',
               fontWeight: 700,
               fontSize: 'clamp(5rem, 14vw, 16rem)',
               lineHeight: 0.88,
@@ -119,14 +119,14 @@ export function Hero() {
             display: 'flex', alignItems: 'center', gap: '2rem',
           }}>
             <span style={{
-              fontFamily: 'var(--font-jost), sans-serif',
+              fontFamily: 'var(--font-sans), sans-serif',
               fontWeight: 300, fontSize: 'clamp(0.65rem,1vw,0.9rem)',
               letterSpacing: '0.3em', textTransform: 'uppercase',
               color: 'oklch(44% 0.007 74)',
             }}>Architecture Studio</span>
             <span style={{ width: '3rem', height: '1px', background: 'oklch(82% 0.007 74)', display: 'block', flexShrink: 0 }} />
             <span style={{
-              fontFamily: 'var(--font-jost), sans-serif',
+              fontFamily: 'var(--font-sans), sans-serif',
               fontWeight: 300, fontSize: 'clamp(0.6rem,0.9vw,0.8rem)',
               letterSpacing: '0.28em', textTransform: 'uppercase',
               color: 'oklch(52% 0.007 74)',
@@ -138,7 +138,7 @@ export function Hero() {
         <div ref={scatterRef} style={{ opacity: 0, position: 'relative' }}>
           <div style={{
             position: 'absolute', bottom: 0, left: 0,
-            fontFamily: 'var(--font-jost), sans-serif',
+            fontFamily: 'var(--font-sans), sans-serif',
             fontWeight: 300, fontSize: '0.56rem',
             letterSpacing: '0.38em', textTransform: 'uppercase',
             color: 'oklch(48% 0.007 74)',
@@ -160,7 +160,7 @@ export function Hero() {
 
           <div style={{
             position: 'absolute', bottom: 0, right: 0,
-            fontFamily: 'var(--font-cormorant), Georgia, serif',
+            fontFamily: 'var(--font-display), Georgia, serif',
             fontWeight: 400, fontSize: 'clamp(0.8rem,1.2vw,1.1rem)',
             letterSpacing: '0.06em', textTransform: 'uppercase',
             color: 'oklch(40% 0.007 74)',
@@ -168,7 +168,7 @@ export function Hero() {
 
           <div style={{
             position: 'absolute', bottom: '2.5rem', right: 0,
-            fontFamily: 'var(--font-jost), sans-serif',
+            fontFamily: 'var(--font-sans), sans-serif',
             fontWeight: 300, fontSize: '0.54rem',
             letterSpacing: '0.4em', textTransform: 'uppercase',
             color: 'oklch(50% 0.007 74)',

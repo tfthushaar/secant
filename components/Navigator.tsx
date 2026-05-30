@@ -80,7 +80,7 @@ export function Navigator() {
         )}
         <span
           style={{
-            fontFamily: 'var(--font-jost), sans-serif',
+            fontFamily: 'var(--font-sans), sans-serif',
             fontWeight: 500,
             fontSize: '0.72rem',
             letterSpacing: '0.18em',
@@ -116,7 +116,7 @@ export function Navigator() {
         <div className="flex items-center justify-between">
           <span
             style={{
-              fontFamily: 'var(--font-jost), sans-serif',
+              fontFamily: 'var(--font-sans), sans-serif',
               fontWeight: 100,
               fontSize: 'clamp(1.1rem, 2.2vw, 1.8rem)',
               letterSpacing: '0.1em',
@@ -128,7 +128,7 @@ export function Navigator() {
           <button
             onClick={() => setOpen(false)}
             style={{
-              fontFamily: 'var(--font-jost), sans-serif',
+              fontFamily: 'var(--font-sans), sans-serif',
               fontWeight: 200,
               fontSize: '0.6rem',
               letterSpacing: '0.4em',
@@ -175,7 +175,7 @@ export function Navigator() {
                 <span
                   className="nav-row-num"
                   style={{
-                    fontFamily: 'var(--font-jost), sans-serif',
+                    fontFamily: 'var(--font-sans), sans-serif',
                     fontWeight: 300,
                     fontSize: '0.56rem',
                     letterSpacing: '0.35em',
@@ -190,7 +190,7 @@ export function Navigator() {
                 </span>
                 <span
                   style={{
-                    fontFamily: 'var(--font-cormorant), Georgia, serif',
+                    fontFamily: 'var(--font-display), Georgia, serif',
                     fontWeight: 300,
                     fontSize: 'clamp(3rem, 8vw, 8.5rem)',
                     lineHeight: 1.0,
@@ -213,7 +213,7 @@ export function Navigator() {
         >
           <div
             style={{
-              fontFamily: 'var(--font-jost), sans-serif',
+              fontFamily: 'var(--font-sans), sans-serif',
               fontWeight: 200,
               fontSize: '0.6rem',
               letterSpacing: '0.35em',
@@ -227,7 +227,7 @@ export function Navigator() {
           </div>
           <div
             style={{
-              fontFamily: 'var(--font-jost), sans-serif',
+              fontFamily: 'var(--font-sans), sans-serif',
               fontWeight: 200,
               fontSize: '0.6rem',
               letterSpacing: '0.35em',

@@ -59,6 +59,6 @@
   white-space: nowrap;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-family: var(--font-jost, sans-serif);
+  font-family: var(--font-sans, sans-serif);
   font-weight: 300;
 }

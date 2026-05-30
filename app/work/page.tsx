@@ -23,8 +23,8 @@ const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
 
 const N      = CATEGORY_CONFIG.length   /* 5 */
 const STEP   = 360 / N                  /* 72° between items */
-const RADIUS = 440                      /* cylinder radius in px */
-const DAMPEN = 0.88                     /* inertia friction */
+const RADIUS = 360                      /* closer cards — tighter ring */
+const DAMPEN = 0.90                     /* inertia friction */
 
 export default function WorkPage() {
   const router       = useRouter()
@@ -79,8 +79,8 @@ export default function WorkPage() {
     if (!down.current) return
     const dx = e.clientX - startX.current
     if (Math.abs(dx) > 4) dragged.current = true
-    targetY.current += dx * 0.35
-    vel.current      = dx * 0.35
+    targetY.current += dx * 0.22
+    vel.current      = dx * 0.22
     startX.current   = e.clientX
   }, [])
 
@@ -130,13 +130,13 @@ export default function WorkPage() {
         position: 'sticky', top: 0, zIndex: 10,
       }}>
         <Link href="/" style={{
-          fontFamily: 'var(--font-jost), sans-serif',
+          fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.68rem', letterSpacing: '0.28em',
           textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)',
           textDecoration: 'none',
         }}>SECANT</Link>
         <span style={{
-          fontFamily: 'var(--font-jost), sans-serif',
+          fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 300, fontSize: '0.52rem', letterSpacing: '0.42em',
           textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)',
         }}>Drag to explore · Click to enter</span>
@@ -145,7 +145,7 @@ export default function WorkPage() {
       {/* Title */}
       <div style={{ paddingTop: 'clamp(2rem,5vh,4rem)', paddingBottom: '0.5rem', textAlign: 'center', flexShrink: 0 }}>
         <p style={{
-          fontFamily: 'var(--font-cormorant), Georgia, serif',
+          fontFamily: 'var(--font-display), Georgia, serif',
           fontWeight: 400, fontSize: 'clamp(1.3rem,2.8vw,2.4rem)',
           letterSpacing: '0.02em', color: 'rgba(255,255,255,0.82)', margin: 0,
           fontFeatureSettings: '"kern" 1, "liga" 1',
@@ -212,10 +212,10 @@ export default function WorkPage() {
                   imageSrc={cat.heroImage}
                   altText={cat.label}
                   captionText={`${count} works`}
-                  containerWidth="clamp(180px,17vw,250px)"
-                  containerHeight="clamp(240px,22vw,330px)"
-                  imageWidth="clamp(180px,17vw,250px)"
-                  imageHeight="clamp(240px,22vw,330px)"
+                  containerWidth="clamp(260px,22vw,340px)"
+                  containerHeight="clamp(165px,14vw,215px)"
+                  imageWidth="clamp(260px,22vw,340px)"
+                  imageHeight="clamp(165px,14vw,215px)"
                   /* Tilt intensity: full on active, reduced on side cards */
                   rotateAmplitude={isActive ? 10 : 3}
                   scaleOnHover={isActive ? 1.07 : 1.03}
@@ -230,7 +230,7 @@ export default function WorkPage() {
                       borderRadius: '0 0 12px 12px',
                     }}>
                       <p style={{
-                        fontFamily: 'var(--font-cormorant), Georgia, serif',
+                        fontFamily: 'var(--font-display), Georgia, serif',
                         fontWeight: 400,
                         fontSize: 'clamp(1.1rem,1.8vw,1.55rem)',
                         lineHeight: 1.1,
@@ -241,7 +241,7 @@ export default function WorkPage() {
                         {cat.label}
                       </p>
                       <p style={{
-                        fontFamily: 'var(--font-jost), sans-serif',
+                        fontFamily: 'var(--font-sans), sans-serif',
                         fontWeight: 300, fontSize: '8px',
                         letterSpacing: '0.32em', textTransform: 'uppercase',
                         color: 'rgba(255,255,255,0.45)', margin: '4px 0 0',

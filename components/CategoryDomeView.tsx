@@ -71,7 +71,7 @@ export function CategoryDomeView({ config, items }: Props) {
       }}>
         {/* Back to work */}
         <Link href="/work" style={{
-          fontFamily: 'var(--font-jost), sans-serif',
+          fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.62rem', letterSpacing: '0.28em',
           textTransform: 'uppercase', color: 'rgba(255,255,255,0.65)',
           textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem',
@@ -86,7 +86,7 @@ export function CategoryDomeView({ config, items }: Props) {
 
         {/* Category name */}
         <span style={{
-          fontFamily: 'var(--font-cormorant), Georgia, serif',
+          fontFamily: 'var(--font-display), Georgia, serif',
           fontWeight: 400, fontSize: 'clamp(1.1rem, 2.2vw, 1.7rem)',
           letterSpacing: '0.03em', color: 'rgba(255,255,255,0.92)',
         }}>
@@ -95,7 +95,7 @@ export function CategoryDomeView({ config, items }: Props) {
 
         {/* Home link */}
         <Link href="/" style={{
-          fontFamily: 'var(--font-jost), sans-serif',
+          fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.6rem', letterSpacing: '0.28em',
           textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)',
           textDecoration: 'none', transition: 'color 0.2s',

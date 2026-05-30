@@ -31,7 +31,7 @@ export default async function RenderDetailPage({ params }: Props) {
   const LINE  = 'oklch(88% 0.006 76)'
 
   return (
-    <PageTransition style={{ minHeight: '100dvh', background: BG, fontFamily: 'var(--font-jost), sans-serif' }}>
+    <PageTransition style={{ minHeight: '100dvh', background: BG, fontFamily: 'var(--font-sans), sans-serif' }}>
 
       {/* Fixed top bar */}
       <header style={{
@@ -82,7 +82,7 @@ export default async function RenderDetailPage({ params }: Props) {
 
             {/* Title */}
             <h1 style={{
-              fontFamily: 'var(--font-cormorant), Georgia, serif',
+              fontFamily: 'var(--font-display), Georgia, serif',
               fontWeight: 400,
               fontSize: 'clamp(2.4rem, 4.5vw, 5rem)',
               lineHeight: 1.0, letterSpacing: '-0.005em',

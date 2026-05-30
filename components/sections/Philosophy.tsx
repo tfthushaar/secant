@@ -70,7 +70,7 @@ export function Philosophy() {
         <div ref={quoteRef}>
           <p
             style={{
-              fontFamily: 'var(--font-jost), sans-serif',
+              fontFamily: 'var(--font-sans), sans-serif',
               fontWeight: 100,
               fontSize: 'clamp(2.4rem, 6.5vw, 7rem)',
               lineHeight: 1.06,
@@ -102,7 +102,7 @@ export function Philosophy() {
           <p
             ref={bodyRef}
             style={{
-              fontFamily: 'var(--font-jost), sans-serif',
+              fontFamily: 'var(--font-sans), sans-serif',
               fontWeight: 300,
               fontSize: 'clamp(0.82rem, 1.05vw, 0.97rem)',
               lineHeight: 1.85,
@@ -121,7 +121,7 @@ export function Philosophy() {
             <a
               href="/work"
               style={{
-                fontFamily: 'var(--font-jost), sans-serif',
+                fontFamily: 'var(--font-sans), sans-serif',
                 fontWeight: 200,
                 fontSize: '0.62rem',
                 letterSpacing: '0.4em',
@@ -160,7 +160,7 @@ export function Philosophy() {
             <div key={label}>
               <div
                 style={{
-                  fontFamily: 'var(--font-jost), sans-serif',
+                  fontFamily: 'var(--font-sans), sans-serif',
                   fontWeight: 100,
                   fontSize: 'clamp(2rem, 4vw, 3.8rem)',
                   lineHeight: 1,
@@ -171,7 +171,7 @@ export function Philosophy() {
               </div>
               <div
                 style={{
-                  fontFamily: 'var(--font-jost), sans-serif',
+                  fontFamily: 'var(--font-sans), sans-serif',
                   fontWeight: 300,
                   fontSize: '0.72rem',
                   letterSpacing: '0.08em',

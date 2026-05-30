@@ -11,8 +11,10 @@
   --color-line:      oklch(86%   0.006 76);   /* hairline       */
   --color-dark:      oklch(6.5%  0.007 72);   /* near-black     */
 
-  --font-sans:    var(--font-jost),       "Helvetica Neue", "Arial", sans-serif;
-  --font-display: var(--font-cormorant), "Georgia", "Times New Roman", serif;
+  /* EB Garamond: display / brand identity — classical, high-contrast, precise */
+  --font-display: var(--font-garamond), "Georgia", "Times New Roman", serif;
+  /* Raleway: all UI / body — geometric, architectural, multiple ultra-thin weights */
+  --font-sans:    var(--font-raleway),  "Helvetica Neue", "Arial", sans-serif;
 
   /* Easing */
   --ease-arch: cubic-bezier(0.16, 1, 0.3, 1);
@@ -43,8 +45,8 @@ body {
   font-weight: 300;
 }
 
-/* Cormorant display: apply optical features at any size */
-[style*="--font-cormorant"],
+/* EB Garamond display: apply optical features at any size */
+[style*="--font-garamond"],
 .font-display,
 h1, h2, h3 {
   font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "onum" 1;

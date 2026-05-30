@@ -14,7 +14,7 @@ export default function StudioPage() {
       style={{
         minHeight: '100dvh',
         background: BG,
-        fontFamily: 'var(--font-jost), sans-serif',
+        fontFamily: 'var(--font-sans), sans-serif',
       }}
     >
       {/* Top bar */}
@@ -25,7 +25,7 @@ export default function StudioPage() {
         borderBottom: `1px solid ${LINE}`,
       }}>
         <Link href="/" style={{
-          fontFamily: 'var(--font-jost), sans-serif',
+          fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.6rem', letterSpacing: '0.35em',
           textTransform: 'uppercase', color: INK, textDecoration: 'none',
           transition: 'opacity 0.2s',
@@ -42,7 +42,7 @@ export default function StudioPage() {
         {/* Opening */}
         <div style={{ marginBottom: 'clamp(5rem,10vh,9rem)' }}>
           <h1 style={{
-            fontFamily: 'var(--font-cormorant), Georgia, serif',
+            fontFamily: 'var(--font-display), Georgia, serif',
             fontWeight: 300,
             fontSize: 'clamp(2.6rem, 7vw, 7.5rem)',
             lineHeight: 1.04, letterSpacing: '-0.015em',
@@ -95,7 +95,7 @@ export default function StudioPage() {
           gap: 'clamp(3rem,6vw,8rem)', alignItems: 'end',
         }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontWeight: 300, fontSize: 'clamp(2.2rem,5vw,5rem)', lineHeight: 1.05, letterSpacing: '-0.015em', color: INK, marginBottom: '2rem' }}>
+            <div style={{ fontFamily: 'var(--font-display), Georgia, serif', fontWeight: 300, fontSize: 'clamp(2.2rem,5vw,5rem)', lineHeight: 1.05, letterSpacing: '-0.015em', color: INK, marginBottom: '2rem' }}>
               Begin a project.
             </div>
             <a href="mailto:contact@secant.studio" style={{

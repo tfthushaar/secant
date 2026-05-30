@@ -18,7 +18,7 @@
   top: 50%;
   left: 4%;
   transform: translateY(-50%);
-  font-family: var(--font-cormorant, 'Georgia', serif);
+  font-family: var(--font-display, 'Georgia', serif);
   font-weight: 400;
   font-size: clamp(1.6rem, 3.5vw, 3.2rem);
   letter-spacing: 0.01em;
@@ -38,7 +38,7 @@
   top: 50%;
   right: 4%;
   transform: translateY(-50%);
-  font-family: var(--font-jost, sans-serif);
+  font-family: var(--font-sans, sans-serif);
   font-weight: 300;
   font-size: 0.58rem;
   letter-spacing: 0.4em;
@@ -89,7 +89,7 @@
 }
 
 .action-button-text {
-  font-family: var(--font-jost, sans-serif);
+  font-family: var(--font-sans, sans-serif);
   font-weight: 400;
   font-size: 0.62rem;
   letter-spacing: 0.25em;

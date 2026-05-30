@@ -43,12 +43,12 @@ export function Loader({ onComplete }: LoaderProps) {
     <div
       ref={rootRef}
       className="fixed inset-0 z-[200] flex items-center justify-center"
-      style={{ background: '#0D0C0A' }}
+      style={{ background: '#000000' }}   /* pure black — no warm cast */
       aria-hidden="true"
     >
       {/* Corner labels */}
       <div className="absolute top-7 left-8" style={{
-        fontFamily: 'var(--font-jost), sans-serif',
+        fontFamily: 'var(--font-sans), sans-serif',
         fontWeight: 300, fontSize: '0.55rem',
         letterSpacing: '0.38em', textTransform: 'uppercase',
         color: 'rgba(255,255,255,0.18)',
@@ -56,7 +56,7 @@ export function Loader({ onComplete }: LoaderProps) {
         12°58&apos;N · 77°35&apos;E
       </div>
       <div className="absolute bottom-7 right-8" style={{
-        fontFamily: 'var(--font-jost), sans-serif',
+        fontFamily: 'var(--font-sans), sans-serif',
         fontWeight: 300, fontSize: '0.55rem',
         letterSpacing: '0.35em', textTransform: 'uppercase',
         color: 'rgba(255,255,255,0.18)',
@@ -76,7 +76,7 @@ export function Loader({ onComplete }: LoaderProps) {
           cursorCharacter="_"
           cursorBlinkDuration={0.45}
           style={{
-            fontFamily: 'var(--font-cormorant), Georgia, serif',
+            fontFamily: 'var(--font-display), Georgia, serif',
             fontWeight: 400,
             fontSize: 'clamp(2.2rem, 6vw, 5.5rem)',
             letterSpacing: '0.06em',
@@ -86,7 +86,7 @@ export function Loader({ onComplete }: LoaderProps) {
           }}
         />
         <div style={{
-          fontFamily: 'var(--font-jost), sans-serif',
+          fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 300,
           fontSize: '0.56rem',
           letterSpacing: '0.48em',
