@@ -137,14 +137,14 @@ export function Scene3D({ progressRef }: Props) {
             float dMax = 0.0;
 
             vec2 dirs[8];
-            dirs[0] = vec2( 1.5,  0.0);
-            dirs[1] = vec2(-1.5,  0.0);
-            dirs[2] = vec2( 0.0,  1.5);
-            dirs[3] = vec2( 0.0, -1.5);
-            dirs[4] = vec2( 1.1,  1.1);
-            dirs[5] = vec2(-1.1,  1.1);
-            dirs[6] = vec2( 1.1, -1.1);
-            dirs[7] = vec2(-1.1, -1.1);
+            dirs[0] = vec2( 2.0,  0.0);
+            dirs[1] = vec2(-2.0,  0.0);
+            dirs[2] = vec2( 0.0,  2.0);
+            dirs[3] = vec2( 0.0, -2.0);
+            dirs[4] = vec2( 1.5,  1.5);
+            dirs[5] = vec2(-1.5,  1.5);
+            dirs[6] = vec2( 1.5, -1.5);
+            dirs[7] = vec2(-1.5, -1.5);
 
             for (int i = 0; i < 8; i++) {
               vec2 uv2 = vUv + dirs[i] * t;
@@ -216,9 +216,9 @@ export function Scene3D({ progressRef }: Props) {
         cam.ly = lerp(a.look[1], b.look[1], e)
         cam.lz = lerp(a.look[2], b.look[2], e)
 
-        camera.position.x += (cam.x - camera.position.x) * 0.04
-        camera.position.y += (cam.y - camera.position.y) * 0.04
-        camera.position.z += (cam.z - camera.position.z) * 0.04
+        camera.position.x += (cam.x - camera.position.x) * 0.10
+        camera.position.y += (cam.y - camera.position.y) * 0.10
+        camera.position.z += (cam.z - camera.position.z) * 0.10
         camera.lookAt(cam.lx, cam.ly, cam.lz)
 
         /* Pass 1 — Normals */
