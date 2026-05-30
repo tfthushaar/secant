@@ -123,32 +123,40 @@ export function Scene3D({ progressRef }: Props) {
           void main() {
             vec2 t = 1.0 / res;
 
-            /* ── Normal edge detection (interior architectural edges) */
-            vec3 n  = normalize(texture2D(tNormal, vUv                ).rgb * 2.0 - 1.0);
-            vec3 nN = normalize(texture2D(tNormal, vUv + vec2(0, t.y) ).rgb * 2.0 - 1.0);
-            vec3 nS = normalize(texture2D(tNormal, vUv - vec2(0, t.y) ).rgb * 2.0 - 1.0);
-            vec3 nE = normalize(texture2D(tNormal, vUv + vec2(t.x, 0) ).rgb * 2.0 - 1.0);
-            vec3 nW = normalize(texture2D(tNormal, vUv - vec2(t.x, 0) ).rgb * 2.0 - 1.0);
+            vec3 n0  = normalize(texture2D(tNormal, vUv).rgb * 2.0 - 1.0);
+            float d0 = linDepth(vUv);
 
-            /* 1 - dot: 0 for parallel normals, 1 for perpendicular (90° corners) */
-            float normalEdge = (1.0 - dot(n, nN)) + (1.0 - dot(n, nS))
-                             + (1.0 - dot(n, nE)) + (1.0 - dot(n, nW));
+            /*
+              Sample 8 neighbours at 1.5px radius.
+              MAX operator: one strong neighbour is enough to draw the line.
+              This gives 2-3px thick solid lines and eliminates flicker —
+              the edge is either clearly there or clearly not, regardless
+              of sub-pixel camera movement.
+            */
+            float nMax = 0.0;
+            float dMax = 0.0;
 
-            /* smoothstep thresholds — tuned for the model's geometry:
-               40° angle change → dot ≈ 0.77 → (1-dot)=0.23 per neighbor
-               Two neighbors at corner: sum ≈ 0.46, × 0.5 = 0.23 → below lower bound
-               90° angle change (architectural) → (1-dot)=1.0 × 2 = 2.0 × 0.5 = 1.0 → black */
-            float ne = smoothstep(0.20, 0.70, normalEdge * 0.5);
+            vec2 dirs[8];
+            dirs[0] = vec2( 1.5,  0.0);
+            dirs[1] = vec2(-1.5,  0.0);
+            dirs[2] = vec2( 0.0,  1.5);
+            dirs[3] = vec2( 0.0, -1.5);
+            dirs[4] = vec2( 1.1,  1.1);
+            dirs[5] = vec2(-1.1,  1.1);
+            dirs[6] = vec2( 1.1, -1.1);
+            dirs[7] = vec2(-1.1, -1.1);
 
-            /* ── Depth edge detection (silhouettes) ─────────────── */
-            float d  = linDepth(vUv);
-            float dN = linDepth(vUv + vec2(0,  t.y));
-            float dS = linDepth(vUv - vec2(0,  t.y));
-            float dE = linDepth(vUv + vec2(t.x, 0));
-            float dW = linDepth(vUv - vec2(t.x, 0));
+            for (int i = 0; i < 8; i++) {
+              vec2 uv2 = vUv + dirs[i] * t;
+              vec3 n2  = normalize(texture2D(tNormal, uv2).rgb * 2.0 - 1.0);
+              float d2 = linDepth(uv2);
+              nMax = max(nMax, 1.0 - dot(n0, n2));
+              dMax = max(dMax, abs(d2 - d0));
+            }
 
-            float depthEdge = abs(dN - d) + abs(dS - d) + abs(dE - d) + abs(dW - d);
-            float de = smoothstep(0.02, 0.12, depthEdge);
+            /* Lower threshold = more edges caught, less flickering */
+            float ne = smoothstep(0.10, 0.45, nMax);
+            float de = smoothstep(0.012, 0.07, dMax);
 
             float edge = max(ne, de);
             gl_FragColor = vec4(vec3(1.0 - edge), 1.0);
