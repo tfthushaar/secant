@@ -61,7 +61,7 @@ export default function Home() {
         background: '#ffffff', pointerEvents: 'none',
         /* Fade in once the model is mounted */
         opacity: loaderDone ? 1 : 0,
-        transition: 'opacity 0.6s ease',
+        transition: 'opacity 0.3s ease',
       }}>
         {loaderDone && <Scene3D progressRef={progressRef} />}
       </div>

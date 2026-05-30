@@ -41,7 +41,7 @@ export function Hero() {
           <div ref={titleRef} style={{ opacity: 0 }}>
             <h1 style={{
               fontFamily:    'var(--font-sans), "Helvetica Neue", Arial, sans-serif',
-              fontWeight:    300,
+              fontWeight:    200,
               fontSize:      'clamp(5rem, 14vw, 16rem)',
               lineHeight:    0.88, letterSpacing: '0.06em',
               textTransform: 'uppercase',

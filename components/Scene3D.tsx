@@ -22,13 +22,20 @@ import { useEffect, useRef } from 'react'
     • Flat ground / walls → no change → white (blend with background)
 */
 
+/*
+  Camera stops calibrated to the actual model geometry:
+  bboxY: 0.00003–0.49039 → after scale 5.25 → height 2.57 world units
+  pulldown = 0.15 → model center ≈ Y –0.39, top ≈ Y 0.90, bottom ≈ Y –1.67
+  Look-at points target model center/top so the building fills the lower
+  half of the viewport cleanly beneath the SECANT wordmark.
+*/
 const CAM_STOPS = [
-  { pos: [ 0,    4.0, 11.5], look: [0, 1.5, 0] },  /* front elevation      */
-  { pos: [ 0,    3.0,  7.5], look: [0, 2.5, 0] },  /* zoom in front        */
-  { pos: [ 8.5,  4.5,  8.5], look: [0, 1.2, 0] },  /* three-quarter right  */
-  { pos: [ 7.0, 10.5,  5.0], look: [0, 0.2, 0] },  /* aerial right         */
-  { pos: [-7.5,  4.5,  9.0], look: [0, 1.2, 0] },  /* three-quarter left   */
-  { pos: [ 0.5, 14.0,  0.5], look: [0, 0.0, 0] },  /* top-down plan        */
+  { pos: [ 0,    3.5, 11.5], look: [0,  0.6, 0] },  /* front elevation      */
+  { pos: [ 0,    2.2,  7.5], look: [0,  0.4, 0] },  /* zoom in              */
+  { pos: [ 8.5,  3.0,  8.5], look: [0,  0.3, 0] },  /* three-quarter right  */
+  { pos: [ 7.0,  8.5,  5.0], look: [0, -0.4, 0] },  /* aerial right         */
+  { pos: [-7.5,  3.0,  9.0], look: [0,  0.3, 0] },  /* three-quarter left   */
+  { pos: [ 0.5, 13.5,  0.5], look: [0, -0.5, 0] },  /* top-down plan        */
 ]
 
 interface Props { progressRef: React.MutableRefObject<number> }
@@ -131,7 +138,7 @@ export function Scene3D({ progressRef }: Props) {
                40° angle change → dot ≈ 0.77 → (1-dot)=0.23 per neighbor
                Two neighbors at corner: sum ≈ 0.46, × 0.5 = 0.23 → below lower bound
                90° angle change (architectural) → (1-dot)=1.0 × 2 = 2.0 × 0.5 = 1.0 → black */
-            float ne = smoothstep(0.35, 0.85, normalEdge * 0.5);
+            float ne = smoothstep(0.20, 0.70, normalEdge * 0.5);
 
             /* ── Depth edge detection (silhouettes) ─────────────── */
             float d  = linDepth(vUv);
@@ -141,7 +148,7 @@ export function Scene3D({ progressRef }: Props) {
             float dW = linDepth(vUv - vec2(t.x, 0));
 
             float depthEdge = abs(dN - d) + abs(dS - d) + abs(dE - d) + abs(dW - d);
-            float de = smoothstep(0.04, 0.18, depthEdge);
+            float de = smoothstep(0.02, 0.12, depthEdge);
 
             float edge = max(ne, de);
             gl_FragColor = vec4(vec3(1.0 - edge), 1.0);
@@ -174,7 +181,7 @@ export function Scene3D({ progressRef }: Props) {
         const maxDim = Math.max(size.x, size.y, size.z)
         model.position.sub(centre)
         model.scale.setScalar(10.0 / maxDim)
-        model.position.y -= size.y * (10.0 / maxDim) * 0.35
+        model.position.y -= size.y * (10.0 / maxDim) * 0.15
         model.updateMatrixWorld(true)
       }, undefined, (e) => console.error('GLB load error:', e))
 

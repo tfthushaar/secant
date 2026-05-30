@@ -31,17 +31,16 @@ export default async function RenderDetailPage({ params }: Props) {
   return (
     <PageTransition style={{ minHeight: '100dvh', background: BG, fontFamily: 'var(--font-sans), sans-serif' }}>
 
-      {/* Fixed top bar */}
+      {/* Fixed top bar — right padding clears the MENU button */}
       <header style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         height: '3.2rem',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 clamp(1.2rem,4vw,2.5rem)',
+        display: 'flex', alignItems: 'center',
+        padding: '0 clamp(7rem,10vw,9rem) 0 clamp(1.2rem,4vw,2.5rem)',
         background: BG, borderBottom: `1px solid ${LINE}`,
       }}>
-        {/* Back to category */}
         <Link href={catConfig ? `/work/${catConfig.slug}` : '/work'} style={{
-          fontWeight: 300, fontSize: '0.6rem', letterSpacing: '0.3em',
+          fontWeight: 450, fontSize: '0.6rem', letterSpacing: '0.3em',
           textTransform: 'uppercase', color: SOFT,
           textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem',
         }}>
@@ -51,9 +50,6 @@ export default async function RenderDetailPage({ params }: Props) {
           </svg>
           {catConfig?.label ?? 'Work'}
         </Link>
-        <span style={{ fontWeight: 300, fontSize: '0.56rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: FAINT }}>
-          {isSketch ? 'Sketch' : 'Render'}
-        </span>
       </header>
 
       {/* Main layout: left details, right full-quality image */}
@@ -103,11 +99,11 @@ export default async function RenderDetailPage({ params }: Props) {
             const next = catItems[(ci + 1) % catItems.length]
             return (
               <div style={{ paddingTop: '2rem', borderTop: `1px solid ${LINE}`, display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
-                <Link href={`/work/render/${prev.id}`} style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                <Link href={`/work/render/${prev.id}`} style={{ fontWeight: 450, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
                   <svg width="14" height="7" viewBox="0 0 14 7" fill="none"><line x1="14" y1="3.5" x2="0" y2="3.5" stroke="currentColor" strokeWidth="0.8"/><polyline points="4,1 1,3.5 4,6" stroke="currentColor" strokeWidth="0.8" fill="none"/></svg>
                   {prev.title}
                 </Link>
-                <Link href={`/work/render/${next.id}`} style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                <Link href={`/work/render/${next.id}`} style={{ fontWeight: 450, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
                   {next.title}
                   <svg width="14" height="7" viewBox="0 0 14 7" fill="none"><line x1="0" y1="3.5" x2="14" y2="3.5" stroke="currentColor" strokeWidth="0.8"/><polyline points="10,1 13,3.5 10,6" stroke="currentColor" strokeWidth="0.8" fill="none"/></svg>
                 </Link>
@@ -116,19 +112,17 @@ export default async function RenderDetailPage({ params }: Props) {
           })()}
         </div>
 
-        {/* Right: fast-loading web image */}
+        {/* Right: original quality image */}
         <div style={{
           position: 'relative',
           background: isSketch ? '#f5f0e8' : BG,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 'clamp(1.5rem,3vh,2.5rem)',
           minHeight: 'calc(100dvh - 3.2rem)',
-          flexDirection: 'column', gap: '1rem',
         }}>
-          <div style={{ position: 'relative', width: '100%', flex: 1 }}>
-            {/* Small web-optimised image loads fast */}
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <Image
-              src={item.image}
+              src={item.detailImage ?? item.image}
               alt={item.title}
               fill
               style={{ objectFit: 'contain', objectPosition: 'center' }}
@@ -137,8 +131,8 @@ export default async function RenderDetailPage({ params }: Props) {
               sizes="62vw"
             />
           </div>
-          {/* Link to original quality */}
-          {item.detailImage && (
+          {/* dead code removed */}
+          {false && item.detailImage && (
             <a
               href={item.detailImage}
               target="_blank"

@@ -32,8 +32,11 @@ function Rule() {
 }
 
 /* Gradient backdrop so text is legible over the model */
-const LEFT_FADE  = 'linear-gradient(to right, rgba(255,255,255,0.88) 52%, transparent 100%)'
-const RIGHT_FADE = 'linear-gradient(to left,  rgba(255,255,255,0.88) 52%, transparent 100%)'
+/*
+  No opaque backdrop sections. Text uses a white text-shadow halo so it reads
+  cleanly against the 3D model background without masking the model at all.
+*/
+const TEXT_SHADOW = '0 0 40px rgba(255,255,255,1), 0 0 18px rgba(255,255,255,0.9), 0 0 8px rgba(255,255,255,0.7)'
 
 /* ── Section 1: Manifesto — left content, model right ──────────── */
 function Manifesto() {
@@ -53,12 +56,6 @@ function Manifesto() {
 
   return (
     <section ref={ref} style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-      {/* Left white gradient backdrop */}
-      <div style={{
-        position: 'absolute', left: 0, top: 0, bottom: 0, width: '58%',
-        background: LEFT_FADE, pointerEvents: 'none',
-      }} />
-
       <div ref={contentRef} style={{
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         left: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 580px)',
@@ -68,6 +65,7 @@ function Manifesto() {
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
           color: 'oklch(50% 0.007 74)', margin: '0 0 2rem',
+          textShadow: TEXT_SHADOW,
         }}>Design Philosophy</p>
 
         <h2 style={{
@@ -75,6 +73,7 @@ function Manifesto() {
           fontSize: 'clamp(2rem, 4.5vw, 5.5rem)',
           lineHeight: 1.08, letterSpacing: '-0.015em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
+          textShadow: TEXT_SHADOW,
         }}>
           Designing spaces<br />
           that inspire,<br />
@@ -87,6 +86,7 @@ function Manifesto() {
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
           fontSize: 'clamp(0.85rem, 1.1vw, 1rem)', lineHeight: 1.85,
           color: 'oklch(42% 0.007 74)', margin: '0 0 2.5rem', maxWidth: '38ch',
+          textShadow: TEXT_SHADOW,
         }}>
           Every project begins with prolonged observation — of the site,
           its light at different hours, its relationship to everything around it.
@@ -98,7 +98,7 @@ function Manifesto() {
           <span style={{
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
             fontSize: '0.6rem', letterSpacing: '0.35em', textTransform: 'uppercase',
-            color: 'oklch(52% 0.007 74)',
+            color: 'oklch(52% 0.007 74)', textShadow: TEXT_SHADOW,
           }}>Founded 1999 · Bangalore</span>
         </div>
       </div>
@@ -131,11 +131,6 @@ function Stats() {
 
   return (
     <section ref={ref} style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-      {/* Right white gradient backdrop */}
-      <div style={{
-        position: 'absolute', right: 0, top: 0, bottom: 0, width: '58%',
-        background: RIGHT_FADE, pointerEvents: 'none',
-      }} />
 
       {/* Right padding ensures content doesn't reach MENU button area (top-right) */}
       <div ref={contentRef} style={{
@@ -149,6 +144,7 @@ function Stats() {
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
           color: 'oklch(50% 0.007 74)', margin: '0 0 2.5rem',
+          textShadow: TEXT_SHADOW,
         }}>Practice</p>
 
         <div style={{
@@ -165,17 +161,18 @@ function Stats() {
                 fontFamily: 'var(--font-sans), sans-serif', fontWeight: 200,
                 fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1,
                 color: 'oklch(8% 0.007 72)', margin: '0 0 0.45rem',
-                letterSpacing: '-0.02em',
+                letterSpacing: '-0.02em', textShadow: TEXT_SHADOW,
               }}>{n}</p>
               <p style={{
                 fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
                 fontSize: 'clamp(0.7rem, 0.85vw, 0.82rem)', letterSpacing: '0.05em',
                 color: 'oklch(22% 0.007 72)', margin: '0 0 0.18rem',
+                textShadow: TEXT_SHADOW,
               }}>{label}</p>
               <p style={{
                 fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
                 fontSize: '0.6rem', letterSpacing: '0.03em',
-                color: 'oklch(56% 0.007 74)', margin: 0,
+                color: 'oklch(56% 0.007 74)', margin: 0, textShadow: TEXT_SHADOW,
               }}>{sub}</p>
             </div>
           ))}
@@ -211,10 +208,6 @@ function Services() {
 
   return (
     <section ref={ref} style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-      <div style={{
-        position: 'absolute', left: 0, top: 0, bottom: 0, width: '58%',
-        background: LEFT_FADE, pointerEvents: 'none',
-      }} />
 
       <div ref={contentRef} style={{
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -282,11 +275,6 @@ function Contact() {
 
   return (
     <section ref={ref} style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-      <div style={{
-        position: 'absolute', right: 0, top: 0, bottom: 0, width: '58%',
-        background: RIGHT_FADE, pointerEvents: 'none',
-      }} />
-
       <div ref={contentRef} style={{
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         right: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(260px, 40vw, 520px)',
