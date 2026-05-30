@@ -25,12 +25,13 @@ export function CategoryDomeView({ config, items }: Props) {
     gsap.fromTo(el, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' })
   }, [])
 
-  /* Use original-quality images for masonry; thumbnail as fallback */
+  /* thumbnailImg loads fast for layout; img (original) swaps in progressively */
   const masonryItems = items.map(item => ({
-    id:    item.id,
-    img:   item.detailImage ?? item.image,
-    link:  `/work/render/${item.id}`,
-    title: item.title,
+    id:           item.id,
+    img:          item.detailImage ?? item.image,
+    thumbnailImg: item.image,
+    link:         `/work/render/${item.id}`,
+    title:        item.title,
   }))
 
   return (
@@ -38,7 +39,7 @@ export function CategoryDomeView({ config, items }: Props) {
       ref={containerRef}
       style={{
         width: '100vw', height: '100dvh',
-        background: 'oklch(6.5% 0.007 72)',
+        background: '#ffffff',
         overflow: 'hidden', position: 'relative',
         display: 'flex', flexDirection: 'column',
         opacity: 0,
@@ -49,13 +50,13 @@ export function CategoryDomeView({ config, items }: Props) {
         flexShrink: 0, height: '3.6rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 clamp(1.2rem,4vw,2.5rem)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid oklch(90% 0.006 76)',
         position: 'relative', zIndex: 10,
       }}>
         <Link href="/work" style={{
           fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.62rem', letterSpacing: '0.28em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.65)',
+          textTransform: 'uppercase', color: 'oklch(40% 0.007 72)',
           textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem',
           transition: 'color 0.2s',
         }}>
@@ -69,7 +70,7 @@ export function CategoryDomeView({ config, items }: Props) {
         <span style={{
           fontFamily: 'var(--font-display), Georgia, serif',
           fontWeight: 400, fontSize: 'clamp(1.1rem, 2.2vw, 1.7rem)',
-          letterSpacing: '0.03em', color: 'rgba(255,255,255,0.92)',
+          letterSpacing: '0.03em', color: 'oklch(10% 0.007 72)',
         }}>
           {config.label}
         </span>
@@ -82,11 +83,10 @@ export function CategoryDomeView({ config, items }: Props) {
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         <Masonry
           items={masonryItems}
-          animateFrom="bottom"
           blurToFocus={true}
           scaleOnHover={true}
           hoverScale={0.97}
-          stagger={0.04}
+          stagger={0.055}
         />
       </div>
 

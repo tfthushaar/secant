@@ -14,17 +14,25 @@ import { useEffect, useRef } from 'react'
   • 5 camera presets, scroll-driven via progressRef.
 */
 
+/*
+  Six camera positions tuned to the landing page content sections.
+  Progress 0→1 spreads across 5 × 100vh of content (500vh total).
+  Each stop corresponds roughly to one content section.
+
+  0 — front elevation     (hero section)
+  1 — zoom-in close       (manifesto — camera moves in as text appears left)
+  2 — three-quarter right (stats — model swings right, text sits left)
+  3 — aerial three-quarter (services — elevated, overview feeling)
+  4 — three-quarter left  (contact — symmetrical, draws eye right)
+  5 — top-down plan       (final — contemplative, architectural plan view)
+*/
 const CAM_STOPS = [
-  { pos: [ 0,    4.0, 11.5], look: [0, 1.5, 0] },  /* 0 — front elevation         */
-  { pos: [ 0,    1.2, 10.5], look: [0, 4.0, 0] },  /* 1 — low dramatic angle      */
-  { pos: [ 7.0,  4.5,  9.5], look: [0, 1.5, 0] },  /* 2 — three-quarter right     */
-  { pos: [11.0,  3.5,  1.5], look: [0, 2.0, 0] },  /* 3 — side elevation right    */
-  { pos: [ 8.0, 10.0, -5.0], look: [0, 0.8, 0] },  /* 4 — aerial rear right       */
-  { pos: [ 0.5, 13.5,  0.5], look: [0, 0.0, 0] },  /* 5 — plan / top-down         */
-  { pos: [-8.0, 10.0, -5.0], look: [0, 0.8, 0] },  /* 6 — aerial rear left        */
-  { pos: [-11.0, 3.5,  1.5], look: [0, 2.0, 0] },  /* 7 — side elevation left     */
-  { pos: [-7.0,  4.5,  9.5], look: [0, 1.5, 0] },  /* 8 — three-quarter left      */
-  { pos: [ 0,    4.0, 11.5], look: [0, 1.5, 0] },  /* 9 — return to front         */
+  { pos: [ 0,    4.0, 11.5], look: [0, 1.5, 0] },  /* 0 — front elevation      */
+  { pos: [ 0,    3.0,  7.5], look: [0, 2.5, 0] },  /* 1 — zoom in, slight up   */
+  { pos: [ 8.5,  4.5,  8.5], look: [0, 1.2, 0] },  /* 2 — three-quarter right  */
+  { pos: [ 7.0, 10.5,  5.0], look: [0, 0.2, 0] },  /* 3 — aerial right         */
+  { pos: [-7.5,  4.5,  9.0], look: [0, 1.2, 0] },  /* 4 — three-quarter left   */
+  { pos: [ 0.5, 14.0,  0.5], look: [0, 0.0, 0] },  /* 5 — top-down plan        */
 ]
 
 interface Props { progressRef: React.MutableRefObject<number> }
@@ -119,21 +127,47 @@ export function Scene3D({ progressRef }: Props) {
 
         model.updateMatrixWorld(true)
 
+        /*
+          Keywords that identify organic / landscape meshes in the GLB.
+          These meshes render as flat white (invisible against background)
+          but produce NO edge lines — eliminating rock dots, tree noise etc.
+        */
+        const ORGANIC_KEYS = [
+          'tree', 'palm', 'plant', 'bush', 'shrub', 'flower', 'grass',
+          'rock', 'stone', 'boulder', 'pebble', 'gravel',
+          'leaf', 'leaves', 'foliage', 'vegetation', 'nature',
+          'landscape', 'terrain', 'ground_cover', 'topogr',
+          'bench', 'furniture', 'chair', 'table', 'lamp', 'light',
+          'car', 'vehicle', 'human', 'person', 'figure',
+        ]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function isOrganic(mesh: any): boolean {
+          const n = ((mesh.name ?? '') + ' ' + (mesh.parent?.name ?? '')).toLowerCase()
+          /* High vertex density in a small bounding box → likely organic prop */
+          const box = new THREE.Box3().setFromObject(mesh)
+          const vol = box.getSize(new THREE.Vector3())
+          const vol3 = vol.x * vol.y * vol.z
+          const density = (mesh.geometry?.attributes?.position?.count ?? 0) / Math.max(vol3, 0.001)
+          const highDensity = density > 8000  /* architectural walls are low-density */
+          return ORGANIC_KEYS.some(k => n.includes(k)) || highDensity
+        }
+
         model.traverse((obj) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const mesh = obj as any
           if (!mesh.isMesh) return
 
-          /* ── Clean white MeshBasicMaterial — zero shading / texture ─
-             White walls blend with white background; edges carry depth. */
+          /* All meshes: flat white so they read as solid walls */
           mesh.material = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            side: THREE.FrontSide,
+            color: 0xffffff, side: THREE.FrontSide,
           })
           mesh.castShadow    = false
           mesh.receiveShadow = false
 
-          /* ── Black edge lines ───────────────────────────────────── */
+          /* Organic / landscape meshes: white silhouette only, no edges */
+          if (isOrganic(mesh)) return
+
+          /* ── Architectural edges only ───────────────────────────── */
           const worldGeo = mesh.geometry.clone()
           worldGeo.applyMatrix4(mesh.matrixWorld)
 
@@ -142,9 +176,14 @@ export function Scene3D({ progressRef }: Props) {
           try { cleanGeo = mergeVertices(worldGeo, 1e-4) }
           catch { cleanGeo = worldGeo }
 
-          /* 35° crease removes micro-surface noise (tree bark, rocks, furniture
-             surface facets) while keeping all structural architectural edges */
-          const edges = new THREE.EdgesGeometry(cleanGeo, 35)
+          /*
+            65° crease: only show edges where adjacent faces meet at angle > 65°.
+            This keeps hard architectural corners (walls, roofs, slabs = 90°)
+            while eliminating surface texture from any remaining organic geometry.
+          */
+          const edges = new THREE.EdgesGeometry(cleanGeo, 65)
+          if (edges.attributes.position.count === 0) return
+
           const linesGeo = new LineSegmentsGeometry()
           linesGeo.setPositions(Array.from(edges.attributes.position.array as Float32Array))
 

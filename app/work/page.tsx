@@ -139,7 +139,7 @@ export default function WorkPage() {
       ref={containerRef}
       style={{
         width: '100vw', minHeight: '100dvh',
-        background: 'oklch(6.5% 0.007 72)',
+        background: '#ffffff',
         display: 'flex', flexDirection: 'column',
       }}
     >
@@ -148,20 +148,20 @@ export default function WorkPage() {
         flexShrink: 0, height: '3.6rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 clamp(1.2rem,4vw,2.5rem)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        background: 'oklch(6.5% 0.007 72)',
+        borderBottom: '1px solid oklch(90% 0.006 76)',
+        background: '#ffffff',
         position: 'sticky', top: 0, zIndex: 10,
       }}>
         <Link href="/" style={{
           fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.68rem', letterSpacing: '0.28em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)',
+          textTransform: 'uppercase', color: 'oklch(38% 0.007 72)',
           textDecoration: 'none',
         }}>SECANT</Link>
         <span style={{
           fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 300, fontSize: '0.5rem', letterSpacing: '0.42em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)',
+          textTransform: 'uppercase', color: 'oklch(68% 0.006 74)',
         }}>Drag or scroll to browse</span>
       </header>
 
@@ -173,7 +173,7 @@ export default function WorkPage() {
         <p style={{
           fontFamily: 'var(--font-display), Georgia, serif',
           fontWeight: 400, fontSize: 'clamp(1.2rem,2.5vw,2.2rem)',
-          letterSpacing: '0.02em', color: 'rgba(255,255,255,0.88)', margin: 0,
+          letterSpacing: '0.02em', color: 'oklch(12% 0.007 72)', margin: 0,
         }}>
           Select a category
         </p>
@@ -261,7 +261,7 @@ export default function WorkPage() {
                     fontWeight: 400,
                     fontSize: `${Math.round(18 * (1 - Math.abs(i - snapIdx) * 0.12))}px`,
                     lineHeight: 1.1,
-                    color: '#ffffff',   /* pure white — no rgba gray */
+                    color: 'oklch(10% 0.007 72)',
                     margin: 0,
                     letterSpacing: '0.01em',
                   }}>
@@ -273,7 +273,7 @@ export default function WorkPage() {
                     fontSize: '9px',
                     letterSpacing: '0.35em',
                     textTransform: 'uppercase',
-                    color: '#ffffff',   /* pure white */
+                    color: 'oklch(48% 0.007 74)',
                     opacity: 0.55,
                     margin: '5px 0 0',
                   }}>

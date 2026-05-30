@@ -1,6 +1,7 @@
 interface MasonryItem {
   id: string
-  img: string
+  img: string           /* full-quality display image (original) */
+  thumbnailImg?: string /* small image used for fast layout measurement */
   link: string
   title: string
 }
@@ -10,7 +11,6 @@ interface MasonryProps {
   ease?: string
   duration?: number
   stagger?: number
-  animateFrom?: 'top' | 'bottom' | 'left' | 'right'
   scaleOnHover?: boolean
   hoverScale?: number
   blurToFocus?: boolean
