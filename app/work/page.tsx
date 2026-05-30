@@ -23,9 +23,9 @@ const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
 */
 
 const N        = CATEGORY_CONFIG.length   /* 5 */
-const CARD_W   = 300                      /* px — landscape card width  */
-const CARD_H   = 190                      /* px — landscape card height  */
-const SPACING  = 350                      /* px — centre-to-centre gap   */
+const CARD_W   = 420                      /* px — bigger landscape card  */
+const CARD_H   = 265                      /* px — 16:10 aspect           */
+const SPACING  = 460                      /* px — wider gap for bigger cards */
 
 export default function WorkPage() {
   const router       = useRouter()
@@ -215,21 +215,30 @@ export default function WorkPage() {
             const isActive = i === snapIdx
 
             return (
+              /*
+                Outer wrapper: arch-item CSS transform applied here.
+                Inner structure: TiltedCard (image only) + label below.
+                Label sits OUTSIDE the card so nothing overlaps the image.
+              */
               <div
                 key={cat.slug}
                 className="arch-item"
                 style={{
                   position: 'absolute',
                   top: 0, left: 0,
-                  /* Centre each card on its position */
-                  translate: `-50% -50%`,
+                  translate: '-50% -50%',
                   transformStyle: 'preserve-3d',
                   willChange: 'transform, opacity',
                   transition: 'none',
                   pointerEvents: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '14px',
                 }}
                 onClick={() => handleClick(i)}
               >
+                {/* Card image — NO text overlay on top of the image */}
                 <TiltedCard
                   imageSrc={cat.heroImage}
                   altText={cat.label}
@@ -241,34 +250,36 @@ export default function WorkPage() {
                   rotateAmplitude={isActive ? 9 : 2}
                   scaleOnHover={isActive ? 1.06 : 1.02}
                   showMobileWarning={false}
-                  showTooltip={isActive}
-                  displayOverlayContent={true}
-                  overlayContent={
-                    <div style={{
-                      position: 'absolute', bottom: 0, left: 0, right: 0,
-                      padding: '14px 16px',
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, transparent 100%)',
-                      borderRadius: '0 0 12px 12px',
-                    }}>
-                      <p style={{
-                        fontFamily: 'var(--font-display), Georgia, serif',
-                        fontWeight: 400,
-                        fontSize: '1.3rem',
-                        lineHeight: 1.1, color: '#ffffff', margin: 0,
-                      }}>
-                        {cat.label}
-                      </p>
-                      <p style={{
-                        fontFamily: 'var(--font-sans), sans-serif',
-                        fontWeight: 300, fontSize: '9px',
-                        letterSpacing: '0.32em', textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.5)', margin: '4px 0 0',
-                      }}>
-                        {count} works
-                      </p>
-                    </div>
-                  }
+                  showTooltip={false}
+                  displayOverlayContent={false}
                 />
+
+                {/* Label BELOW the card — pure white, no gray */}
+                <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
+                  <p style={{
+                    fontFamily: 'var(--font-display), Georgia, serif',
+                    fontWeight: 400,
+                    fontSize: `${Math.round(18 * (1 - Math.abs(i - snapIdx) * 0.12))}px`,
+                    lineHeight: 1.1,
+                    color: '#ffffff',   /* pure white — no rgba gray */
+                    margin: 0,
+                    letterSpacing: '0.01em',
+                  }}>
+                    {cat.label}
+                  </p>
+                  <p style={{
+                    fontFamily: 'var(--font-sans), sans-serif',
+                    fontWeight: 300,
+                    fontSize: '9px',
+                    letterSpacing: '0.35em',
+                    textTransform: 'uppercase',
+                    color: '#ffffff',   /* pure white */
+                    opacity: 0.55,
+                    margin: '5px 0 0',
+                  }}>
+                    {count} works
+                  </p>
+                </div>
               </div>
             )
           })}

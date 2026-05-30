@@ -110,9 +110,15 @@ class ArcballControl{
     this.canvas=canvas;this.updateCallback=cb||(()=>null);
     this.pointerPos=vec2.create();this.previousPointerPos=vec2.create();
     this._rotationVelocity=0;this._combinedQuat=quat.create();
-    canvas.addEventListener('pointerdown',e=>{vec2.set(this.pointerPos,e.clientX,e.clientY);vec2.copy(this.previousPointerPos,this.pointerPos);this.isPointerDown=true;});
+    canvas.addEventListener('pointerdown',e=>{
+      vec2.set(this.pointerPos,e.clientX,e.clientY);
+      vec2.copy(this.previousPointerPos,this.pointerPos);
+      this.isPointerDown=true;
+      /* Capture pointer so drag continues even when mouse moves over header/footer */
+      canvas.setPointerCapture(e.pointerId);
+    });
     canvas.addEventListener('pointerup',()=>this.isPointerDown=false);
-    canvas.addEventListener('pointerleave',()=>this.isPointerDown=false);
+    /* pointerleave no longer cancels drag — pointer capture keeps events flowing */
     canvas.addEventListener('pointermove',e=>{if(this.isPointerDown)vec2.set(this.pointerPos,e.clientX,e.clientY);});
     canvas.style.touchAction='none';
   }
@@ -259,7 +265,8 @@ class InfiniteGridMenu{
   }
   #animate(dt){
     const gl=this.gl;this.control.update(dt,this.TARGET_FRAME_DURATION);
-    const scale=0.28,SI=0.6;  /* slightly smaller for square cards to avoid overlap */
+    /* Bigger tiles + less depth falloff → dense surface-of-globe look */
+    const scale=0.38,SI=0.50;
     this.instancePositions.map(p=>vec3.transformQuat(vec3.create(),p,this.control.orientation)).forEach((p,ndx)=>{
       const s=(Math.abs(p[2])/this.SPHERE_RADIUS)*SI+(1-SI);
       const fs=s*scale;
@@ -296,7 +303,8 @@ class InfiniteGridMenu{
   #upCam(){mat4.targetTo(this.camera.matrix,this.camera.position,[0,0,0],this.camera.up);mat4.invert(this.camera.matrices.view,this.camera.matrix);}
   #upProj(gl){
     this.camera.aspect=gl.canvas.clientWidth/gl.canvas.clientHeight;
-    const h=this.SPHERE_RADIUS*.35,d=this.camera.position[2];
+    /* h=0.50 → wider FOV, shows more of the sphere surface (was 0.35) */
+    const h=this.SPHERE_RADIUS*.50,d=this.camera.position[2];
     this.camera.fov=this.camera.aspect>1?2*Math.atan(h/d):2*Math.atan(h/this.camera.aspect/d);
     mat4.perspective(this.camera.matrices.projection,this.camera.fov,this.camera.aspect,this.camera.near,this.camera.far);
     mat4.invert(this.camera.matrices.inversProjection,this.camera.matrices.projection);

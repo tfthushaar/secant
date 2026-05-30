@@ -100,7 +100,7 @@ export function Hero() {
                 to clean, architectural minimalism.
               */
               fontFamily:    'var(--font-sans), "Helvetica Neue", Arial, sans-serif',
-              fontWeight:    100,
+              fontWeight:    200,  /* slightly bolder than 100 — still minimal */
               fontSize:      'clamp(5rem, 14vw, 16rem)',
               lineHeight:    0.88,
               letterSpacing: '0.06em',     /* slight tracking suits thin weight */

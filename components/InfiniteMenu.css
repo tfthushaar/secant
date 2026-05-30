@@ -1,4 +1,4 @@
-/* InfiniteMenu — SECANT brand, improved visibility */
+/* InfiniteMenu — pure white/black text, no gray */
 
 #infinite-grid-menu-canvas {
   cursor: grab;
@@ -7,11 +7,11 @@
   overflow: hidden;
   position: relative;
   outline: none;
-  background: transparent;  /* alpha:true — page background shows through */
+  background: transparent;
 }
 #infinite-grid-menu-canvas:active { cursor: grabbing; }
 
-/* ── Active item title — large Cormorant, left ── */
+/* Active item title — pure white */
 .face-title {
   user-select: none;
   position: absolute;
@@ -20,18 +20,17 @@
   transform: translateY(-50%);
   font-family: var(--font-display, 'Georgia', serif);
   font-weight: 400;
-  font-size: clamp(1.6rem, 3.5vw, 3.2rem);
+  font-size: clamp(1.4rem, 3vw, 2.8rem);
   letter-spacing: 0.01em;
   line-height: 1.1;
-  color: rgba(247, 244, 239, 0.95);   /* near-white */
+  color: #ffffff;           /* pure white — no rgba gray */
   max-width: 16ch;
   pointer-events: none;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
-.face-title.active  { opacity: 1; transform: translateY(-50%) translateX(0);   transition: opacity 0.5s ease, transform 0.5s ease; }
-.face-title.inactive { opacity: 0; transform: translateY(-50%) translateX(-8px); transition: opacity 0.12s ease, transform 0.12s ease; }
+.face-title.active  { opacity: 1; transition: opacity 0.5s ease; }
+.face-title.inactive { opacity: 0; transition: opacity 0.12s ease; }
 
-/* ── Description — right side ── */
+/* Description — pure white, slightly dimmed */
 .face-description {
   user-select: none;
   position: absolute;
@@ -43,16 +42,16 @@
   font-size: 0.58rem;
   letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: rgba(247, 244, 239, 0.6);   /* more visible than before */
+  color: #ffffff;           /* pure white */
+  opacity: 0.7;
   max-width: 14ch;
   text-align: right;
   pointer-events: none;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
 }
-.face-description.active  { opacity: 1; transition: opacity 0.5s ease; }
-.face-description.inactive { opacity: 0; transition: opacity 0.12s ease; }
+.face-description.active  { opacity: 0.7; transition: opacity 0.5s ease; }
+.face-description.inactive { opacity: 0;   transition: opacity 0.12s ease; }
 
-/* ── Action button — pill shape, clearly visible ── */
+/* Action button — white border, white text */
 .action-button {
   position: absolute;
   left: 50%;
@@ -62,50 +61,38 @@
   gap: 8px;
   padding: 11px 28px;
   border-radius: 40px;
-  background: rgba(247, 244, 239, 0.14);
-  border: 1.5px solid rgba(247, 244, 239, 0.65);
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.65);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
   z-index: 10;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
 }
 .action-button:hover {
-  background: rgba(247, 244, 239, 0.22);
-  border-color: rgba(247, 244, 239, 0.9);
+  background: rgba(255,255,255,0.16);
+  border-color: #ffffff;
 }
 .action-button.active {
-  bottom: 2.8rem;
-  opacity: 1;
-  pointer-events: auto;
+  bottom: 2.8rem; opacity: 1; pointer-events: auto;
   transition: bottom 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease, background 0.2s ease;
 }
 .action-button.inactive {
-  bottom: -80px;
-  opacity: 0;
-  pointer-events: none;
+  bottom: -80px; opacity: 0; pointer-events: none;
   transition: bottom 0.12s ease, opacity 0.12s ease;
 }
-
 .action-button-text {
   font-family: var(--font-sans, sans-serif);
-  font-weight: 400;
-  font-size: 0.62rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: rgba(247, 244, 239, 0.92);
-  user-select: none;
-  margin: 0;
+  font-weight: 400; font-size: 0.62rem;
+  letter-spacing: 0.25em; text-transform: uppercase;
+  color: #ffffff;     /* pure white */
+  user-select: none; margin: 0;
 }
 .action-button-icon {
-  font-size: 16px;
-  color: rgba(247, 244, 239, 0.85);
-  position: relative;
-  top: 0;
-  user-select: none;
-  margin: 0; padding: 0;
-  line-height: 1;
+  font-size: 16px; color: #ffffff;  /* pure white */
+  position: relative; top: 0;
+  user-select: none; margin: 0; padding: 0; line-height: 1;
 }
 
 @media (max-width: 900px) {
