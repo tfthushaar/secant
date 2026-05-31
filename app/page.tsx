@@ -70,7 +70,7 @@ export default function Home() {
         top: 0, left: 0, right: 0,
         height: isMobile ? '52vh' : '100vh',
         zIndex: 0,
-        background: '#f5f2ed', pointerEvents: 'none',
+        background: '#ffffff', pointerEvents: 'none',
         opacity: loaderDone ? 1 : 0,
         transition: 'opacity 0.3s ease',
       }}>
