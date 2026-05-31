@@ -18,17 +18,20 @@ import { useEffect, useRef } from 'react'
 */
 
 /*
-  New model is taller (7.4 world units vs 2.6 before).
-  Look-at Y raised by ~1 unit so the building fills the viewport
-  below the SECANT wordmark rather than pushing above it.
+  Scale divisor 5.0 (vs default 10) keeps this taller building
+  at a similar apparent size to the previous flat bungalow.
+  Resulting world dims: ~4.7 wide × 3.7 tall × 5 deep.
+  Camera positions match the old model's viewing angles.
 */
+const SCALE_TARGET = 5.0
+
 const CAM_STOPS = [
-  { pos: [ 0,    3.5, 12.0], look: [0,  1.5, 0] },  /* front elevation      */
-  { pos: [ 0,    2.5,  8.0], look: [0,  1.2, 0] },  /* zoom in              */
-  { pos: [ 8.5,  3.5,  9.0], look: [0,  1.0, 0] },  /* three-quarter right  */
-  { pos: [ 7.0,  9.0,  5.5], look: [0,  0.0, 0] },  /* aerial right         */
-  { pos: [-8.0,  3.5,  9.0], look: [0,  1.0, 0] },  /* three-quarter left   */
-  { pos: [ 0.5, 14.0,  0.5], look: [0, -1.0, 0] },  /* top-down plan        */
+  { pos: [ 0,    3.5, 11.5], look: [0,  0.6, 0] },  /* front elevation      */
+  { pos: [ 0,    2.2,  7.5], look: [0,  0.4, 0] },  /* zoom in              */
+  { pos: [ 8.5,  3.0,  8.5], look: [0,  0.3, 0] },  /* three-quarter right  */
+  { pos: [ 7.0,  8.5,  5.0], look: [0, -0.4, 0] },  /* aerial right         */
+  { pos: [-7.5,  3.0,  9.0], look: [0,  0.3, 0] },  /* three-quarter left   */
+  { pos: [ 0.5, 13.5,  0.5], look: [0, -0.5, 0] },  /* top-down plan        */
 ]
 
 const LERP   = 0.12
@@ -147,12 +150,12 @@ export function Scene3D({ progressRef }: Props) {
             vec3  n0 = normalize(texture2D(tNormal, vUv).rgb * 2.0 - 1.0);
             float d0 = linDepth(vUv);
 
-            /* 8 neighbours at 1 px radius — thin crisp lines, MAX for stability */
+            /* 8 neighbours at 1.5 px radius — solid continuous lines */
             vec2 dirs[8];
-            dirs[0] = vec2( 1.0,  0.0); dirs[1] = vec2(-1.0,  0.0);
-            dirs[2] = vec2( 0.0,  1.0); dirs[3] = vec2( 0.0, -1.0);
-            dirs[4] = vec2( 0.8,  0.8); dirs[5] = vec2(-0.8,  0.8);
-            dirs[6] = vec2( 0.8, -0.8); dirs[7] = vec2(-0.8, -0.8);
+            dirs[0] = vec2( 1.5,  0.0); dirs[1] = vec2(-1.5,  0.0);
+            dirs[2] = vec2( 0.0,  1.5); dirs[3] = vec2( 0.0, -1.5);
+            dirs[4] = vec2( 1.1,  1.1); dirs[5] = vec2(-1.1,  1.1);
+            dirs[6] = vec2( 1.1, -1.1); dirs[7] = vec2(-1.1, -1.1);
 
             float nMax = 0.0, dMax = 0.0;
             for (int i = 0; i < 8; i++) {
@@ -169,7 +172,7 @@ export function Scene3D({ progressRef }: Props) {
               Organic rock facets (30-45°): below threshold → invisible.
               Narrow range (0.15) = near-binary output, crisp not blurry.
             */
-            float ne   = smoothstep(0.35, 0.50, nMax);
+            float ne   = smoothstep(0.25, 0.45, nMax);
             float de   = smoothstep(0.020, 0.045, dMax);
             float edge = max(ne, de);
 
@@ -202,9 +205,10 @@ export function Scene3D({ progressRef }: Props) {
         const centre = box.getCenter(new THREE.Vector3())
         const size   = box.getSize(new THREE.Vector3())
         const maxDim = Math.max(size.x, size.y, size.z)
+        const sc     = SCALE_TARGET / maxDim
         model.position.sub(centre)
-        model.scale.setScalar(10.0 / maxDim)
-        model.position.y -= size.y * (10.0 / maxDim) * 0.15
+        model.scale.setScalar(sc)
+        model.position.y -= size.y * sc * 0.15
         model.updateMatrixWorld(true)
       }, undefined, (e) => console.error('GLB error:', e))
 
