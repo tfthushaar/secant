@@ -129,11 +129,27 @@ export default function WorkPage() {
 
   const onPointerLeave = useCallback(() => { down.current = false }, [])
 
-  /* Wheel — slow deliberate movement (0.0015 per pixel, 0.04 per line) */
+  /*
+    Wheel — threshold accumulator.
+    Scroll input is silently accumulated. Only when the total crosses
+    a threshold (≈ one mouse click or ~60px of trackpad movement) does
+    the card actually change. This prevents the "scroll a little → jitter
+    → snap back" feel because centreF never enters a fractional mid-position
+    from wheel input; it only ever jumps integer steps.
+  */
+  const wheelAccum = useRef(0)
   const onWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
-    const delta = e.deltaY * (e.deltaMode === 1 ? 0.04 : 0.0015)
-    centreF.current = Math.max(0, Math.min(N - 1, centreF.current + delta))
+    wheelAccum.current += e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY
+    const THRESHOLD = 60   /* pixels — one mouse tick ≈ 100px, trackpad ~60px */
+    if (Math.abs(wheelAccum.current) >= THRESHOLD) {
+      const dir = wheelAccum.current > 0 ? 1 : -1
+      centreF.current = Math.max(0, Math.min(N - 1,
+        Math.round(centreF.current) + dir
+      ))
+      vel.current = dir * 0.15   /* gentle momentum kick after snap */
+      wheelAccum.current = 0
+    }
   }, [])
 
   /* Click → navigate (only on the centred card, not during drag) */
