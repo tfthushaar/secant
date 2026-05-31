@@ -36,16 +36,17 @@ const TOON_VERT = /* glsl */`
     gl_Position  = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
   }
 `
+/* Stronger contrast — more dramatic architectural sketch depth */
 const TOON_FRAG = /* glsl */`
   uniform vec3 uLight;
   varying vec3 vWorldNormal;
   void main() {
     float d = max(dot(normalize(vWorldNormal), uLight), 0.0);
     vec3 c;
-    if      (d > 0.62) c = vec3(1.00);
-    else if (d > 0.38) c = vec3(0.90);
-    else if (d > 0.12) c = vec3(0.76);
-    else               c = vec3(0.58);
+    if      (d > 0.62) c = vec3(1.00);   /* full light: pure white           */
+    else if (d > 0.40) c = vec3(0.86);   /* lit face: light gray             */
+    else if (d > 0.14) c = vec3(0.66);   /* shadow: noticeably darker        */
+    else               c = vec3(0.44);   /* deep shadow: strong under-eaves  */
     gl_FragColor = vec4(c, 1.0);
   }
 `
@@ -273,11 +274,21 @@ export function Scene3D({ progressRef }: Props) {
       bld.add(at(box(0.32, 0.60, 13.6, toonMat, 8),   8.2, EL+BH+0.12, 0))
       bld.add(at(box(28.6, 0.60, 0.32, toonMat, 8), -5.5, EL+BH+0.12,  6.7))
       bld.add(at(box(28.6, 0.60, 0.32, toonMat, 8), -5.5, EL+BH+0.12, -6.7))
-      /* Soffit grid */
-      const soLines = mkEdges(new THREE.PlaneGeometry(27.5, 12.5, 16, 9), 1, 0.005)
-      soLines.rotation.x = Math.PI / 2
-      at(soLines, -5.5, EL + BH + 0.30, 0)
-      bld.add(soLines)
+      /*
+        Soffit hatching — explicit continuous line segments, NOT EdgesGeometry.
+        EdgesGeometry on PlaneGeometry creates many tiny segments that appear
+        dotted at shallow camera angles. Explicit BufferGeometry lines are
+        always solid and continuous regardless of viewing angle.
+      */
+      const soffitY = EL + BH + 0.30
+      for (let si = 0; si < 9; si++) {
+        const sz = -6.0 + si * 1.55
+        const sGeo = new THREE.BufferGeometry()
+        sGeo.setAttribute('position', new THREE.BufferAttribute(
+          new Float32Array([-19.0, soffitY, sz,  8.0, soffitY, sz]), 3
+        ))
+        bld.add(new THREE.LineSegments(sGeo, lineMat))
+      }
       /* Rooftop element — thin skylight strip (dark glass) */
       bld.add(at(box(5, 0.08, 1.5, darkMat, 8), 0, EL + BH + 0.68, -2))
 
@@ -295,14 +306,17 @@ export function Scene3D({ progressRef }: Props) {
         bld.add(at(cyl(0.10, EL, 8, darkMat), x, EL/2, z))
       })
 
-      /* ── EXTERIOR STAIRCASE (off-centre, left of glass) ────────── */
-      /* 6 treads rising from ground to elevated box floor */
+      /* ── EXTERIOR STAIRCASE ─────────────────────────────────────────
+         Steps descend AWAY from the building: lowest step at furthest z,
+         highest step adjacent to the elevated box floor (z=4.5).
+         Each step: tread height rises as z decreases (toward building).  */
       for (let i = 0; i < 6; i++) {
-        const tw = 4.5 - i * 0.08
-        bld.add(at(box(tw, 0.28, 1.0), -8.5, 0.28 + i * EL/6, 4.5 + i * 1.0))
+        const stairZ = 9.8 - i * 1.0        /* far (ground) → near (building) */
+        const stairY = 0.22 + i * (EL - 0.22) / 5  /* low → high as we approach */
+        bld.add(at(box(4.5, 0.26, 1.0), -8.5, stairY, stairZ))
       }
       /* Stair side wall */
-      bld.add(at(box(0.14, EL + 0.5, 8.5, darkMat, 10), -10.8, EL/2 + 0.1, 8.5))
+      bld.add(at(box(0.14, EL + 0.5, 6.5, darkMat, 10), -10.8, EL/2 + 0.1, 7.0))
 
       /* ── PENDANT LIGHTS inside elevated box ─────────────────────── */
       const pends: [number, number, number][] = [
