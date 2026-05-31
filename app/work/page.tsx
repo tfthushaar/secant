@@ -141,7 +141,7 @@ export default function WorkPage() {
   const onWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
     wheelAccum.current += e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY
-    const THRESHOLD = 60   /* pixels — one mouse tick ≈ 100px, trackpad ~60px */
+    const THRESHOLD = 90   /* pixels — one mouse tick ≈ 100px, trackpad ~90px */
     if (Math.abs(wheelAccum.current) >= THRESHOLD) {
       const dir = wheelAccum.current > 0 ? 1 : -1
       centreF.current = Math.max(0, Math.min(N - 1,

@@ -58,13 +58,6 @@ function Manifesto() {
 
   return (
     <section ref={ref} style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
-      {isMobile && (
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%',
-          background: 'linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent)',
-          pointerEvents: 'none', zIndex: 0,
-        }} />
-      )}
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
         opacity: 0, zIndex: 1,
@@ -144,13 +137,6 @@ function Stats() {
 
   return (
     <section ref={ref} style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
-      {isMobile && (
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%',
-          background: 'linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent)',
-          pointerEvents: 'none', zIndex: 0,
-        }} />
-      )}
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
         opacity: 0, zIndex: 1,
@@ -230,13 +216,6 @@ function Services() {
 
   return (
     <section ref={ref} style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
-      {isMobile && (
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '65%',
-          background: 'linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent)',
-          pointerEvents: 'none', zIndex: 0,
-        }} />
-      )}
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
         opacity: 0, zIndex: 1,
@@ -307,13 +286,6 @@ function Contact() {
 
   return (
     <section ref={ref} style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
-      {isMobile && (
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '65%',
-          background: 'linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent)',
-          pointerEvents: 'none', zIndex: 0,
-        }} />
-      )}
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
         opacity: 0, zIndex: 1,
