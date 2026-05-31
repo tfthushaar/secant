@@ -219,6 +219,27 @@ export function Scene3D({ progressRef }: Props) {
         gw.add(at(box(15.2, 0.06, 0.10, darkMat, 5), 0, -BH/2 + j*(BH/4), 0.04))
       gw.position.set(-2.5, EL + BH/2, 4.52)
       bld.add(gw)
+
+      /* ── ENTRANCE DOOR — positioned near the staircase (left side of glass) ──
+         The stair lands at x≈-8.5, so the door sits in the first glass bay,
+         at x≈-7.5 to -6.4, exactly where someone ascending the stair arrives. */
+      const doorW = 1.1, doorH = 2.65
+      const doorX = -7.2                 /* aligns with stair landing */
+      /* Door panel — dark, solid */
+      const doorMesh = new THREE.Mesh(new THREE.PlaneGeometry(doorW, doorH), darkMat)
+      doorMesh.position.set(doorX, EL + doorH / 2, 4.56)
+      bld.add(doorMesh)
+      bld.add(at(mkEdges(new THREE.PlaneGeometry(doorW, doorH), 1, 0.004),
+        doorX, EL + doorH / 2, 4.56))
+      /* Door frame — crisp dark reveals */
+      bld.add(at(box(0.055, doorH + 0.10, 0.12, darkMat, 5),
+        doorX - doorW / 2 - 0.028, EL + doorH / 2, 4.57))
+      bld.add(at(box(0.055, doorH + 0.10, 0.12, darkMat, 5),
+        doorX + doorW / 2 + 0.028, EL + doorH / 2, 4.57))
+      bld.add(at(box(doorW + 0.14, 0.055, 0.12, darkMat, 5),
+        doorX, EL + doorH + 0.05, 4.57))
+      /* Door handle — thin horizontal bar */
+      bld.add(at(box(0.32, 0.04, 0.04, darkMat, 5), doorX + 0.42, EL + 1.1, 4.60))
       /* Back wall */
       bld.add(at(box(15.4, BH, 0.28), -2.5, EL + BH/2, -4.5))
       /* End walls */
@@ -366,6 +387,41 @@ export function Scene3D({ progressRef }: Props) {
       /* Planting beds */
       bld.add(at(box(5, 0.16, 0.18, toonMat, 8), -14, 0.42, 6.5))
       bld.add(at(box(5, 0.16, 0.18, toonMat, 8),  10, 0.42, 6.5))
+
+      /* ── SCULPTURES & SITE ELEMENTS ─────────────────────────────────
+         Minimal, architectural — nothing organic. All geometric.        */
+
+      /* Monolith 1 — tall dark vertical slab, left of entrance stair */
+      bld.add(at(solid(new THREE.BoxGeometry(0.28, 3.8, 0.75), darkMat, 10, 0.006),
+        -12.5, 1.9, 6.8))
+
+      /* Monolith 2 — shorter, near reflecting pool, right side */
+      bld.add(at(solid(new THREE.BoxGeometry(0.24, 2.4, 0.60), darkMat, 10, 0.006),
+        11.0, 1.2, 9.0))
+
+      /* Horizontal disk sculpture on pedestal — near secondary volume */
+      bld.add(at(solid(new THREE.CylinderGeometry(1.2, 1.2, 0.10, 28), toonMat, 20, 0.005),
+        10.5, 2.1, 7.0))
+      /* Pedestal */
+      bld.add(at(solid(new THREE.BoxGeometry(0.35, 1.9, 0.35), darkMat, 8, 0.006),
+        10.5, 0.95, 7.0))
+
+      /* Rectangular planters — left side forecourt, clean grid-lined tops */
+      ;[[-14.5, 7.2], [-11.5, 7.2], [-9.0, 7.2]].forEach(([px, pz]) => {
+        bld.add(at(box(2.0, 0.55, 0.75, toonMat, 15), px, 0.50, pz))
+        /* Grid lines on planter top = stylised vegetation */
+        const pg = new THREE.BufferGeometry()
+        pg.setAttribute('position', new THREE.BufferAttribute(
+          new Float32Array([px-0.9, 0.78, pz-0.35,  px+0.9, 0.78, pz-0.35,
+                            px-0.9, 0.78, pz,       px+0.9, 0.78, pz,
+                            px-0.9, 0.78, pz+0.35,  px+0.9, 0.78, pz+0.35]), 3
+        ))
+        bld.add(new THREE.LineSegments(pg, lineMat))
+      })
+
+      /* Thin vertical fins flanking the stair (like entry markers) */
+      bld.add(at(box(0.10, 2.2, 0.10, darkMat, 8), -11.2, 1.1, 5.2))
+      bld.add(at(box(0.10, 1.6, 0.10, darkMat, 8), -11.2, 0.8, 6.5))
 
       /* ── Post-processing — subtle grain only ─────────────────────── */
       const composer = new EffectComposer(renderer)
