@@ -99,7 +99,7 @@ export function Hero() {
             color: 'oklch(38% 0.007 74)',
           }}>Space · Composed</span>
 
-          <span style={{
+          <span className="hidden sm:block" style={{
             position: 'absolute', bottom: '2.5rem', right: 0,
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
             fontSize: '0.54rem', letterSpacing: '0.4em', textTransform: 'uppercase',

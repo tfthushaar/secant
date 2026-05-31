@@ -1,4 +1,10 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
 import { ebGaramond, raleway } from '@/lib/fonts'
 import { CustomCursor } from '@/components/CustomCursor'
 import './globals.css'

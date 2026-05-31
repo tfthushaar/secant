@@ -98,7 +98,13 @@ const Masonry = ({
     Object.values(imgRefs.current).forEach(el => { if (el) obs.observe(el) })
   }, [ready, aspectRatios])
 
-  const columns = useMemo(() => computeColumns(items.length), [items.length])
+  /* Cap at 2 columns on mobile — useMeasure gives us the real container width */
+  const maxCols = width > 0 && width <= 768 ? 2 : 4
+  const columns = useMemo(
+    () => Math.min(computeColumns(items.length), maxCols),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items.length, maxCols]
+  )
 
   const grid = useMemo(() => {
     if (!width || !height || !ready) return []

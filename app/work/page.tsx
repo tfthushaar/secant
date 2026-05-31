@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { Navigator } from '@/components/Navigator'
 import { CATEGORY_CONFIG, getItemsByCategory } from '@/lib/projects'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
   ssr: false, loading: () => null,
@@ -22,15 +23,18 @@ const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
   TiltedCard hover tilt active on every card independently.
 */
 
-const N        = CATEGORY_CONFIG.length
-const CARD_W   = 500
-const CARD_H   = 316
-const SPACING  = 520
+const N = CATEGORY_CONFIG.length
 
 export default function WorkPage() {
   const router       = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const trackRef     = useRef<HTMLDivElement>(null)
+  const isMobile     = useIsMobile()
+
+  /* Card dimensions respond to mobile breakpoint */
+  const CARD_W  = isMobile ? 240 : 500
+  const CARD_H  = isMobile ? 152 : 316
+  const SPACING = isMobile ? 248 : 520
 
   /* Continuous centre position — fractional between cards during drag */
   const centreF  = useRef(Math.floor(N / 2))  /* start centred on card 2 */

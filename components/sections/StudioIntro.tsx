@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -40,23 +41,34 @@ const TEXT_SHADOW = '0 0 80px rgba(255,255,255,1), 0 0 50px rgba(255,255,255,1),
 
 /* ── Section 1: Manifesto — left content, model right ──────────── */
 function Manifesto() {
-  const ref     = useRef<HTMLElement>(null)
+  const ref        = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const isMobile   = useIsMobile()
 
   useEffect(() => {
     if (!contentRef.current) return
     gsap.fromTo(contentRef.current,
-      { autoAlpha: 0, x: -24 },
+      { autoAlpha: 0, y: isMobile ? 20 : 0, x: isMobile ? 0 : -24 },
       {
-        autoAlpha: 1, x: 0, duration: 1.1, ease: 'power3.out',
+        autoAlpha: 1, y: 0, x: 0, duration: 1.1, ease: 'power3.out',
         scrollTrigger: { trigger: ref.current!, start: 'top 62%', toggleActions: 'play none none none' },
       }
     )
-  }, [])
+  }, [isMobile])
 
   return (
-    <section ref={ref} style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-      <div ref={contentRef} style={{
+    <section ref={ref} style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
+      {isMobile && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%',
+          background: 'linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
+      )}
+      <div ref={contentRef} style={isMobile ? {
+        position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
+        opacity: 0, zIndex: 1,
+      } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         left: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 580px)',
         opacity: 0,
@@ -108,13 +120,14 @@ function Manifesto() {
 
 /* ── Section 2: Stats — right content, model left ──────────────── */
 function Stats() {
-  const ref     = useRef<HTMLElement>(null)
+  const ref        = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const isMobile   = useIsMobile()
 
   useEffect(() => {
     if (!contentRef.current) return
     gsap.fromTo(contentRef.current,
-      { autoAlpha: 0, x: 24 },
+      { autoAlpha: 0, x: isMobile ? 0 : 24, y: isMobile ? 20 : 0 },
       {
         autoAlpha: 1, x: 0, duration: 1.1, ease: 'power3.out',
         scrollTrigger: { trigger: ref.current!, start: 'top 62%', toggleActions: 'play none none none' },
@@ -130,13 +143,21 @@ function Stats() {
   ]
 
   return (
-    <section ref={ref} style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-
-      {/* Right padding ensures content doesn't reach MENU button area (top-right) */}
-      <div ref={contentRef} style={{
+    <section ref={ref} style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
+      {isMobile && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%',
+          background: 'linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
+      )}
+      <div ref={contentRef} style={isMobile ? {
+        position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
+        opacity: 0, zIndex: 1,
+      } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         right: 'clamp(1.5rem, 7vw, 7rem)',
-        paddingRight: 'clamp(0rem, 1vw, 0.5rem)',  /* extra clearance from MENU */
+        paddingRight: 'clamp(0rem, 1vw, 0.5rem)',
         width: 'clamp(260px, 40vw, 520px)',
         opacity: 0,
       }}>
@@ -184,19 +205,20 @@ function Stats() {
 
 /* ── Section 3: Services — left content, model right ───────────── */
 function Services() {
-  const ref     = useRef<HTMLElement>(null)
+  const ref        = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const isMobile   = useIsMobile()
 
   useEffect(() => {
     if (!contentRef.current) return
     gsap.fromTo(contentRef.current,
-      { autoAlpha: 0, x: -24 },
+      { autoAlpha: 0, x: isMobile ? 0 : -24, y: isMobile ? 20 : 0 },
       {
-        autoAlpha: 1, x: 0, duration: 1.1, ease: 'power3.out',
+        autoAlpha: 1, x: 0, y: 0, duration: 1.1, ease: 'power3.out',
         scrollTrigger: { trigger: ref.current!, start: 'top 62%', toggleActions: 'play none none none' },
       }
     )
-  }, [])
+  }, [isMobile])
 
   const services = [
     'Residential Design',
@@ -207,9 +229,18 @@ function Services() {
   ]
 
   return (
-    <section ref={ref} style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-
-      <div ref={contentRef} style={{
+    <section ref={ref} style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
+      {isMobile && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '65%',
+          background: 'linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
+      )}
+      <div ref={contentRef} style={isMobile ? {
+        position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
+        opacity: 0, zIndex: 1,
+      } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         left: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 560px)',
         opacity: 0,
@@ -259,23 +290,34 @@ function Services() {
 
 /* ── Section 4: Contact — right content ─────────────────────────── */
 function Contact() {
-  const ref     = useRef<HTMLElement>(null)
+  const ref        = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const isMobile   = useIsMobile()
 
   useEffect(() => {
     if (!contentRef.current) return
     gsap.fromTo(contentRef.current,
-      { autoAlpha: 0, x: 24 },
+      { autoAlpha: 0, x: isMobile ? 0 : 24, y: isMobile ? 20 : 0 },
       {
-        autoAlpha: 1, x: 0, duration: 1.1, ease: 'power3.out',
+        autoAlpha: 1, x: 0, y: 0, duration: 1.1, ease: 'power3.out',
         scrollTrigger: { trigger: ref.current!, start: 'top 62%', toggleActions: 'play none none none' },
       }
     )
-  }, [])
+  }, [isMobile])
 
   return (
-    <section ref={ref} style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-      <div ref={contentRef} style={{
+    <section ref={ref} style={{ height: '100svh', position: 'relative', overflow: 'hidden' }}>
+      {isMobile && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '65%',
+          background: 'linear-gradient(to top, rgba(255,255,255,0.97) 70%, transparent)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
+      )}
+      <div ref={contentRef} style={isMobile ? {
+        position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
+        opacity: 0, zIndex: 1,
+      } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         right: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(260px, 40vw, 520px)',
         paddingRight: 'clamp(0rem, 1vw, 0.5rem)',

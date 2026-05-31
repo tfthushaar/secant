@@ -148,6 +148,22 @@ a:hover, button:hover { opacity: 0.6; }
   }
 }
 
+/* ─── Mobile ───────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Custom cursor is pointer-only; suppress on touch */
+  .custom-cursor { display: none !important; }
+
+  /* Restore default cursor on mobile */
+  *, *::before, *::after { cursor: auto !important; }
+  canvas { cursor: auto !important; }
+
+  /* Grain too expensive on low-end mobile */
+  .grain::after { display: none; }
+
+  /* Work page: arch coverflow cards */
+  .arch-card-img { width: 260px !important; height: 165px !important; }
+}
+
 /* ─── Utilities ─────────────────────────────────────────────────────────────  */
 @layer utilities {
   .w-thin     { font-weight: 100; }
