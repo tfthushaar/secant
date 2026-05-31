@@ -62,14 +62,14 @@ function Manifesto() {
         opacity: 0,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
           color: 'oklch(50% 0.007 74)', margin: '0 0 2rem',
           textShadow: TEXT_SHADOW,
         }}>Design Philosophy</p>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 200,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
           fontSize: 'clamp(2rem, 4.5vw, 5.5rem)',
           lineHeight: 1.08, letterSpacing: '-0.015em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
@@ -77,13 +77,13 @@ function Manifesto() {
         }}>
           Designing spaces<br />
           that inspire,<br />
-          <span style={{ fontWeight: 300, color: 'oklch(44% 0.007 74)' }}>
+          <span style={{ fontWeight: 400, color: 'oklch(44% 0.007 74)' }}>
             endure, and evolve.
           </span>
         </h2>
 
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
           fontSize: 'clamp(0.85rem, 1.1vw, 1rem)', lineHeight: 1.85,
           color: 'oklch(42% 0.007 74)', margin: '0 0 2.5rem', maxWidth: '38ch',
           textShadow: TEXT_SHADOW,
@@ -96,7 +96,7 @@ function Manifesto() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
           <Rule />
           <span style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
             fontSize: '0.6rem', letterSpacing: '0.35em', textTransform: 'uppercase',
             color: 'oklch(52% 0.007 74)', textShadow: TEXT_SHADOW,
           }}>Founded 1999 · Bangalore</span>
@@ -141,7 +141,7 @@ function Stats() {
         opacity: 0,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
           color: 'oklch(50% 0.007 74)', margin: '0 0 2.5rem',
           textShadow: TEXT_SHADOW,
@@ -158,19 +158,19 @@ function Stats() {
               paddingRight: 'clamp(0.8rem, 2vw, 1.5rem)',
             }}>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 200,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
                 fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1,
                 color: 'oklch(8% 0.007 72)', margin: '0 0 0.45rem',
                 letterSpacing: '-0.02em', textShadow: TEXT_SHADOW,
               }}>{n}</p>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500,
                 fontSize: 'clamp(0.7rem, 0.85vw, 0.82rem)', letterSpacing: '0.05em',
                 color: 'oklch(22% 0.007 72)', margin: '0 0 0.18rem',
                 textShadow: TEXT_SHADOW,
               }}>{label}</p>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
                 fontSize: '0.6rem', letterSpacing: '0.03em',
                 color: 'oklch(56% 0.007 74)', margin: 0, textShadow: TEXT_SHADOW,
               }}>{sub}</p>
@@ -217,14 +217,14 @@ function Services() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '2.5rem' }}>
           <Rule />
           <p style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
             fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
             color: 'oklch(50% 0.007 74)', margin: 0,
           }}>Services</p>
         </div>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 200,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
           fontSize: 'clamp(1.8rem, 3.5vw, 4rem)',
           lineHeight: 1.1, letterSpacing: '-0.01em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
@@ -240,12 +240,12 @@ function Services() {
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
                 fontSize: 'clamp(0.82rem, 1.1vw, 1rem)',
                 color: 'oklch(24% 0.007 72)', margin: 0, letterSpacing: '0.01em',
               }}>{s}</p>
               <span style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
                 fontSize: '0.52rem', letterSpacing: '0.3em',
                 color: 'oklch(64% 0.006 74)',
               }}>0{i + 1}</span>
@@ -282,13 +282,13 @@ function Contact() {
         opacity: 0,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
           color: 'oklch(50% 0.007 74)', margin: '0 0 2rem',
         }}>Studio</p>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 200,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
           fontSize: 'clamp(2rem, 4.5vw, 5rem)',
           lineHeight: 1.06, letterSpacing: '-0.015em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
