@@ -99,20 +99,21 @@ export default function WorkPage() {
      4. Sensitivity scales with breakpoint — mobile swipes cover more.
   ──────────────────────────────────────────────────────────────────────── */
   const onPointerDown = useCallback((e: React.PointerEvent) => {
-    e.preventDefault()
+    /* No preventDefault here — it would suppress the click event on iOS/Safari.
+       touch-action:none on the container is sufficient to stop scroll stealing. */
     down.current    = true
     dragged.current = false
     startX.current  = e.clientX
     vel.current     = 0
-    /* currentTarget = the container div that owns the handler */
     e.currentTarget.setPointerCapture(e.pointerId)
   }, [])
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!down.current) return
-    e.preventDefault()
     const dx = e.clientX - startX.current
-    if (Math.abs(dx) > 3) dragged.current = true
+    /* 8px threshold — touch has natural jitter, 3px was causing false drags
+       that blocked clicks even when the user just tapped */
+    if (Math.abs(dx) > 8) dragged.current = true
     const { s: S } = dimsRef.current
     /* Mobile needs higher sensitivity — smaller swipe distance available */
     const sensitivity = dimsRef.current === DIMS_MOBILE ? 1.4 : 0.58
