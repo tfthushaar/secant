@@ -99,13 +99,13 @@ export default function WorkPage() {
      4. Sensitivity scales with breakpoint — mobile swipes cover more.
   ──────────────────────────────────────────────────────────────────────── */
   const onPointerDown = useCallback((e: React.PointerEvent) => {
-    /* No preventDefault here — it would suppress the click event on iOS/Safari.
-       touch-action:none on the container is sufficient to stop scroll stealing. */
     down.current    = true
     dragged.current = false
     startX.current  = e.clientX
     vel.current     = 0
-    e.currentTarget.setPointerCapture(e.pointerId)
+    /* No setPointerCapture — it reroutes click events to the container,
+       breaking onClick on the arch-item children. touch-action:none on
+       the container is sufficient to prevent browser scroll on mobile. */
   }, [])
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
@@ -127,10 +127,12 @@ export default function WorkPage() {
     down.current = false
   }, [])
 
-  /* Wheel (desktop trackpad/mouse) */
+  const onPointerLeave = useCallback(() => { down.current = false }, [])
+
+  /* Wheel — slow deliberate movement (0.0015 per pixel, 0.04 per line) */
   const onWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
-    const delta = e.deltaY * (e.deltaMode === 1 ? 0.08 : 0.004)
+    const delta = e.deltaY * (e.deltaMode === 1 ? 0.04 : 0.0015)
     centreF.current = Math.max(0, Math.min(N - 1, centreF.current + delta))
   }, [])
 
@@ -211,6 +213,7 @@ export default function WorkPage() {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onPointerLeave={onPointerLeave}
         onPointerCancel={onPointerUp}
         onWheel={onWheel}
       >
