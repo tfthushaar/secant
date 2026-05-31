@@ -37,7 +37,8 @@ function Rule() {
   No opaque backdrop sections. Text uses a white text-shadow halo so it reads
   cleanly against the 3D model background without masking the model at all.
 */
-const TEXT_SHADOW = '0 0 80px rgba(255,255,255,1), 0 0 50px rgba(255,255,255,1), 0 0 25px rgba(255,255,255,0.98), 0 0 8px rgba(255,255,255,0.95)'
+/* Minimal shadow — just enough to lift text off the model, not a glow */
+const TEXT_SHADOW = '0 1px 4px rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.6)'
 
 /* ── Section 1: Manifesto — left content, model right ──────────── */
 function Manifesto() {

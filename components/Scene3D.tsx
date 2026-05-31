@@ -15,12 +15,12 @@ const LERP = 0.10
 const SNAP = 0.001
 
 const CAM_STOPS = [
-  { pos: [  0,  5.5, 34], look: [ 0, 1.2,  0] }, /* front elevation     */
-  { pos: [ -2,  3.5, 18], look: [-1, 0.8,  2] }, /* zoom in — entrance  */
-  { pos: [ 20,  7,   24], look: [ 3, 1.2,  0] }, /* three-quarter right */
-  { pos: [ 22, 20,   26], look: [ 0, 0.0,  0] }, /* high aerial         */
-  { pos: [-22,  6,   24], look: [-4, 1.2,  0] }, /* three-quarter left  */
-  { pos: [0.5, 38, 0.5],  look: [ 0,-1.5,  0] }, /* top-down plan       */
+  { pos: [ -2,  5.5, 30], look: [-2.5, 2.5,  0] }, /* front — shows full asymmetry  */
+  { pos: [ -8,  4.0, 16], look: [-6.0, 2.5,  3] }, /* zoom — stair + glass          */
+  { pos: [ 14,  7.0, 22], look: [ 0.0, 2.5,  0] }, /* three-quarter right           */
+  { pos: [ 10, 20.0, 22], look: [-2.0, 1.0,  0] }, /* high aerial                   */
+  { pos: [-18,  7.0, 20], look: [-5.0, 2.5,  0] }, /* three-quarter left — terrace  */
+  { pos: [-2, 36.0, 0.5], look: [-2.0,-0.5,  0] }, /* top-down plan                 */
 ]
 
 /*
@@ -180,138 +180,151 @@ export function Scene3D({ progressRef }: Props) {
       bld.position.y = -1.5
 
       /* Ground plane — shows forecourt and context */
-      const gnd = solid(new THREE.BoxGeometry(70, 0.08, 46), toonMat, 8, 0.04)
-      at(gnd, 0, 0.04, -5)
+      /*
+        Building concept — inspired by Farnsworth House (Mies) + Villa dall'Ava (OMA):
+        · Main glazed box elevated 1.8 units on slender pilotis (columns)
+        · Asymmetric: left terrace extends further than right
+        · Secondary volume at ground level right-rear, perpendicular, taller
+        · Off-center exterior staircase bridging ground to elevated box
+        · Two distinct roof planes at different heights
+        · Reflecting pool axis aligned with entrance
+      */
+
+      /* Ground plane */
+      const gnd = solid(new THREE.BoxGeometry(60, 0.08, 42), toonMat, 8, 0.04)
+      at(gnd, 0, 0.04, -3)
       bld.add(gnd)
 
-      /* Raised forecourt / entrance platform */
-      bld.add(at(box(36, 0.36, 20), 0, 0.22, -1))
+      /* Ground-level base platform (forecourt paving) */
+      bld.add(at(box(28, 0.22, 18, toonMat, 10), -1, 0.15, 1))
 
-      /* ── WALLS — complete building envelope ──────────────────────
-         Each section has: front face, back wall, side returns, so the
-         building reads as solid 3D volumes, not cardboard facades.     */
+      /* ── ELEVATED MAIN BOX (raised 1.8 on columns) ────────────────
+         16W × 4.8H × 9D, centred slightly left of overall composition */
 
       const wallH    = 5.4
-      const wallHalf = wallH / 2 + 0.4  /* vertical centre including plinth */
+      /* Elevation of the main box base */
+      const EL = 1.8   /* pilotis height */
+      const BH = 4.8   /* box interior height */
 
-      /* ── LEFT WING (x: -18 to -6) ─────────────────────────────── */
-      /* Front wall — vertical siding panels */
-      for (let i = 0; i < 30; i++) {
-        const p = box(0.22, wallH, 0.18, toonMat, 5)
-        at(p, -17.6 + i * 0.4, wallHalf, 5.6)
-        bld.add(p)
-      }
-      /* Back wall */
-      bld.add(at(box(12, wallH, 0.35), -12, wallHalf, -6.5))
-      /* Left end wall */
-      bld.add(at(box(0.35, wallH, 12.3), -18.2, wallHalf, -0.4))
-      /* Right return (connects left wing to central mass) */
-      bld.add(at(box(0.35, wallH, 12.3), -6.0, wallHalf, -0.4))
-      /* Ceiling panel (between siding top and roof) */
-      bld.add(at(box(12, 0.22, 12.3), -12, wallH + 0.4 + 0.11, -0.4))
-
-      /* ── CENTRAL MASS (x: -6 to 6) ─────────────────────────────── */
-      /* Glass curtain wall — front */
+      /* ── ELEVATED MAIN BOX (x: -10 to 5, el+BH) ──────────────── */
+      /* Full-height glass — front face — with mullion grid */
       const gw = new THREE.Group()
-      gw.add(new THREE.Mesh(new THREE.PlaneGeometry(10.5, wallH), glassMat))
-      gw.add(mkEdges(new THREE.PlaneGeometry(10.5, wallH), 1, 0.006))
-      /* Mullions — vertical (5 bays) */
-      for (let i = 0; i <= 5; i++) {
-        const m = box(0.08, wallH, 0.14, darkMat, 5)
-        at(m, -5.25 + i * 2.1, 0, 0.05)
-        gw.add(m)
-      }
-      /* Mullions — horizontal (2 transoms) */
-      for (let j = 1; j <= 2; j++) {
-        const t = box(10.5, 0.08, 0.14, darkMat, 5)
-        at(t, 0, -wallH / 2 + j * (wallH / 3), 0.05)
-        gw.add(t)
-      }
-      gw.position.set(0, wallHalf, 5.65)
+      gw.add(new THREE.Mesh(new THREE.PlaneGeometry(15.2, BH), glassMat))
+      gw.add(mkEdges(new THREE.PlaneGeometry(15.2, BH), 1, 0.005))
+      for (let i = 0; i <= 7; i++)        /* 7 vertical bays */
+        gw.add(at(box(0.06, BH, 0.10, darkMat, 5), -7.6 + i * 2.17, 0, 0.04))
+      for (let j = 1; j <= 3; j++)        /* 3 horizontal transoms */
+        gw.add(at(box(15.2, 0.06, 0.10, darkMat, 5), 0, -BH/2 + j*(BH/4), 0.04))
+      gw.position.set(-2.5, EL + BH/2, 4.52)
       bld.add(gw)
-      /* Solid back wall behind glass */
-      bld.add(at(box(12, wallH, 0.35), 0, wallHalf, -6.5))
-      /* Ceiling */
-      bld.add(at(box(12, 0.22, 12.3), 0, wallH + 0.4 + 0.11, -0.4))
-
-      /* ── RIGHT SECTION (x: 6 to 18) ────────────────────────────── */
-      /* Front — mixed siding */
-      for (let i = 0; i < 30; i++) {
-        const p = box(0.22, wallH, 0.18, toonMat, 5)
-        at(p, 6.2 + i * 0.4, wallHalf, 5.6)
-        bld.add(p)
-      }
       /* Back wall */
-      bld.add(at(box(12, wallH, 0.35), 12, wallHalf, -6.5))
-      /* Right end wall */
-      bld.add(at(box(0.35, wallH, 12.3), 18.2, wallHalf, -0.4))
-      /* Left return already handled by central mass right edge */
-      bld.add(at(box(0.35, wallH, 12.3), 6.0, wallHalf, -0.4))
+      bld.add(at(box(15.4, BH, 0.28), -2.5, EL + BH/2, -4.5))
+      /* End walls */
+      bld.add(at(box(0.28, BH, 9.3), -10.2, EL + BH/2, 0.1))
+      bld.add(at(box(0.28, BH, 9.3),   5.2, EL + BH/2, 0.1))
+      /* Floor plate of elevated box */
+      bld.add(at(box(15.6, 0.22, 9.5), -2.5, EL, 0))
       /* Ceiling */
-      bld.add(at(box(12, 0.22, 12.3), 12, wallH + 0.4 + 0.11, -0.4))
+      bld.add(at(box(15.6, 0.22, 9.5), -2.5, EL + BH, 0))
 
-      /* ── MAIN ROOF ─────────────────────────────────────────────── */
-      /* Primary slab — wide cantilevered flat roof */
-      bld.add(at(box(42, 0.32, 24, toonMat, 8), 0, wallH + 0.56, -1.5))
-      /* Thin upper edge trim — gives the sharp crisp roof edge in the sketch */
-      bld.add(at(box(42.6, 0.10, 24.6, darkMat, 5), 0, wallH + 0.73, -1.5))
-      /* Soffit underside — fine horizontal lines for depth reading */
-      const soffitLines = mkEdges(new THREE.PlaneGeometry(41.5, 23.5, 20, 14), 1, 0.005)
-      soffitLines.rotation.x = Math.PI / 2
-      at(soffitLines, 0, wallH + 0.38, -1.5)
-      bld.add(soffitLines)
+      /* ── LEFT TERRACE (x: -16 to -10, at elevation) ──────────────
+         Open deck extending left of the box — asymmetric key feature */
+      bld.add(at(box(6.2, 0.22, 9.5), -13.1, EL, 0))
+      /* Terrace railing — thin frame */
+      bld.add(at(box(0.10, 0.9, 9.5), -16.1, EL + 0.65, 0))
+      bld.add(at(box(6.2, 0.10, 0.10), -13.1, EL + 0.9, 4.72))
+      bld.add(at(box(6.2, 0.10, 0.10), -13.1, EL + 0.9, -4.72))
 
-      /* ── SUPPORT COLUMNS ───────────────────────────────────────── */
-      const cols: [number, number][] = [
-        [-3.5, 6.5], [3.5, 6.5],               /* central front pair  */
-        [-14, 6.5], [-10, 6.5],                 /* left wing front     */
-        [10, 6.5], [14, 6.5],                   /* right front         */
-        [18, -2], [18, -7],                      /* right side          */
-        [-18, -2],                               /* left side           */
-      ]
-      cols.forEach(([x, z]) => {
-        bld.add(at(cyl(0.15, wallH + 0.4, 8, darkMat), x, wallHalf + 0.2, z))
+      /* ── RIGHT SECONDARY VOLUME (x: 6 to 12, ground level) ────────
+         Taller mass, perpendicular orientation, horizontal window slits.
+         Creates asymmetric silhouette — inspired by Villa dall'Ava.    */
+      const sh = 6.4   /* secondary height — taller than main box */
+      bld.add(at(box(6.2, sh, 0.28),  9.0, sh/2, 4.52))   /* front wall */
+      bld.add(at(box(6.2, sh, 0.28),  9.0, sh/2, -8.5))   /* back wall  */
+      bld.add(at(box(0.28, sh, 13.3), 5.8, sh/2, -2.0))   /* left wall  */
+      bld.add(at(box(0.28, sh, 13.3), 12.2, sh/2, -2.0))  /* right wall */
+      /* Horizontal window slits — 3 openings across the front */
+      const hSlits = [-1.8, 0.6, 3.0]
+      hSlits.forEach(slitY => {
+        bld.add(at(new THREE.Mesh(
+          new THREE.PlaneGeometry(4.5, 0.9), glassMat,
+        ), 9.0, slitY, 4.56))
+        bld.add(mkEdges(new THREE.PlaneGeometry(4.5, 0.9), 1, 0.004))
+      })
+      /* Secondary roof — extends beyond walls, toonMat only */
+      bld.add(at(box(7.2, 0.24, 14.5, toonMat, 8), 9.0, sh + 0.15, -2.0))
+      /* Fascia beam around secondary roof */
+      ;([
+        [9.0, sh - 0.12,  5.15, 7.2, 0.42, 0.28],
+        [9.0, sh - 0.12, -9.25, 7.2, 0.42, 0.28],
+        [5.4, sh - 0.12, -2.0, 0.28, 0.42, 14.5],
+        [12.6, sh - 0.12, -2.0, 0.28, 0.42, 14.5],
+      ] as [number,number,number,number,number,number][]).forEach(([x,y,z,w,h,d]) => {
+        bld.add(at(box(w, h, d, toonMat, 8), x, y, z))
       })
 
-      /* ── PENDANT LIGHTS ────────────────────────────────────────── */
+      /* ── MAIN ROOF (asymmetric — extends 4 extra units LEFT) ────────
+         toonMat throughout — NO darkMat → roof stays white            */
+      /* Left extension: x -19 to -10  Right: x -10 to 8 */
+      bld.add(at(box(28, 0.26, 13, toonMat, 8), -5.5, EL + BH + 0.44, 0))
+      /* Asymmetric fascia — different left vs right projection */
+      bld.add(at(box(0.32, 0.60, 13.6, toonMat, 8), -19.2, EL+BH+0.12, 0))
+      bld.add(at(box(0.32, 0.60, 13.6, toonMat, 8),   8.2, EL+BH+0.12, 0))
+      bld.add(at(box(28.6, 0.60, 0.32, toonMat, 8), -5.5, EL+BH+0.12,  6.7))
+      bld.add(at(box(28.6, 0.60, 0.32, toonMat, 8), -5.5, EL+BH+0.12, -6.7))
+      /* Soffit grid */
+      const soLines = mkEdges(new THREE.PlaneGeometry(27.5, 12.5, 16, 9), 1, 0.005)
+      soLines.rotation.x = Math.PI / 2
+      at(soLines, -5.5, EL + BH + 0.30, 0)
+      bld.add(soLines)
+      /* Rooftop element — thin skylight strip (dark glass) */
+      bld.add(at(box(5, 0.08, 1.5, darkMat, 8), 0, EL + BH + 0.68, -2))
+
+      /* ── PILOTIS — slender columns supporting elevated box ──────── */
+      const pilotis: [number, number][] = [
+        [-10, 4.5], [-6, 4.5], [-2.5, 4.5], [1, 4.5], /* front row */
+        [-10, -4.5], [-6, -4.5], [-2.5, -4.5], [1, -4.5], /* back row */
+        [5, 4.5], [5, -4.5],                             /* right end */
+      ]
+      pilotis.forEach(([x, z]) => {
+        bld.add(at(cyl(0.10, EL, 8, darkMat), x, EL/2, z))
+      })
+      /* Additional columns for left terrace */
+      ;[[-13, 4.5], [-16, 4.5], [-13, -4.5], [-16, -4.5]].forEach(([x,z]) => {
+        bld.add(at(cyl(0.10, EL, 8, darkMat), x, EL/2, z))
+      })
+
+      /* ── EXTERIOR STAIRCASE (off-centre, left of glass) ────────── */
+      /* 6 treads rising from ground to elevated box floor */
+      for (let i = 0; i < 6; i++) {
+        const tw = 4.5 - i * 0.08
+        bld.add(at(box(tw, 0.28, 1.0), -8.5, 0.28 + i * EL/6, 4.5 + i * 1.0))
+      }
+      /* Stair side wall */
+      bld.add(at(box(0.14, EL + 0.5, 8.5, darkMat, 10), -10.8, EL/2 + 0.1, 8.5))
+
+      /* ── PENDANT LIGHTS inside elevated box ─────────────────────── */
       const pends: [number, number, number][] = [
-        [-2.5, 5.1, 2.0], [-0.8, 4.7, 1.2], [0.8, 5.0, 2.8],
-        [2.4, 4.6, 1.0], [-0.1, 4.8, 3.5], [1.6, 5.2, 0.4],
+        [-7, EL + 3.8, 1.5], [-4, EL + 3.5, 0.5], [-1, EL + 3.7, 2.0],
+        [ 2, EL + 3.4, 0.8], [-5.5, EL + 3.6, -1.5],
       ]
       pends.forEach(([x, y, z]) => {
-        const r = 0.60 + Math.random() * 0.40
+        const r = 0.55 + Math.random() * 0.30
         bld.add(at(solid(new THREE.CylinderGeometry(r, r, 0.07, 22)), x, y, z))
-        const stemH = wallH + 0.4 - y
-        bld.add(at(cyl(0.02, stemH, 4, darkMat), x, y + stemH / 2, z))
+        const stemH = EL + BH - y
+        bld.add(at(cyl(0.015, stemH, 4, darkMat), x, y + stemH/2, z))
       })
 
-      /* ── ARCHITECTURAL FORECOURT ────────────────────────────────────
-         Entrance steps, low perimeter walls, and a reflecting pool replace
-         any organic/sculptural elements — everything reads as architecture. */
-
-      /* Entrance steps — 3 shallow risers leading up to plinth */
-      ;[0, 1, 2].forEach(i => {
-        const stepW = 10 - i * 1.5
-        bld.add(at(box(stepW, 0.18, 1.2), 0, 0.4 + i * 0.18, 6.8 + i * 1.2))
-      })
-
-      /* Low perimeter walls — frame the forecourt on left and right */
-      bld.add(at(box(0.25, 0.8, 10, toonMat, 10), -13, 0.76, 4.5))
-      bld.add(at(box(0.25, 0.8, 10, toonMat, 10),  13, 0.76, 4.5))
-
-      /* Reflecting pool — long shallow rectangular water feature */
-      const poolBox = box(16, 0.12, 4, darkMat, 8)
-      at(poolBox, 0, 0.40, 10.5)
-      bld.add(poolBox)
-      /* Pool rim */
-      bld.add(at(box(16.5, 0.08, 4.5, toonMat, 8), 0, 0.48, 10.5))
-
-      /* Interior partition wall visible through glass */
-      bld.add(at(box(0.25, wallH - 1.5, 7, darkMat, 10), 1.5, wallHalf - 0.3, -2))
-
-      /* Low garden/planting bed frames left and right */
-      bld.add(at(box(8, 0.20, 0.20, toonMat, 8), -14, 0.46, 6.0))
-      bld.add(at(box(8, 0.20, 0.20, toonMat, 8),  12, 0.46, 6.0))
+      /* ── FORECOURT ───────────────────────────────────────────────── */
+      /* Entrance axis: reflecting pool aligned with staircase */
+      bld.add(at(box(4.5, 0.08, 3.0, darkMat, 8), -8.5, 0.12, 9.8))
+      bld.add(at(box(5.0, 0.06, 3.5, toonMat, 8), -8.5, 0.16, 9.8))
+      /* Low perimeter walls */
+      bld.add(at(box(0.18, 0.65, 10, toonMat, 10), -17, 0.55, 5.5))
+      bld.add(at(box(0.18, 0.65, 10, toonMat, 10),  13, 0.55, 5.5))
+      /* Planting beds */
+      bld.add(at(box(5, 0.16, 0.18, toonMat, 8), -14, 0.42, 6.5))
+      bld.add(at(box(5, 0.16, 0.18, toonMat, 8),  10, 0.42, 6.5))
 
       /* ── Post-processing — subtle grain only ─────────────────────── */
       const composer = new EffectComposer(renderer)
