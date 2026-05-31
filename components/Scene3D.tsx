@@ -17,13 +17,18 @@ import { useEffect, useRef } from 'react'
   sub-pixel drift during movement.
 */
 
+/*
+  New model is taller (7.4 world units vs 2.6 before).
+  Look-at Y raised by ~1 unit so the building fills the viewport
+  below the SECANT wordmark rather than pushing above it.
+*/
 const CAM_STOPS = [
-  { pos: [ 0,    3.5, 11.5], look: [0,  0.6, 0] },  /* front elevation      */
-  { pos: [ 0,    2.2,  7.5], look: [0,  0.4, 0] },  /* zoom in              */
-  { pos: [ 8.5,  3.0,  8.5], look: [0,  0.3, 0] },  /* three-quarter right  */
-  { pos: [ 7.0,  8.5,  5.0], look: [0, -0.4, 0] },  /* aerial right         */
-  { pos: [-7.5,  3.0,  9.0], look: [0,  0.3, 0] },  /* three-quarter left   */
-  { pos: [ 0.5, 13.5,  0.5], look: [0, -0.5, 0] },  /* top-down plan        */
+  { pos: [ 0,    3.5, 12.0], look: [0,  1.5, 0] },  /* front elevation      */
+  { pos: [ 0,    2.5,  8.0], look: [0,  1.2, 0] },  /* zoom in              */
+  { pos: [ 8.5,  3.5,  9.0], look: [0,  1.0, 0] },  /* three-quarter right  */
+  { pos: [ 7.0,  9.0,  5.5], look: [0,  0.0, 0] },  /* aerial right         */
+  { pos: [-8.0,  3.5,  9.0], look: [0,  1.0, 0] },  /* three-quarter left   */
+  { pos: [ 0.5, 14.0,  0.5], look: [0, -1.0, 0] },  /* top-down plan        */
 ]
 
 const LERP   = 0.12
@@ -142,12 +147,12 @@ export function Scene3D({ progressRef }: Props) {
             vec3  n0 = normalize(texture2D(tNormal, vUv).rgb * 2.0 - 1.0);
             float d0 = linDepth(vUv);
 
-            /* 8 neighbours at 2 px radius — MAX operator for stable thick lines */
+            /* 8 neighbours at 1 px radius — thin crisp lines, MAX for stability */
             vec2 dirs[8];
-            dirs[0] = vec2( 2.0,  0.0); dirs[1] = vec2(-2.0,  0.0);
-            dirs[2] = vec2( 0.0,  2.0); dirs[3] = vec2( 0.0, -2.0);
-            dirs[4] = vec2( 1.5,  1.5); dirs[5] = vec2(-1.5,  1.5);
-            dirs[6] = vec2( 1.5, -1.5); dirs[7] = vec2(-1.5, -1.5);
+            dirs[0] = vec2( 1.0,  0.0); dirs[1] = vec2(-1.0,  0.0);
+            dirs[2] = vec2( 0.0,  1.0); dirs[3] = vec2( 0.0, -1.0);
+            dirs[4] = vec2( 0.8,  0.8); dirs[5] = vec2(-0.8,  0.8);
+            dirs[6] = vec2( 0.8, -0.8); dirs[7] = vec2(-0.8, -0.8);
 
             float nMax = 0.0, dMax = 0.0;
             for (int i = 0; i < 8; i++) {
