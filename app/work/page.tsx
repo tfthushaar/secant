@@ -179,40 +179,54 @@ export default function WorkPage() {
         display: 'flex', flexDirection: 'column',
       }}
     >
-      {/* Header */}
+      {/* Header — right padding clears the fixed MENU button */}
       <header style={{
         flexShrink: 0, height: '3.6rem',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 clamp(1.2rem,4vw,2.5rem)',
+        display: 'flex', alignItems: 'center',
+        /* 3-column: logo | hint (centred) | empty space for MENU */
+        padding: '0 clamp(7rem,11vw,9rem) 0 clamp(1.2rem,4vw,2.5rem)',
         borderBottom: '1px solid oklch(90% 0.006 76)',
         background: '#ffffff',
         position: 'sticky', top: 0, zIndex: 10,
+        gap: '1rem',
       }}>
         <Link href="/" style={{
           fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 400, fontSize: '0.68rem', letterSpacing: '0.28em',
           textTransform: 'uppercase', color: 'oklch(38% 0.007 72)',
-          textDecoration: 'none',
+          textDecoration: 'none', flexShrink: 0,
         }}>SECANT</Link>
-        <span style={{
-          fontFamily: 'var(--font-sans), sans-serif',
-          fontWeight: 300, fontSize: '0.5rem', letterSpacing: '0.42em',
-          textTransform: 'uppercase', color: 'oklch(68% 0.006 74)',
-        }}>{isMobile ? 'Swipe to browse' : 'Drag or scroll to browse'}</span>
+        {/* Hint — hidden on very small screens to prevent crowding */}
+        {!isMobile && (
+          <span style={{
+            fontFamily: 'var(--font-sans), sans-serif',
+            fontWeight: 300, fontSize: '0.5rem', letterSpacing: '0.42em',
+            textTransform: 'uppercase', color: 'oklch(68% 0.006 74)',
+            flex: 1, textAlign: 'center',
+          }}>Drag or scroll to browse</span>
+        )}
       </header>
 
       {/* Title */}
       <div style={{
-        paddingTop: 'clamp(1.5rem,4vh,3.5rem)', paddingBottom: '0.5rem',
+        paddingTop: isMobile ? '1.2rem' : 'clamp(1.5rem,4vh,3.5rem)',
+        paddingBottom: '0.5rem',
         textAlign: 'center', flexShrink: 0,
       }}>
         <p style={{
           fontFamily: 'var(--font-display), Georgia, serif',
-          fontWeight: 400, fontSize: 'clamp(1.1rem,2.5vw,2.2rem)',
+          fontWeight: 400, fontSize: isMobile ? '1.1rem' : 'clamp(1.2rem,2.5vw,2.2rem)',
           letterSpacing: '0.02em', color: 'oklch(12% 0.007 72)', margin: 0,
         }}>
           Select a category
         </p>
+        {isMobile && (
+          <p style={{
+            fontFamily: 'var(--font-sans), sans-serif',
+            fontWeight: 300, fontSize: '0.52rem', letterSpacing: '0.38em',
+            textTransform: 'uppercase', color: 'oklch(65% 0.006 74)', margin: '0.4rem 0 0',
+          }}>Swipe to browse</p>
+        )}
       </div>
 
       {/* Coverflow — touch-action:none prevents browser scroll stealing */}

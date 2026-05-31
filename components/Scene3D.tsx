@@ -77,7 +77,8 @@ const GRAIN_FRAG = /* glsl */`
   float rand(vec2 co){return fract(sin(dot(co,vec2(12.9898,78.233)))*43758.5453);}
   void main(){
     vec4 c=texture2D(tDiffuse,vUv);
-    c.rgb+=(rand(vUv+uTime*0.05)-0.5)*0.018;
+    /* Grain at 0.008 — barely perceptible, won't appear as line flicker */
+    c.rgb+=(rand(vUv+uTime*0.04)-0.5)*0.008;
     gl_FragColor=c;
   }
 `
@@ -138,7 +139,7 @@ export function Scene3D({ progressRef }: Props) {
 
       /* ── Helpers ──────────────────────────────────────────────── */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function mkEdges(geo: any, angle = 20, jitter = 0.012) {
+      function mkEdges(geo: any, angle = 20, jitter = 0.006) {
         const e = new THREE.EdgesGeometry(geo, angle)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const pos = e.attributes.position as any
@@ -154,7 +155,7 @@ export function Scene3D({ progressRef }: Props) {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function solid(geo: any, mat: any = toonMat, edgeAngle = 15, jitter = 0.012) {
+      function solid(geo: any, mat: any = toonMat, edgeAngle = 15, jitter = 0.006) {
         const g = new THREE.Group()
         g.add(new THREE.Mesh(geo, mat))
         g.add(mkEdges(geo, edgeAngle, jitter))
@@ -314,6 +315,32 @@ export function Scene3D({ progressRef }: Props) {
         const stemH = EL + BH - y
         bld.add(at(cyl(0.015, stemH, 4, darkMat), x, y + stemH/2, z))
       })
+
+      /* ── ADDITIONAL ARCHITECTURAL DETAIL ─────────────────────────── */
+
+      /* Horizontal louvres / sun shading fins on the secondary volume front */
+      for (let li = 0; li < 8; li++) {
+        bld.add(at(box(6.5, 0.06, 0.55, toonMat, 8), 9.0, 0.5 + li * 0.72, 5.1))
+      }
+
+      /* Structural beams visible under the main elevated box (front edge) */
+      for (let bi = 0; bi < 4; bi++) {
+        bld.add(at(box(0.18, 0.30, 9.3, darkMat, 8), -10 + bi * 5, EL - 0.05, 0))
+      }
+
+      /* Window sill ledges on secondary volume */
+      hSlits.forEach(slitY => {
+        bld.add(at(box(4.7, 0.08, 0.22, toonMat, 8), 9.0, slitY - 0.45, 4.9))
+      })
+
+      /* Roof terrace element on secondary volume — low parapet */
+      bld.add(at(box(6.4, 0.35, 0.18, toonMat, 8), 9.0, sh + 0.40, 5.1))
+      bld.add(at(box(6.4, 0.35, 0.18, toonMat, 8), 9.0, sh + 0.40, -8.7))
+      bld.add(at(box(0.18, 0.35, 14.0, toonMat, 8), 5.8, sh + 0.40, -1.9))
+      bld.add(at(box(0.18, 0.35, 14.0, toonMat, 8), 12.2, sh + 0.40, -1.9))
+
+      /* Canopy over entrance — thin projecting slab above stair top */
+      bld.add(at(box(5.5, 0.14, 2.5, toonMat, 8), -8.5, EL + BH * 0.55, 5.8))
 
       /* ── FORECOURT ───────────────────────────────────────────────── */
       /* Entrance axis: reflecting pool aligned with staircase */
