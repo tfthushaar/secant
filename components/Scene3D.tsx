@@ -3,29 +3,87 @@
 import { useEffect, useRef } from 'react'
 
 /*
-  Scene3D — 4-pass sketch rendering
-  ───────────────────────────────────
-  Pass 1  MeshNormalMaterial → normalTarget   (camera-space normals for edge detection)
-  Pass 2  Custom toon shader  → colorTarget   (4-step directional shading)
-  Pass 3  MeshBasicMaterial  → depthTarget    (depth texture for silhouette edges)
-  Pass 4  Composite shader   → screen         (toon base + crisp black edge lines)
+  Scene3D — Procedural architectural sketch model
+  ─────────────────────────────────────────────────
+  Entire building built from Three.js primitives.
+  No GLB file. No organic noise. Full artistic control.
 
-  Flat normals from Blender export mean each face has one exact normal —
-  edge detection fires cleanly at corners with zero in-between noise.
-  Camera snaps to target within 0.001 world units → zero flicker at rest.
+  Rendering:
+    • Custom toon ShaderMaterial — warm cream 4-step palette
+    • EdgesGeometry + ShaderMaterial lines with animated vertex jitter
+      (shader-driven sine-wave displacement per frame → living sketch feel)
+    • EffectComposer: subtle paper grain post-process
+    • Background: warm paper cream #f5f2ed
+
+  Camera: 6 scroll-driven viewpoints, progressRef-driven, snap-to-rest.
 */
 
+const LERP = 0.10
+const SNAP = 0.001
+
 const CAM_STOPS = [
-  { pos: [ 0,    3.5, 11.5], look: [0,  0.6, 0] },  /* front elevation      */
-  { pos: [ 0,    2.2,  7.5], look: [0,  0.4, 0] },  /* zoom in              */
-  { pos: [ 8.5,  3.0,  8.5], look: [0,  0.3, 0] },  /* three-quarter right  */
-  { pos: [ 7.0,  8.5,  5.0], look: [0, -0.4, 0] },  /* aerial right         */
-  { pos: [-7.5,  3.0,  9.0], look: [0,  0.3, 0] },  /* three-quarter left   */
-  { pos: [ 0.5, 13.5,  0.5], look: [0, -0.5, 0] },  /* top-down plan        */
+  { pos: [  0,  6, 38], look: [ 0, 3.0,  0] }, /* front elevation       */
+  { pos: [ -3,  4, 18], look: [-2, 2.5,  3] }, /* zoom in — entrance    */
+  { pos: [ 20,  8, 22], look: [ 3, 3.0,  0] }, /* three-quarter right   */
+  { pos: [ 24, 20, 24], look: [ 0, 2.0,  0] }, /* high aerial           */
+  { pos: [-22,  7, 20], look: [-4, 3.0,  0] }, /* three-quarter left    */
+  { pos: [0.5, 40, 0.5], look: [0, 0.0,  0] }, /* top-down plan         */
 ]
 
-const LERP = 0.12
-const SNAP = 0.001
+/* Warm cream toon shader — 4 steps matching paper sketch palette */
+const TOON_VERT = /* glsl */`
+  varying vec3 vNormal;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+const TOON_FRAG = /* glsl */`
+  uniform vec3 uLight;
+  varying vec3 vNormal;
+  void main() {
+    float d = max(dot(normalize(vNormal), uLight), 0.0);
+    vec3 c;
+    if      (d > 0.65) c = vec3(0.980, 0.965, 0.945);
+    else if (d > 0.35) c = vec3(0.905, 0.888, 0.865);
+    else if (d > 0.10) c = vec3(0.795, 0.775, 0.752);
+    else               c = vec3(0.620, 0.600, 0.578);
+    gl_FragColor = vec4(c, 1.0);
+  }
+`
+
+/* Animated ink line shader — subtle sine-wave jitter per vertex */
+const LINE_VERT = /* glsl */`
+  uniform float uTime;
+  void main() {
+    vec3 pos = position;
+    float j = 0.007;
+    pos.x += sin(pos.y * 11.0 + uTime * 0.28) * j;
+    pos.y += sin(pos.x * 11.0 + uTime * 0.35) * j;
+    pos.z += sin(pos.z * 11.0 + uTime * 0.22) * j;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+  }
+`
+const LINE_FRAG = /* glsl */`
+  void main() { gl_FragColor = vec4(0.07, 0.06, 0.05, 0.88); }
+`
+
+/* Paper grain post-process */
+const GRAIN_VERT = /* glsl */`
+  varying vec2 vUv;
+  void main() { vUv = uv; gl_Position = vec4(position, 1.0); }
+`
+const GRAIN_FRAG = /* glsl */`
+  uniform sampler2D tDiffuse;
+  uniform float uTime;
+  varying vec2 vUv;
+  float rand(vec2 co) { return fract(sin(dot(co, vec2(12.9898,78.233))) * 43758.5453); }
+  void main() {
+    vec4 col = texture2D(tDiffuse, vUv);
+    col.rgb += (rand(vUv + uTime * 0.07) - 0.5) * 0.028;
+    gl_FragColor = col;
+  }
+`
 
 interface Props { progressRef: React.MutableRefObject<number> }
 
@@ -39,190 +97,360 @@ export function Scene3D({ progressRef }: Props) {
 
     ;(async () => {
       const THREE = await import('three')
-      const { GLTFLoader }  = await import('three/examples/jsm/loaders/GLTFLoader.js')
-      const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js')
+      const { EffectComposer } = await import('three/addons/postprocessing/EffectComposer.js')
+      const { RenderPass }     = await import('three/addons/postprocessing/RenderPass.js')
+      const { ShaderPass }     = await import('three/addons/postprocessing/ShaderPass.js')
 
       const W   = mount.clientWidth  || window.innerWidth
       const H   = mount.clientHeight || window.innerHeight
       const dpr = Math.min(window.devicePixelRatio, 2)
-      const PW  = Math.floor(W * dpr)
-      const PH  = Math.floor(H * dpr)
 
+      /* ── Renderer ─────────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({ antialias: true })
-      renderer.setSize(W, H)
-      renderer.setPixelRatio(dpr)
-      renderer.setClearColor(0xffffff, 1)
+      renderer.setSize(W, H); renderer.setPixelRatio(dpr)
+      renderer.setClearColor(0xf5f2ed, 1)
       mount.appendChild(renderer.domElement)
 
-      const scene  = new THREE.Scene()
-      scene.background = new THREE.Color(0xffffff)
-      const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 400)
+      const scene = new THREE.Scene()
+      scene.background = new THREE.Color(0xf5f2ed)
+
+      const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 500)
       const p0 = CAM_STOPS[0]
-      camera.position.set(p0.pos[0], p0.pos[1], p0.pos[2])
-      camera.lookAt(p0.look[0], p0.look[1], p0.look[2])
+      camera.position.set(...(p0.pos as [number,number,number]))
+      camera.lookAt(...(p0.look as [number,number,number]))
 
-      const rtOpts = { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter }
-      const normalTarget = new THREE.WebGLRenderTarget(PW, PH, rtOpts)
-      const colorTarget  = new THREE.WebGLRenderTarget(PW, PH, rtOpts)
-      const depthTarget  = new THREE.WebGLRenderTarget(PW, PH, {
-        ...rtOpts, depthBuffer: true,
-        depthTexture: new THREE.DepthTexture(PW, PH),
-      })
-
-      const whiteMat  = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.FrontSide })
-      const normalMat = new THREE.MeshNormalMaterial({ side: THREE.FrontSide })
-
-      /*
-        4-step toon shading — architectural sketch look.
-        Light from upper-right-front gives roof highlight, lit facade,
-        side shadow, and deep shadow under overhangs/eaves.
-        Flat normals mean each face has one exact shade — no gradient
-        across a surface, pure architectural technical drawing.
-      */
+      /* ── Shared materials ─────────────────────────────────────── */
       const toonMat = new THREE.ShaderMaterial({
-        uniforms: {
-          uLight: { value: new THREE.Vector3(0.7, 1.2, 0.8).normalize() },
-        },
-        vertexShader: /* glsl */`
-          varying vec3 vWorldNormal;
-          void main() {
-            vWorldNormal = normalize(mat3(modelMatrix) * normal);
-            gl_Position  = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
-          }
-        `,
+        uniforms: { uLight: { value: new THREE.Vector3(0.5, 1.0, 0.8).normalize() } },
+        vertexShader: TOON_VERT, fragmentShader: TOON_FRAG,
+        side: THREE.FrontSide,
+      })
+      const darkMat = new THREE.ShaderMaterial({
+        uniforms: { uLight: { value: new THREE.Vector3(0.5, 1.0, 0.8).normalize() } },
+        vertexShader: TOON_VERT,
         fragmentShader: /* glsl */`
-          uniform vec3 uLight;
-          varying vec3 vWorldNormal;
+          uniform vec3 uLight; varying vec3 vNormal;
           void main() {
-            float d = max(dot(normalize(vWorldNormal), uLight), 0.0);
-            float toon;
-            if      (d > 0.65) toon = 1.00;   /* full light  — white           */
-            else if (d > 0.40) toon = 0.88;   /* lit face    — near white      */
-            else if (d > 0.15) toon = 0.74;   /* shadow face — medium gray     */
-            else               toon = 0.60;   /* deep shadow — under overhangs */
-            gl_FragColor = vec4(vec3(toon), 1.0);
+            float d = max(dot(normalize(vNormal), uLight), 0.0);
+            vec3 c;
+            if (d > 0.6) c = vec3(0.22,0.20,0.18);
+            else if (d > 0.3) c = vec3(0.14,0.13,0.12);
+            else c = vec3(0.06,0.05,0.04);
+            gl_FragColor = vec4(c, 1.0);
           }
         `,
         side: THREE.FrontSide,
       })
+      const glassMat = new THREE.MeshBasicMaterial({ color: 0xddd8d0, transparent: true, opacity: 0.55 })
 
-      /* Composite: toon shading base + binary black edge lines */
-      const edgeMat = new THREE.ShaderMaterial({
-        uniforms: {
-          tNormal: { value: normalTarget.texture },
-          tColor:  { value: colorTarget.texture  },
-          tDepth:  { value: depthTarget.depthTexture },
-          res:     { value: new THREE.Vector2(PW, PH) },
-          near:    { value: camera.near },
-          far:     { value: camera.far  },
-        },
-        vertexShader: /* glsl */`
-          varying vec2 vUv;
-          void main() { vUv = uv; gl_Position = vec4(position, 1.0); }
-        `,
-        fragmentShader: /* glsl */`
-          uniform sampler2D tNormal;
-          uniform sampler2D tColor;
-          uniform sampler2D tDepth;
-          uniform vec2      res;
-          uniform float     near, far;
-          varying vec2      vUv;
-
-          float linDepth(vec2 uv) {
-            float d = texture2D(tDepth, uv).r;
-            float z = d * 2.0 - 1.0;
-            return (2.0 * near * far) / (far + near - z * (far - near)) / far;
-          }
-
-          void main() {
-            vec2  t  = 1.0 / res;
-            vec3  n0 = normalize(texture2D(tNormal, vUv).rgb * 2.0 - 1.0);
-            float d0 = linDepth(vUv);
-
-            /*
-              1.5 px radius — fills gaps between adjacent edge pixels so
-              lines are continuous, not dotted.
-              MAX operator: one strong neighbour = solid line, stable under
-              camera movement.
-            */
-            vec2 dirs[8];
-            dirs[0] = vec2( 1.5,  0.0); dirs[1] = vec2(-1.5,  0.0);
-            dirs[2] = vec2( 0.0,  1.5); dirs[3] = vec2( 0.0, -1.5);
-            dirs[4] = vec2( 1.1,  1.1); dirs[5] = vec2(-1.1,  1.1);
-            dirs[6] = vec2( 1.1, -1.1); dirs[7] = vec2(-1.1, -1.1);
-
-            float nMax = 0.0, dMax = 0.0;
-            for (int i = 0; i < 8; i++) {
-              vec2  uv2 = vUv + dirs[i] * t;
-              vec3  n2  = normalize(texture2D(tNormal, uv2).rgb * 2.0 - 1.0);
-              float d2  = linDepth(uv2);
-              nMax = max(nMax, 1.0 - dot(n0, n2));
-              dMax = max(dMax, abs(d2 - d0));
-            }
-
-            /* Threshold tuned for flat-normal bungalow:
-               90° corners → nMax=1.0 → always above → solid black line ✓
-               Organic facets 30-45° → nMax<0.30 → filtered out ✓        */
-            float ne   = smoothstep(0.28, 0.46, nMax);
-            float de   = smoothstep(0.018, 0.045, dMax);
-            float edge = max(ne, de);
-
-            /* Binary composite — no blending, pure toon or pure ink */
-            vec3  base  = texture2D(tColor, vUv).rgb;
-            float mask  = step(0.5, edge);
-            gl_FragColor = vec4(mix(base, vec3(0.0), mask), 1.0);
-          }
-        `,
-        depthTest: false,
-        depthWrite: false,
+      const lineUniforms = { uTime: { value: 0 } }
+      const lineMat = new THREE.ShaderMaterial({
+        uniforms: lineUniforms,
+        vertexShader: LINE_VERT, fragmentShader: LINE_FRAG,
+        transparent: true,
       })
 
-      const fsScene  = new THREE.Scene()
-      const fsMesh   = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), edgeMat)
-      fsMesh.frustumCulled = false
-      fsScene.add(fsMesh)
-      const fsCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
+      /* ── Helpers ─────────────────────────────────────────────── */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      function mkEdges(geo: any, angle = 20, jitter = 0.018) {
+        const e = new THREE.EdgesGeometry(geo, angle)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pos = e.attributes.position as any
+        for (let i = 0; i < pos.count; i++) {
+          pos.setXYZ(i,
+            pos.getX(i) + (Math.random()-.5) * jitter,
+            pos.getY(i) + (Math.random()-.5) * jitter,
+            pos.getZ(i) + (Math.random()-.5) * jitter,
+          )
+        }
+        pos.needsUpdate = true
+        return new THREE.LineSegments(e, lineMat)
+      }
 
-      const draco = new DRACOLoader()
-      draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
-      const loader = new GLTFLoader()
-      loader.setDRACOLoader(draco)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      function outlined(geo: any, mat: any = toonMat, angle = 20, j = 0.018) {
+        const g = new THREE.Group()
+        g.add(new THREE.Mesh(geo, mat))
+        g.add(mkEdges(geo, angle, j))
+        return g
+      }
 
-      loader.load('/assets/base.glb', (gltf) => {
-        const model  = gltf.scene
-        scene.add(model)
-        const box    = new THREE.Box3().setFromObject(model)
-        const centre = box.getCenter(new THREE.Vector3())
-        const size   = box.getSize(new THREE.Vector3())
-        const maxDim = Math.max(size.x, size.y, size.z)
+      function box(w: number, h: number, d: number, mat: any = toonMat, angle = 20) {
+        return outlined(new THREE.BoxGeometry(w, h, d), mat, angle)
+      }
+      function cyl(r: number, h: number, seg = 8, mat: any = toonMat) {
+        return outlined(new THREE.CylinderGeometry(r, r, h, seg), mat)
+      }
 
-        /* 12 world units on longest axis — 20% bigger than the old 10 */
-        const sc = 12.0 / maxDim
-        model.position.sub(centre)
-        model.scale.setScalar(sc)
-        model.position.y -= size.y * sc * 0.15
-        model.updateMatrixWorld(true)
-      }, undefined, (e) => console.error('GLB error:', e))
+      function place(obj: any, x: number, y: number, z: number) {
+        obj.position.set(x, y, z); return obj
+      }
 
-      const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-      const cam  = { x: p0.pos[0], y: p0.pos[1], z: p0.pos[2],
-                     lx: p0.look[0], ly: p0.look[1], lz: p0.look[2] }
+      /* ── Building group ───────────────────────────────────────── */
+      const bld = new THREE.Group()
+      scene.add(bld)
 
-      function moveAxis(cur: number, tgt: number): number {
+      /* Ground plane */
+      bld.add(place(box(60, 0.1, 40, toonMat, 5), 0, -0.05, -5))
+
+      /* Plinth */
+      bld.add(place(box(38, 0.45, 22, toonMat, 10), 0, 0.22, -1))
+
+      /* ── Main Central Mass ──────────────────────────────────────
+         Glass curtain wall (center) + solid siding walls (left/right)       */
+      const centralBack = box(14, 5.5, 0.4)
+      place(centralBack, 0, 3.2, -5.8)
+      bld.add(centralBack)
+
+      /* Glass curtain wall — front face */
+      const glassWall = new THREE.Group()
+      glassWall.add(new THREE.Mesh(new THREE.PlaneGeometry(9, 5), glassMat))
+      glassWall.add(mkEdges(new THREE.PlaneGeometry(9, 5), 1, 0.01))
+      /* Vertical mullions */
+      for (let i = 0; i <= 5; i++) {
+        const m = box(0.07, 5, 0.12, darkMat, 5)
+        place(m, -4.5 + i * 1.8, 3.0, 5.02)
+        glassWall.add(m)
+      }
+      /* Horizontal transom */
+      const transom = box(9, 0.07, 0.12, darkMat, 5)
+      place(transom, 0, 4.5, 5.02)
+      glassWall.add(transom)
+      glassWall.position.set(0, 3.0, 5.0)
+      bld.add(glassWall)
+
+      /* Vertical siding — LEFT of glass (x: -7 to -4.5) */
+      for (let i = 0; i < 10; i++) {
+        const p = box(0.18, 5.5, 0.16, toonMat, 5)
+        place(p, -7 + i * 0.25, 3.0, 5.01)
+        bld.add(p)
+      }
+      /* Vertical siding — RIGHT of glass (x: 4.5 to 7) */
+      for (let i = 0; i < 10; i++) {
+        const p = box(0.18, 5.5, 0.16, toonMat, 5)
+        place(p, 4.5 + i * 0.25, 3.0, 5.01)
+        bld.add(p)
+      }
+
+      /* ── Left Wing ──────────────────────────────────────────────
+         Lower volume, full vertical siding on front face              */
+      const leftBack = box(12, 4.5, 0.4)
+      place(leftBack, -13, 2.7, -5.8)
+      bld.add(leftBack)
+      const leftSide = box(0.4, 4.5, 12)
+      place(leftSide, -19, 2.7, -0.2)
+      bld.add(leftSide)
+      /* Left wing siding — 36 panels */
+      for (let i = 0; i < 36; i++) {
+        const p = box(0.2, 4.5, 0.18, toonMat, 5)
+        place(p, -19 + i * 0.33, 2.7, 5.01)
+        bld.add(p)
+      }
+
+      /* ── Right Covered Area ─────────────────────────────────────
+         Open pavilion, columns visible                                */
+      const rightBack = box(9, 4.5, 0.4)
+      place(rightBack, 12.5, 2.7, -5.8)
+      bld.add(rightBack)
+      const rightSide = box(0.4, 4.5, 12)
+      place(rightSide, 17, 2.7, -0.2)
+      bld.add(rightSide)
+      /* Right siding */
+      for (let i = 0; i < 22; i++) {
+        const p = box(0.2, 4.5, 0.18, toonMat, 5)
+        place(p, 8 + i * 0.42, 2.7, 5.01)
+        bld.add(p)
+      }
+
+      /* ── Main Roof — wide flat cantilever ───────────────────── */
+      const mainRoof = box(44, 0.28, 25, toonMat, 8)
+      place(mainRoof, 0, 5.92, -2)
+      bld.add(mainRoof)
+      /* Thin top edge trim */
+      const roofTrim = box(44.5, 0.09, 25.5, darkMat, 5)
+      place(roofTrim, 0, 6.07, -2)
+      bld.add(roofTrim)
+      /* Soffit lines — horizontal hatching under the roof */
+      for (let i = 0; i < 18; i++) {
+        const sl = new THREE.Group()
+        sl.add(new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.PlaneGeometry(44, 25, 1, 1)),
+          lineMat
+        ))
+        sl.position.set(0, 5.75 - i * 0.005, -2)
+        sl.rotation.x = Math.PI / 2
+        if (i < 1) bld.add(sl)
+      }
+      /* Secondary lower overhang right */
+      const overhang = box(12, 0.18, 13, toonMat, 8)
+      place(overhang, 11, 4.85, 1)
+      bld.add(overhang)
+
+      /* ── Support Columns ────────────────────────────────────── */
+      const colPositions: [number,number,number][] = [
+        [-3, 2.25, 6.5], [3, 2.25, 6.5],          /* central front */
+        [-16, 2.25, 5.5], [-12, 2.25, 5.5],        /* left wing     */
+        [9, 2.25, 5.5], [13, 2.25, 5.5],           /* right         */
+        [17, 2.25, 0], [17, 2.25, -4],             /* right side    */
+      ]
+      colPositions.forEach(([x,y,z]) => {
+        bld.add(place(cyl(0.14, 4.5, 8, darkMat), x, y, z))
+      })
+
+      /* ── Pendant Lights ─────────────────────────────────────── */
+      const pendPos: [number,number,number][] = [
+        [-2.5, 5.0, 2], [-1.0, 4.6, 1.5], [0.5, 4.8, 2.5],
+        [2.0, 4.5, 1], [-0.2, 4.9, 3.5],
+      ]
+      pendPos.forEach(([x,y,z]) => {
+        const r = 0.65 + Math.random() * 0.35
+        const disk = cyl(r, 0.07, 20, toonMat)
+        place(disk, x, y, z)
+        bld.add(disk)
+        const stemH = 5.75 - y
+        const stem = cyl(0.022, stemH, 4, darkMat)
+        place(stem, x, y + stemH/2, z)
+        bld.add(stem)
+      })
+
+      /* ── Sculptures ─────────────────────────────────────────── */
+      /* Torus ring */
+      const ring = outlined(new THREE.TorusGeometry(1.0, 0.26, 16, 40), toonMat, 12)
+      ring.rotation.x = Math.PI / 2
+      place(ring, 0.5, 2.0, 3.5)
+      bld.add(ring)
+
+      /* Dark vase / organic drop shape */
+      const vasePoints = [
+        new THREE.Vector2(0, 0), new THREE.Vector2(0.45, 0.3),
+        new THREE.Vector2(0.65, 0.9), new THREE.Vector2(0.55, 1.8),
+        new THREE.Vector2(0.28, 2.6), new THREE.Vector2(0.08, 3.2),
+      ]
+      const vaseGeo = new THREE.LatheGeometry(vasePoints, 12)
+      const vase = outlined(vaseGeo, darkMat, 25, 0.015)
+      place(vase, -5, 0.45, 4)
+      bld.add(vase)
+
+      /* Oval standing stones — cluster of 5 on left */
+      for (let i = 0; i < 5; i++) {
+        const h = 1.6 + Math.random() * 0.8
+        const r = 0.5 + Math.random() * 0.2
+        const stone = outlined(new THREE.SphereGeometry(r, 10, 8), toonMat, 20, 0.012)
+        stone.scale.set(0.7, h, 0.65)
+        place(stone, -11 + i * 1.4, 0.45 + h * r, 5)
+        bld.add(stone)
+      }
+
+      /* ── Palm Trees ─────────────────────────────────────────── */
+      function makePalm(x: number, z: number, scale = 1.0) {
+        const g = new THREE.Group()
+        const h = 14, segs = 9
+        for (let i = 0; i < segs; i++) {
+          const r = Math.max(0.06, 0.28 - i * 0.022)
+          const seg = cyl(r - 0.015, h / segs, 7, toonMat)
+          seg.position.y = i * (h / segs) + h / segs / 2
+          seg.rotation.z = Math.sin(i * 0.3) * 0.04
+          g.add(seg)
+        }
+        /* Fronds */
+        for (let f = 0; f < 10; f++) {
+          const frondGeo = new THREE.PlaneGeometry(7, 1.8, 6, 2)
+          const frond = new THREE.Mesh(frondGeo, toonMat)
+          const fLines = mkEdges(frondGeo, 2, 0.008)
+          frond.add(fLines)
+          frond.position.y = h
+          const pivot = new THREE.Group()
+          pivot.position.y = h
+          pivot.rotation.y = (Math.PI * 2 / 10) * f + 0.15
+          frond.position.set(3.5, 0, 0)
+          frond.rotation.x = -Math.PI / 5 + (Math.random() * 0.3 - 0.15)
+          frond.rotation.z = -Math.PI / 12
+          pivot.add(frond)
+          g.add(pivot)
+        }
+        g.position.set(x, 0, z)
+        g.scale.setScalar(scale)
+        return g
+      }
+      bld.add(makePalm(-22, 6, 1.1))
+      bld.add(makePalm( 22, 4, 1.25))
+      bld.add(makePalm( 28, -10, 1.0))
+
+      /* ── Background Trees ───────────────────────────────────── */
+      function makeTree(x: number, z: number, scale = 1.0) {
+        const g = new THREE.Group()
+        /* Trunk */
+        const trunk = cyl(0.25, 6, 6, toonMat)
+        trunk.position.y = 3
+        g.add(trunk)
+        /* Canopy layers — overlapping spheres at different heights */
+        const canopyPositions: [number,number,number,number][] = [
+          [0, 9, 0, 4.5], [-2, 8, 1, 3.5], [2, 8.5, -1, 3.8],
+          [-1, 10.5, -1, 3.0], [1.5, 9.8, 1.5, 3.2],
+        ]
+        canopyPositions.forEach(([cx, cy, cz, cr]) => {
+          const cg = outlined(new THREE.SphereGeometry(cr, 8, 6), toonMat, 3, 0.025)
+          place(cg, cx, cy, cz)
+          g.add(cg)
+        })
+        g.position.set(x, 0, z)
+        g.scale.setScalar(scale)
+        return g
+      }
+      bld.add(makeTree(-28, -10, 1.3))
+      bld.add(makeTree(-18, -12, 1.1))
+      bld.add(makeTree( -8, -13, 1.2))
+      bld.add(makeTree(  5, -14, 1.0))
+      bld.add(makeTree( 18, -12, 1.15))
+      bld.add(makeTree( 28, -9, 1.05))
+
+      /* ── Foreground Boulders ─────────────────────────────────── */
+      const boulderData: [number,number,number,number,number,number][] = [
+        [3, 0.8, 7.5,  1.6, 0.9, 1.2],
+        [-3, 0.6, 8.0, 1.2, 0.8, 1.0],
+        [8, 0.5, 7.0,  1.0, 0.7, 0.9],
+      ]
+      boulderData.forEach(([x,y,z,sx,sy,sz]) => {
+        const b = outlined(new THREE.SphereGeometry(1, 10, 8), toonMat, 20, 0.015)
+        b.scale.set(sx, sy, sz)
+        place(b, x, y, z)
+        bld.add(b)
+      })
+
+      /* ── EffectComposer — paper grain ────────────────────────── */
+      const composer = new EffectComposer(renderer)
+      composer.addPass(new RenderPass(scene, camera))
+      const grainPass = new ShaderPass({
+        uniforms: { tDiffuse: { value: null }, uTime: { value: 0 } },
+        vertexShader: GRAIN_VERT, fragmentShader: GRAIN_FRAG,
+      })
+      composer.addPass(grainPass)
+
+      /* ── Camera lerp + snap ──────────────────────────────────── */
+      const lerp = (a: number, b: number, t: number) => a + (b-a)*t
+      const cam = {
+        x: p0.pos[0], y: p0.pos[1], z: p0.pos[2],
+        lx: p0.look[0], ly: p0.look[1], lz: p0.look[2],
+      }
+      function moveAxis(cur: number, tgt: number) {
         const d = tgt - cur
         return Math.abs(d) < SNAP ? tgt : cur + d * LERP
       }
 
+      const clock = new THREE.Clock()
+
       function animate() {
         rafId = requestAnimationFrame(animate)
+        const t = clock.getElapsedTime()
+        lineUniforms.uTime.value = t
+        grainPass.uniforms['uTime'].value = t * 0.12
 
-        /* Quantize progress to 0.1% steps → eliminates Lenis drift flicker */
         const p  = Math.round(Math.max(0, Math.min(1, progressRef.current)) * 1000) / 1000
         const N  = CAM_STOPS.length
         const fp = p * (N - 1)
         const i0 = Math.floor(fp), i1 = Math.min(i0 + 1, N - 1)
-        const t  = fp - i0
-        const e  = t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t)
+        const tt = fp - i0
+        const e  = tt < 0.5 ? 2*tt*tt : 1-2*(1-tt)*(1-tt)
         const a  = CAM_STOPS[i0], b = CAM_STOPS[i1]
 
         cam.x  = lerp(a.pos[0],  b.pos[0],  e)
@@ -237,43 +465,24 @@ export function Scene3D({ progressRef }: Props) {
         camera.position.z = moveAxis(camera.position.z, cam.z)
         camera.lookAt(cam.lx, cam.ly, cam.lz)
 
-        scene.overrideMaterial = normalMat
-        renderer.setRenderTarget(normalTarget)
-        renderer.render(scene, camera)
-
-        scene.overrideMaterial = toonMat
-        renderer.setRenderTarget(colorTarget)
-        renderer.render(scene, camera)
-
-        scene.overrideMaterial = whiteMat
-        renderer.setRenderTarget(depthTarget)
-        renderer.render(scene, camera)
-
-        scene.overrideMaterial = null
-        renderer.setRenderTarget(null)
-        renderer.render(fsScene, fsCamera)
+        composer.render()
       }
       animate()
 
       function onResize() {
-        const nW  = mount!.clientWidth, nH  = mount!.clientHeight
+        const nW = mount!.clientWidth, nH = mount!.clientHeight
         const nDPR = Math.min(window.devicePixelRatio, 2)
-        const nPW = Math.floor(nW * nDPR), nPH = Math.floor(nH * nDPR)
         camera.aspect = nW / nH
         camera.updateProjectionMatrix()
         renderer.setSize(nW, nH); renderer.setPixelRatio(nDPR)
-        normalTarget.setSize(nPW, nPH)
-        colorTarget.setSize(nPW, nPH)
-        depthTarget.setSize(nPW, nPH)
-        edgeMat.uniforms.res.value.set(nPW, nPH)
+        composer.setSize(nW * nDPR, nH * nDPR)
       }
       window.addEventListener('resize', onResize)
 
       ;(mount as any)._cleanup3D = () => {
         cancelAnimationFrame(rafId)
         window.removeEventListener('resize', onResize)
-        normalTarget.dispose(); colorTarget.dispose(); depthTarget.dispose()
-        whiteMat.dispose(); normalMat.dispose(); toonMat.dispose(); edgeMat.dispose()
+        toonMat.dispose(); darkMat.dispose(); lineMat.dispose()
         renderer.dispose()
         if (mount!.contains(renderer.domElement)) mount!.removeChild(renderer.domElement)
       }

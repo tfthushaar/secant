@@ -36,7 +36,7 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background: oklch(97.2% 0.006 78);
+  background: #f5f2ed;
   color: oklch(8.5% 0.007 72);
   overflow-x: hidden;
   line-height: 1.65;
