@@ -7,62 +7,62 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { Navigator } from '@/components/Navigator'
 import { CATEGORY_CONFIG, getItemsByCategory } from '@/lib/projects'
-import { useIsMobile } from '@/hooks/useIsMobile'
 
 const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
   ssr: false, loading: () => null,
 })
 
-/*
-  Arched coverflow formation — matches the reference image.
-  Cards are arranged on a gentle 3D arc:
-    • Centre card closest to viewer (z = 0, scale = 1)
-    • Adjacent cards recede in depth, rotate slightly toward centre
-    • Edge cards further back, smaller, more transparent
-  Drag/scroll shifts which card is centred.
-  TiltedCard hover tilt active on every card independently.
-*/
-
 const N = CATEGORY_CONFIG.length
+
+/* Card dimensions per breakpoint */
+const DIMS_DESKTOP = { w: 500, h: 316, s: 520 }
+const DIMS_MOBILE  = { w: 240, h: 152, s: 248 }
 
 export default function WorkPage() {
   const router       = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const trackRef     = useRef<HTMLDivElement>(null)
-  const isMobile     = useIsMobile()
 
-  /* Card dimensions respond to mobile breakpoint */
-  const CARD_W  = isMobile ? 240 : 500
-  const CARD_H  = isMobile ? 152 : 316
-  const SPACING = isMobile ? 248 : 520
+  /* dimsRef — read live in RAF/pointer callbacks without closure staleness */
+  const dimsRef = useRef(DIMS_DESKTOP)
+  /* isMobile state drives TiltedCard re-renders */
+  const [isMobile, setIsMobile] = useState(false)
 
-  /* Continuous centre position — fractional between cards during drag */
-  const centreF  = useRef(Math.floor(N / 2))  /* start centred on card 2 */
+  useEffect(() => {
+    const update = () => {
+      const m = window.innerWidth <= 768
+      setIsMobile(m)
+      dimsRef.current = m ? DIMS_MOBILE : DIMS_DESKTOP
+    }
+    update()
+    window.addEventListener('resize', update, { passive: true })
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  const centreF  = useRef(Math.floor(N / 2))
   const vel      = useRef(0)
   const down     = useRef(false)
   const dragged  = useRef(false)
   const startX   = useRef(0)
   const rafId    = useRef(0)
-
   const [snapIdx, setSnapIdx] = useState(Math.floor(N / 2))
 
-  /* ── Apply arch transforms directly to DOM (no re-renders) ───────────── */
+  /* applyArch reads spacing live from dimsRef — no stale closure */
   const applyArch = useCallback((centre: number) => {
+    const { s: S } = dimsRef.current
     const track = trackRef.current
     if (!track) return
     const cards = track.querySelectorAll<HTMLElement>('.arch-item')
     cards.forEach((el, i) => {
-      const off = i - centre            /* signed offset from centre */
-      const abs = Math.abs(off)
-      const sig = off >= 0 ? 1 : -1
-
-      const x       =  off * SPACING          /* horizontal spread      */
-      const y       =  abs * abs * 8           /* gentle upward arch     */
-      const z       = -abs * 130              /* depth recession         */
-      const rotY    =  sig * abs * 12         /* rotation toward centre  */
-      const scale   =  1 - abs * 0.12         /* centre largest          */
-      const opacity =  Math.max(0.28, 1 - abs * 0.22)
-
+      const off     = i - centre
+      const abs     = Math.abs(off)
+      const sig     = off >= 0 ? 1 : -1
+      const x       = off * S
+      const y       = abs * abs * 8
+      const z       = -abs * 130
+      const rotY    = sig * abs * 12
+      const scale   = 1 - abs * 0.12
+      const opacity = Math.max(0.28, 1 - abs * 0.22)
       el.style.transform = `translateX(${x}px) translateY(${y}px) translateZ(${z}px) rotateY(${rotY}deg) scale(${scale})`
       el.style.opacity   = String(opacity)
       el.style.zIndex    = String(Math.round(10 - abs * 3))
@@ -70,23 +70,17 @@ export default function WorkPage() {
     setSnapIdx(Math.round(centre))
   }, [])
 
-  /* ── RAF loop — momentum + snap ──────────────────────────────────────── */
+  /* RAF — smoother momentum (0.93 decay) and gentler snap (0.06 spring) */
   useEffect(() => {
     applyArch(centreF.current)
-
     const step = () => {
       if (!down.current) {
-        vel.current *= 0.86
+        vel.current     *= 0.93
         centreF.current += vel.current
-
-        /* Clamp */
-        centreF.current = Math.max(0, Math.min(N - 1, centreF.current))
-
-        /* Snap to nearest card */
-        const snap = Math.max(0, Math.min(N - 1, Math.round(centreF.current)))
-        centreF.current += (snap - centreF.current) * 0.10
+        centreF.current  = Math.max(0, Math.min(N - 1, centreF.current))
+        const snap = Math.round(Math.max(0, Math.min(N - 1, centreF.current)))
+        centreF.current += (snap - centreF.current) * 0.06
       }
-
       applyArch(centreF.current)
       rafId.current = requestAnimationFrame(step)
     }
@@ -94,40 +88,57 @@ export default function WorkPage() {
     return () => cancelAnimationFrame(rafId.current)
   }, [applyArch])
 
-  /* ── Pointer ─────────────────────────────────────────────────────────── */
+  /* ── Pointer events ────────────────────────────────────────────────────
+     Key fixes:
+     1. setPointerCapture on currentTarget (the container), not e.target
+        (the child element under the pointer) — this is what broke mobile.
+     2. e.preventDefault() in down + move — stops browser scroll takeover
+        on touch devices.
+     3. touch-action:none on the container (see JSX) — suppresses the
+        browser's default pan/zoom gesture before pointer events even fire.
+     4. Sensitivity scales with breakpoint — mobile swipes cover more.
+  ──────────────────────────────────────────────────────────────────────── */
   const onPointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
     down.current    = true
     dragged.current = false
     startX.current  = e.clientX
     vel.current     = 0
-    ;(e.target as Element).setPointerCapture?.(e.pointerId)
+    /* currentTarget = the container div that owns the handler */
+    e.currentTarget.setPointerCapture(e.pointerId)
   }, [])
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!down.current) return
+    e.preventDefault()
     const dx = e.clientX - startX.current
-    if (Math.abs(dx) > 5) dragged.current = true
-    /* Drag left = increase index (next card), drag right = decrease */
-    const delta = -dx / SPACING * 0.55
+    if (Math.abs(dx) > 3) dragged.current = true
+    const { s: S } = dimsRef.current
+    /* Mobile needs higher sensitivity — smaller swipe distance available */
+    const sensitivity = dimsRef.current === DIMS_MOBILE ? 1.4 : 0.58
+    const delta = -dx / S * sensitivity
     centreF.current = Math.max(0, Math.min(N - 1, centreF.current + delta))
-    vel.current     = delta
+    vel.current     = delta * 0.7   /* carry partial velocity into momentum */
     startX.current  = e.clientX
   }, [])
 
-  const onPointerUp = useCallback(() => { down.current = false }, [])
-
-  /* Scroll wheel */
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault()
-    centreF.current = Math.max(0, Math.min(N - 1, centreF.current + e.deltaY * 0.004))
+  const onPointerUp = useCallback(() => {
+    down.current = false
   }, [])
 
-  /* ── Click → navigate (only on centred card) ─────────────────────────── */
+  /* Wheel (desktop trackpad/mouse) */
+  const onWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault()
+    const delta = e.deltaY * (e.deltaMode === 1 ? 0.08 : 0.004)
+    centreF.current = Math.max(0, Math.min(N - 1, centreF.current + delta))
+  }, [])
+
+  /* Click → navigate (only on the centred card, not during drag) */
   const handleClick = useCallback((idx: number) => {
     if (dragged.current) return
     if (idx !== snapIdx) {
-      /* Jump to this card first */
-      centreF.current = idx; vel.current = 0
+      centreF.current = idx
+      vel.current = 0
       return
     }
     const cat = CATEGORY_CONFIG[idx]
@@ -137,6 +148,8 @@ export default function WorkPage() {
       onComplete: () => router.push(`/work/${cat.slug}`),
     })
   }, [snapIdx, router])
+
+  const { w: CARD_W, h: CARD_H } = isMobile ? DIMS_MOBILE : DIMS_DESKTOP
 
   return (
     <div
@@ -166,46 +179,40 @@ export default function WorkPage() {
           fontFamily: 'var(--font-sans), sans-serif',
           fontWeight: 300, fontSize: '0.5rem', letterSpacing: '0.42em',
           textTransform: 'uppercase', color: 'oklch(68% 0.006 74)',
-        }}>Drag or scroll to browse</span>
+        }}>{isMobile ? 'Swipe to browse' : 'Drag or scroll to browse'}</span>
       </header>
 
       {/* Title */}
       <div style={{
-        paddingTop: 'clamp(2rem,5vh,4rem)', paddingBottom: '0.5rem',
+        paddingTop: 'clamp(1.5rem,4vh,3.5rem)', paddingBottom: '0.5rem',
         textAlign: 'center', flexShrink: 0,
       }}>
         <p style={{
           fontFamily: 'var(--font-display), Georgia, serif',
-          fontWeight: 400, fontSize: 'clamp(1.2rem,2.5vw,2.2rem)',
+          fontWeight: 400, fontSize: 'clamp(1.1rem,2.5vw,2.2rem)',
           letterSpacing: '0.02em', color: 'oklch(12% 0.007 72)', margin: 0,
         }}>
           Select a category
         </p>
       </div>
 
-      {/*
-        ── Arched coverflow gallery ──────────────────────────────────────────
-        perspective + preserve-3d: the arch curves cards into the screen.
-        Each .arch-item receives transform from applyArch() each RAF tick.
-        TiltedCard hover tilt operates in each card's local coordinate space.
-      */}
+      {/* Coverflow — touch-action:none prevents browser scroll stealing */}
       <div
         style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          perspective: '1100px',
+          perspective: isMobile ? '700px' : '1100px',
           perspectiveOrigin: '50% 52%',
           overflow: 'hidden',
-          cursor: down.current ? 'grabbing' : 'grab',
           userSelect: 'none',
+          touchAction: 'none',   /* critical: suppress native pan before pointer fires */
+          cursor: 'grab',
         }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
         onPointerCancel={onPointerUp}
         onWheel={onWheel}
       >
-        {/* Track — all cards are absolute children centred at 0,0 */}
         <div
           ref={trackRef}
           style={{
@@ -215,34 +222,24 @@ export default function WorkPage() {
           }}
         >
           {CATEGORY_CONFIG.map((cat, i) => {
-            const count = getItemsByCategory(cat.slug).length
+            const count    = getItemsByCategory(cat.slug).length
             const isActive = i === snapIdx
-
             return (
-              /*
-                Outer wrapper: arch-item CSS transform applied here.
-                Inner structure: TiltedCard (image only) + label below.
-                Label sits OUTSIDE the card so nothing overlaps the image.
-              */
               <div
                 key={cat.slug}
                 className="arch-item"
                 style={{
-                  position: 'absolute',
-                  top: 0, left: 0,
+                  position: 'absolute', top: 0, left: 0,
                   translate: '-50% -50%',
                   transformStyle: 'preserve-3d',
                   willChange: 'transform, opacity',
                   transition: 'none',
                   pointerEvents: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '14px',
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', gap: isMobile ? '8px' : '14px',
                 }}
                 onClick={() => handleClick(i)}
               >
-                {/* Card image — NO text overlay on top of the image */}
                 <TiltedCard
                   imageSrc={cat.heroImage}
                   altText={cat.label}
@@ -251,35 +248,29 @@ export default function WorkPage() {
                   containerHeight={`${CARD_H}px`}
                   imageWidth={`${CARD_W}px`}
                   imageHeight={`${CARD_H}px`}
-                  rotateAmplitude={isActive ? 9 : 2}
-                  scaleOnHover={isActive ? 1.06 : 1.02}
+                  rotateAmplitude={isActive ? (isMobile ? 6 : 9) : 2}
+                  scaleOnHover={isActive ? 1.04 : 1.02}
                   showMobileWarning={false}
                   showTooltip={false}
                   displayOverlayContent={false}
                 />
 
-                {/* Label BELOW the card — pure white, no gray */}
                 <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
                   <p style={{
                     fontFamily: 'var(--font-display), Georgia, serif',
                     fontWeight: 400,
-                    fontSize: `${Math.round(18 * (1 - Math.abs(i - snapIdx) * 0.12))}px`,
+                    fontSize: `${Math.round((isMobile ? 14 : 18) * (1 - Math.abs(i - snapIdx) * 0.12))}px`,
                     lineHeight: 1.1,
                     color: 'oklch(10% 0.007 72)',
-                    margin: 0,
-                    letterSpacing: '0.01em',
+                    margin: 0, letterSpacing: '0.01em',
                   }}>
                     {cat.label}
                   </p>
                   <p style={{
                     fontFamily: 'var(--font-sans), sans-serif',
-                    fontWeight: 300,
-                    fontSize: '9px',
-                    letterSpacing: '0.35em',
-                    textTransform: 'uppercase',
-                    color: 'oklch(48% 0.007 74)',
-                    opacity: 0.55,
-                    margin: '5px 0 0',
+                    fontWeight: 300, fontSize: isMobile ? '8px' : '9px',
+                    letterSpacing: '0.35em', textTransform: 'uppercase',
+                    color: 'oklch(48% 0.007 74)', opacity: 0.55, margin: '4px 0 0',
                   }}>
                     {count} works
                   </p>
