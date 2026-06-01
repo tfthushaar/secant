@@ -42,36 +42,39 @@ const VERT = /* glsl */`
     gl_Position  = projectionMatrix * viewMatrix * modelMatrix * vec4(position,1.0);
   }
 `
-/* 4-step toon — strong contrast for sketch depth */
+/*
+  Sketch shading — softer toon steps so it reads as a hand drawing,
+  not a flat 3D model. Midtones are closer together, shadows lighter.
+*/
 const TOON_FRAG = /* glsl */`
   uniform vec3 uLight;
   varying vec3 vWorldNormal;
   void main() {
     float d = max(dot(normalize(vWorldNormal), uLight), 0.0);
     vec3 c;
-    if      (d > 0.62) c = vec3(1.00);
-    else if (d > 0.38) c = vec3(0.87);
-    else if (d > 0.12) c = vec3(0.64);
-    else               c = vec3(0.40);
+    if      (d > 0.60) c = vec3(1.00);          /* lit: white          */
+    else if (d > 0.35) c = vec3(0.93);          /* mid-lit: near white */
+    else if (d > 0.10) c = vec3(0.78);          /* shadow: light gray  */
+    else               c = vec3(0.60);          /* deep: mid gray      */
     gl_FragColor = vec4(c, 1.0);
   }
 `
-/* Dark architectural elements (columns, frames, door) */
+/* Dark elements — charcoal, not black, so they read as ink not void */
 const DARK_FRAG = /* glsl */`
   uniform vec3 uLight;
   varying vec3 vWorldNormal;
   void main() {
     float d = max(dot(normalize(vWorldNormal), uLight), 0.0);
     vec3 c;
-    if (d > 0.55) c = vec3(0.22);
-    else if (d > 0.25) c = vec3(0.14);
-    else c = vec3(0.06);
+    if (d > 0.55) c = vec3(0.28);
+    else if (d > 0.25) c = vec3(0.18);
+    else c = vec3(0.10);
     gl_FragColor = vec4(c, 1.0);
   }
 `
-/* Glass — translucent pale blue */
+/* Glass — very faint wash, almost white, like traced paper */
 const GLASS_FRAG = /* glsl */`
-  void main() { gl_FragColor = vec4(0.76, 0.87, 0.90, 0.38); }
+  void main() { gl_FragColor = vec4(0.90, 0.95, 0.97, 0.22); }
 `
 
 interface Props { progressRef: React.MutableRefObject<number> }
@@ -128,7 +131,10 @@ export function Scene3D({ progressRef }: Props) {
         side: THREE.DoubleSide,
         depthWrite: false,
       })
-      const inkMat = new THREE.LineBasicMaterial({ color: 0x0a0a0a })
+      /* Sketch ink — dark gray, semi-transparent → pencil/fine-liner feel */
+      const inkMat = new THREE.LineBasicMaterial({
+        color: 0x1a1a1a, transparent: true, opacity: 0.65,
+      })
 
       /* ── Helpers ──────────────────────────────────────────────── */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -214,19 +220,23 @@ export function Scene3D({ progressRef }: Props) {
         at(box(15.2,0.06,0.12,darkMat,5), 4.0, y, 5.26)
       )
 
-      /* ── ENTRANCE DOOR — glass + dark frame, near stair ───────── */
-      /* Glass panel in leftmost bay */
-      at(new THREE.Mesh(new THREE.BoxGeometry(1.55,2.70,0.10), glassMat),
-        -2.65, EL+1.37, 5.28)
-      /* Aluminium frame — 4 sides */
-      at(box(0.06,2.78,0.12,darkMat,5), -3.48, EL+1.37, 5.29)  /* left  */
-      at(box(0.06,2.78,0.12,darkMat,5), -1.82, EL+1.37, 5.29)  /* right */
-      at(box(1.68,0.06,0.12,darkMat,5), -2.65, EL+2.74, 5.29)  /* top   */
-      at(box(1.68,0.06,0.12,darkMat,5), -2.65, EL+0.06, 5.29)  /* sill — raised 6cm above floor */
-      at(box(1.55,0.05,0.10,darkMat,5), -2.65, EL+1.05, 5.29)  /* mid   */
-      /* Bronze push-bar handle */
-      at(box(0.05,0.42,0.05,darkMat), -1.88, EL+1.38, 5.36)
-      at(box(0.22,0.05,0.05,darkMat), -1.88, EL+1.58, 5.36)
+      /* ── ENTRANCE DOOR — centred in glass facade, aligned with stair ──
+         Door centred at x=0 so it directly faces the staircase (x=-5.4).
+         The stair lands at the floor level (y=EL) and the door is the
+         first element you encounter straight ahead.                       */
+      const doorX = 0.0
+      at(new THREE.Mesh(new THREE.BoxGeometry(1.60,2.72,0.10), glassMat),
+        doorX, EL+1.38, 5.28)
+      at(new THREE.LineSegments(new THREE.EdgesGeometry(
+        new THREE.BoxGeometry(1.60,2.72,0.10),89),inkMat), doorX,EL+1.38,5.29)
+      /* Slim aluminium frame */
+      at(box(0.06,2.80,0.12,darkMat,5), doorX-0.85, EL+1.38, 5.29) /* L  */
+      at(box(0.06,2.80,0.12,darkMat,5), doorX+0.85, EL+1.38, 5.29) /* R  */
+      at(box(1.72,0.06,0.12,darkMat,5), doorX, EL+2.76, 5.29)       /* top*/
+      at(box(1.72,0.06,0.12,darkMat,5), doorX, EL+0.06, 5.29)       /* sill*/
+      /* Handle */
+      at(box(0.05,0.42,0.05,darkMat), doorX+0.76, EL+1.38, 5.36)
+      at(box(0.22,0.05,0.05,darkMat), doorX+0.76, EL+1.58, 5.36)
 
       /* ── PENDANT LIGHTS (inside, torus rings) ─────────────────── */
       ;[[0,0.3],[2.5,-0.2],[5,0.4],[7.5,-0.3],[10,0.1]].forEach(([px,pz],i) => {
@@ -253,23 +263,23 @@ export function Scene3D({ progressRef }: Props) {
         at(box(0.05,0.56,0.05,darkMat),-10.55+i*0.4, EL+0.62, 5.20)
       }
 
-      /* ── EXTERIOR STAIRCASE ───────────────────────────────────── */
-      /* Side wall */
-      at(box(0.14,EL+0.4,4.2,darkMat,10), -6.4, (EL+0.4)/2, 5.9)
-      /* 6 treads ascending toward building (i=0 far+low, i=5 near+high) */
+      /* ── EXTERIOR STAIRCASE ────────────────────────────────────────
+         Side wall: changed from darkMat to toonMat and made thinner
+         so it reads as a light concrete wall, not a heavy dark block
+         blocking the stair view.                                        */
+      at(box(0.12, EL+0.35, 4.0, toonMat, 10), -6.5, (EL+0.35)/2, 5.85)
+      /* 6 treads ascending toward building */
       for (let i=0;i<6;i++) {
-        at(box(1.90,0.16,0.65,toonMat), -5.4, 0.28+i*0.30, 7.60-i*0.65)
-        /* Tread nose */
-        at(box(1.90,0.04,0.06,darkMat), -5.4, 0.20+i*0.30, 7.93-i*0.65)
+        at(box(1.85,0.16,0.65,toonMat), -5.5, 0.28+i*0.30, 7.55-i*0.65)
+        at(box(1.85,0.04,0.06,darkMat), -5.5, 0.20+i*0.30, 7.88-i*0.65)
       }
-      /* Landing slab at top */
-      at(box(1.90,0.22,0.95,toonMat), -5.4, EL+0.04, 4.50)
+      /* Landing slab at top, aligns with elevated floor */
+      at(box(1.85,0.22,0.90,toonMat), -5.5, EL+0.04, 4.48)
 
-      /* ── ENTRY CANOPY (thin projecting slab over door) ─────────── */
-      at(box(5.2,0.14,3.0,toonMat,8), -3.4, EL+3.85, 6.0)
-      /* Two slim support columns */
-      at(cyl(0.07,EL+3.75,darkMat,6), -1.5, (EL+3.75)/2, 7.3)
-      at(cyl(0.07,EL+3.75,darkMat,6), -5.2, (EL+3.75)/2, 7.3)
+      /* ── ENTRY CANOPY — simplified, slim linear slab only ───────── */
+      at(box(4.0,0.12,2.6,toonMat,8), -2.5, EL+3.60, 5.9)
+      /* Single central column — lighter than before */
+      at(cyl(0.06, EL+3.52, darkMat, 6), -2.5, (EL+3.52)/2, 7.1)
 
       /* ── SECONDARY TOWER — redesigned facade composition ──────────
          Three clear horizontal zones:
