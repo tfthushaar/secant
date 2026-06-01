@@ -199,12 +199,33 @@ export function Scene3D({ progressRef }: Props) {
       at(box(22.0, 0.24, 10.0, toonMat, 8), 1.0, EL, 0)         /* floor */
       at(box(15.0, 0.18, 10.0, toonMat, 8), 4.0, EL+4.80, 0)    /* ceiling */
 
-      /* ── MAIN PAVILION WALLS ──────────────────────────────────── */
-      at(box(15.2, 4.8, 0.24, toonMat), 4.0, EL+2.40, -5.2)  /* back wall     */
-      at(box(0.24, 4.8, 10.2, toonMat),-3.5, EL+2.40,  0)    /* left end wall */
-      at(box(0.24, 4.8, 10.2, toonMat),11.6, EL+2.40,  0)    /* right end wall*/
-      /* Interior dividing wall — visible through glass */
-      at(box(0.18, 4.0, 9.8, toonMat), 2.0, EL+2.20, 0)
+      /* ── MAIN PAVILION WALLS ──────────────────────────────────────
+         Left end wall replaced with grand terrace entry:
+           Solid upper band + solid side strips + wide central glass.
+           Entry sequence: stair → terrace deck → through this glass
+           into the main living space.                                  */
+      at(box(15.2, 4.8, 0.24, toonMat), 4.0, EL+2.40, -5.2)  /* back wall      */
+      at(box(0.24, 4.8, 10.2, toonMat),11.6, EL+2.40,  0)     /* right end wall */
+
+      /* Left end wall — 3-part terrace entry */
+      at(box(0.26, 1.0, 10.2, toonMat),  -3.5, EL+4.30, 0)    /* upper band     */
+      at(box(0.26, 3.8, 2.8,  toonMat),  -3.5, EL+1.90, -3.7) /* left solid     */
+      at(box(0.26, 3.8, 2.8,  toonMat),  -3.5, EL+1.90,  3.7) /* right solid    */
+      /* Central glass — wide sliding terrace doors (4.6 wide × 3.8 tall) */
+      at(new THREE.Mesh(new THREE.BoxGeometry(0.12,3.80,4.6),glassMat),
+        -3.5, EL+1.90, 0)
+      at(new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(0.12,3.80,4.6),89),inkMat),
+        -3.5, EL+1.90, 0)
+      /* Terrace door frame */
+      at(box(0.08, 3.88, 0.08, darkMat, 5), -3.5, EL+1.90, -2.38)
+      at(box(0.08, 3.88, 0.08, darkMat, 5), -3.5, EL+1.90,  2.38)
+      at(box(0.08, 0.08, 4.76, darkMat, 5), -3.5, EL+3.82,  0)
+      at(box(0.08, 0.08, 4.76, darkMat, 5), -3.5, EL+0.04,  0)
+      at(box(0.08, 3.80, 0.08, darkMat, 5), -3.5, EL+1.90,  0)    /* central mullion */
+
+      /* Interior dividing wall — living / bedroom separation */
+      at(box(0.18, 4.0, 9.8, toonMat), 7.5, EL+2.20, 0)
 
       /* ── CURTAIN WALL (full-height glass, front face) ─────────── */
       /* Glass mesh + ink perimeter outline */
@@ -251,13 +272,18 @@ export function Scene3D({ progressRef }: Props) {
         re.position.set(px,ry,pz); re.rotation.x=Math.PI/2; scene.add(re)
       })
 
-      /* ── LEFT TERRACE (open deck, elevated, asymmetric extend) ── */
+      /* ── LEFT TERRACE ──────────────────────────────────────────── */
       at(box(7.0, 0.22, 10.2, toonMat, 8), -7.0, EL, 0)
-      /* Perimeter rail — top bar only */
+      /* Back rail — full width (no stair here) */
       at(box(7.0,0.06,0.06,darkMat), -7.0, EL+0.92,-5.20)
-      at(box(7.0,0.06,0.06,darkMat), -7.0, EL+0.92, 5.20)
+      /* Front rail — split with 2-unit GAP at stair landing (x≈-5.5) */
+      /* Left segment: x=-10.5 to x=-6.6 */
+      at(box(3.9,0.06,0.06,darkMat), -8.55, EL+0.92, 5.20)
+      /* Right segment: x=-4.4 to x=-3.5 — short return toward pavilion */
+      at(box(0.9,0.06,0.06,darkMat), -3.95, EL+0.92, 5.20)
+      /* Left side rail (outer edge of terrace) */
       at(box(0.06,0.58,10.2,darkMat),-10.6,EL+0.64, 0)
-      /* Rail posts — vertical spacing */
+      /* Rail posts — only on left half (away from stair) */
       for (let i=0;i<=7;i++) {
         at(box(0.05,0.56,0.05,darkMat),-10.55+i*0.4, EL+0.62,-5.20)
         at(box(0.05,0.56,0.05,darkMat),-10.55+i*0.4, EL+0.62, 5.20)
@@ -350,6 +376,55 @@ export function Scene3D({ progressRef }: Props) {
       }
       /* Skylight strip */
       at(solid(new THREE.BoxGeometry(7,0.14,1.5),darkMat,5), 4, EL+5.28,-0.6)
+
+      /* ── INTERIOR FURNITURE (visible through curtain wall) ────────
+         Simple geometric forms — elegant & minimal, sketch-readable.
+         Layout: entry zone → living/dining → kitchen → bedroom        */
+
+      /* LIVING — sofa (L-shape) */
+      at(box(3.2, 0.60, 1.0, toonMat), 1.5, EL+0.42, 2.0)   /* main body  */
+      at(box(1.0, 0.60, 1.8, toonMat), 3.1, EL+0.42, 1.4)   /* return arm */
+      at(box(3.2, 0.38, 0.26, toonMat),1.5, EL+0.60, 2.60)  /* back rest  */
+      at(box(0.26,0.60, 1.0, toonMat), 3.2, EL+0.42, 2.0)   /* arm rest   */
+
+      /* Coffee table */
+      at(box(1.4, 0.10, 0.75, darkMat), 1.2, EL+0.42, 0.6)
+      at(box(0.06,0.40,0.06,darkMat),   0.6, EL+0.22, 0.35) /* leg x4 */
+      at(box(0.06,0.40,0.06,darkMat),   1.8, EL+0.22, 0.35)
+      at(box(0.06,0.40,0.06,darkMat),   0.6, EL+0.22, 0.85)
+      at(box(0.06,0.40,0.06,darkMat),   1.8, EL+0.22, 0.85)
+
+      /* DINING table + 4 chairs */
+      at(box(2.0, 0.08, 0.95, darkMat), 3.8, EL+0.80, -1.5) /* table top */
+      ;[2.95,4.65].forEach(tx =>
+        [-1.9,-1.1].forEach(tz => {
+          at(box(0.45,0.08,0.42,toonMat), tx, EL+0.78, tz)
+          at(box(0.45,0.55,0.06,toonMat), tx, EL+1.10, tz+0.22)
+        })
+      )
+
+      /* KITCHEN — counter against back wall */
+      at(box(5.5, 0.88, 0.65, toonMat),  5.75, EL+0.56, -4.55) /* counter */
+      at(box(5.5, 0.06, 0.65, darkMat),  5.75, EL+0.92, -4.55) /* worktop */
+      /* Upper cabinets */
+      at(box(5.5, 1.0, 0.40, toonMat),   5.75, EL+2.90, -4.62)
+      /* Kitchen island */
+      at(box(1.8, 0.88, 0.85, toonMat),  5.5, EL+0.56, -2.60)
+      at(box(1.8, 0.06, 0.85, darkMat),  5.5, EL+0.92, -2.60) /* stone top */
+
+      /* TV WALL PANEL — on dividing wall visible from living */
+      at(box(0.06, 0.75, 2.2, darkMat), 7.46, EL+2.0, -0.5)  /* TV screen */
+      at(box(0.06, 0.10, 2.4, toonMat), 7.46, EL+1.55,-0.5)  /* TV unit   */
+
+      /* BEDROOM — right zone beyond dividing wall */
+      at(box(1.9, 0.42, 2.4, toonMat), 9.6, EL+0.32, 1.0)    /* bed platform */
+      at(box(1.9, 0.30, 0.18,toonMat), 9.6, EL+0.56, 2.12)   /* headboard    */
+      /* Bedside tables */
+      at(box(0.45,0.48,0.45,toonMat), 8.62, EL+0.35,-0.12)
+      at(box(0.45,0.48,0.45,toonMat),10.58, EL+0.35,-0.12)
+      /* Wardrobe against back wall */
+      at(box(3.2, 3.6, 0.55, toonMat), 9.8, EL+2.0, -4.68)
+      at(box(3.2, 0.06, 0.55, darkMat),9.8, EL+3.83,-4.68)  /* top panel  */
 
       /* ── SCULPTURES & SITE ART ────────────────────────────────── */
       /* Tall corten monolith — left of entry path */
