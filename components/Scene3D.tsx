@@ -157,19 +157,28 @@ export function Scene3D({ progressRef }: Props) {
       }
 
       /* ── GROUND PLANE ─────────────────────────────────────────── */
-      at(box(80, 0.06, 60, toonMat, 5), 0, -0.03, -5)
+      /* threshold=89°: only the 4 outer perimeter edges show, no ugly top-face grid */
+      at(box(80, 0.06, 60, toonMat, 89), 0, -0.03, -5)
       /* Raised paving forecourt */
-      at(box(30, 0.20, 20, toonMat, 10), 1, 0.10, 0)
+      at(box(30, 0.20, 20, toonMat, 12), 1, 0.10, 0)
 
-      /* ── REFLECTING POOL ──────────────────────────────────────── */
-      at(box(10.0, 0.28, 6.2, toonMat, 10), -7.5, 0.14, 3.0)
-      /* Water surface — dark toned */
-      at(solid(new THREE.PlaneGeometry(9.2, 5.4), darkMat, 5)
-        .rotateX(-Math.PI/2), -7.5, 0.30, 3.0)
+      /* ── REFLECTING POOL — pulled back from stair axis ──────────── */
+      at(box(10.0, 0.28, 6.0, toonMat, 10), -7.5, 0.14, 1.5)
+      /* Water surface */
+      const waterGeo = new THREE.PlaneGeometry(9.0, 5.2)
+      const waterMesh = new THREE.Mesh(waterGeo, darkMat)
+      waterMesh.rotation.x = -Math.PI/2
+      waterMesh.position.set(-7.5, 0.30, 1.5)
+      scene.add(waterMesh)
+      const waterEdge = new THREE.LineSegments(
+        new THREE.EdgesGeometry(waterGeo, 5), inkMat)
+      waterEdge.rotation.x = -Math.PI/2
+      waterEdge.position.set(-7.5, 0.31, 1.5)
+      scene.add(waterEdge)
 
-      /* ── STEPPING STONE PATH — entry axis ────────────────────── */
+      /* ── STEPPING STONE PATH — leads to staircase ────────────────── */
       ;[-5.5,-4.0,-2.5,-1.0].forEach(x =>
-        at(box(0.9, 0.08, 0.9, toonMat, 10), x, 0.24, 6.0)
+        at(box(0.9, 0.08, 0.9, toonMat, 10), x, 0.24, 6.8)
       )
 
       /* ── PILOTIS (12 slender columns) ────────────────────────── */
@@ -192,7 +201,10 @@ export function Scene3D({ progressRef }: Props) {
       at(box(0.18, 4.0, 9.8, toonMat), 2.0, EL+2.20, 0)
 
       /* ── CURTAIN WALL (full-height glass, front face) ─────────── */
-      at(new THREE.Mesh(new THREE.BoxGeometry(15.2,4.80,0.10), glassMat),
+      /* Glass mesh + ink perimeter outline */
+      const cwGeo = new THREE.BoxGeometry(15.2,4.80,0.10)
+      at(new THREE.Mesh(cwGeo, glassMat), 4.0, EL+2.40, 5.24)
+      at(new THREE.LineSegments(new THREE.EdgesGeometry(cwGeo,89), inkMat),
         4.0, EL+2.40, 5.24)
       /* Vertical mullions (8 bays) */
       for (let i=0; i<=7; i++)
@@ -210,7 +222,7 @@ export function Scene3D({ progressRef }: Props) {
       at(box(0.06,2.78,0.12,darkMat,5), -3.48, EL+1.37, 5.29)  /* left  */
       at(box(0.06,2.78,0.12,darkMat,5), -1.82, EL+1.37, 5.29)  /* right */
       at(box(1.68,0.06,0.12,darkMat,5), -2.65, EL+2.74, 5.29)  /* top   */
-      at(box(1.68,0.06,0.12,darkMat,5), -2.65, EL+0.00, 5.29)  /* sill  */
+      at(box(1.68,0.06,0.12,darkMat,5), -2.65, EL+0.06, 5.29)  /* sill — raised 6cm above floor */
       at(box(1.55,0.05,0.10,darkMat,5), -2.65, EL+1.05, 5.29)  /* mid   */
       /* Bronze push-bar handle */
       at(box(0.05,0.42,0.05,darkMat), -1.88, EL+1.38, 5.36)
@@ -259,42 +271,58 @@ export function Scene3D({ progressRef }: Props) {
       at(cyl(0.07,EL+3.75,darkMat,6), -1.5, (EL+3.75)/2, 7.3)
       at(cyl(0.07,EL+3.75,darkMat,6), -5.2, (EL+3.75)/2, 7.3)
 
-      /* ── SECONDARY TOWER (right, perpendicular, taller) ─────────
-         Inspired by Tadao Ando — solid concrete forms, slot windows  */
-      const TH = 7.2   /* tower height */
+      /* ── SECONDARY TOWER — redesigned facade composition ──────────
+         Three clear horizontal zones:
+           Zone 1 (lower)  y=0–2.2   solid wall + sill beam
+           Zone 2 (middle) y=2.2–5.8 three wide slot windows
+           Zone 3 (upper)  y=5.8–7.2 five slim louvres (sun shading)
+         This separates windows and louvres so each reads clearly.    */
+      const TH = 7.2
+      /* Side walls + back wall */
       ;[[11.7,TH/2,0],[17.7,TH/2,0]].forEach(([x,y,z]) =>
         at(box(0.24,TH,13.5,toonMat,10),x,y,z)
       )
-      at(box(6.24, TH, 0.24, toonMat, 10), 14.7, TH/2,-7.0)  /* back  */
-      at(box(6.24, 0.24, 13.5, toonMat, 8), 14.7, TH+0.14, 0)/* roof  */
-      at(box(6.24, 1.40, 0.24, toonMat), 14.7, 2.6, 7.0)      /* base sill */
+      at(box(6.24, TH,   0.24, toonMat, 10), 14.7, TH/2,  -7.0)
+      at(box(6.24, 0.24, 13.5, toonMat,  8), 14.7, TH+0.14, 0)
 
-      /* Vertical slot windows — 4 deep reveals on front face */
-      ;[-1.5, 0.5, 2.5].forEach(wx =>
-        at(new THREE.Mesh(new THREE.BoxGeometry(0.8,2.8,0.12),glassMat),
-          14.7+wx, TH*0.55, 7.16)
-      )
-      ;[-1.5, 0.5, 2.5].forEach(wx => {
-        ;[[-0.43,2.8,0.16],[ 0.43,2.8,0.16]].forEach(([dx,h,d]) =>
-          at(box(0.06,h,d,darkMat,5), 14.7+wx+dx, TH*0.55, 7.18)
-        )
-        at(box(0.88,0.06,0.16,darkMat,5),14.7+wx,TH*0.55+1.4,7.18)
-        at(box(0.88,0.06,0.16,darkMat,5),14.7+wx,TH*0.55-1.4,7.18)
+      /* Zone 1 — solid lower wall + sill beam */
+      at(box(6.0, 2.20, 0.24, toonMat), 14.7, 1.10, 7.05)
+      at(box(6.2, 0.18, 0.30, darkMat), 14.7, 2.28, 7.08)  /* sill beam  */
+
+      /* Zone 2 — THREE tall slot windows, well-spaced across facade
+         Each: 1.15 wide × 3.4 tall with deep dark reveals              */
+      ;[12.55, 14.70, 16.85].forEach(wx => {
+        /* Glass panel */
+        at(new THREE.Mesh(new THREE.BoxGeometry(1.15,3.40,0.12),glassMat),
+          wx, 4.00, 7.10)
+        /* Dark reveals — left, right, top, bottom */
+        at(box(0.07,3.50,0.18,darkMat,5), wx-0.62, 4.00, 7.12)
+        at(box(0.07,3.50,0.18,darkMat,5), wx+0.62, 4.00, 7.12)
+        at(box(1.15,0.07,0.18,darkMat,5), wx, 5.72,        7.12)
+        at(box(1.15,0.07,0.18,darkMat,5), wx, 2.28,        7.12)
       })
+      /* Spandrel panels between windows */
+      at(box(0.95,3.40,0.22,toonMat), 13.62, 4.00, 7.06)
+      at(box(0.95,3.40,0.22,toonMat), 15.78, 4.00, 7.06)
 
-      /* Horizontal fin shading — 8 cream louvres on tower front */
-      for (let i=0;i<8;i++)
-        rot(at(box(6.0,0.10,0.95,toonMat),14.7,TH-0.5-i*0.62,7.5),
-          -0.18,0,0)
+      /* Horizontal band separating zones 2 and 3 */
+      at(box(6.2, 0.18, 0.28, darkMat), 14.7, 5.88, 7.08)
 
-      /* Tower secondary roof + parapet */
-      ;[[11.5,TH+0.42,0,0.20,0.42,13.8],[17.9,TH+0.42,0,0.20,0.42,13.8],
-        [14.7,TH+0.42,-7.2,6.6,0.42,0.20],[14.7,TH+0.42,7.2,6.6,0.42,0.20]
+      /* Zone 3 — 5 slim louvres, ABOVE windows only, subtle angle     */
+      /* Depth: 0.35 (not 0.95!) so they read as fins, not shelves     */
+      for (let i=0;i<5;i++) {
+        const ly = 6.10 + i*0.22
+        rot(at(box(5.7,0.07,0.35,toonMat), 14.7, ly, 7.22), -0.12,0,0)
+      }
+
+      /* Tower secondary roof + slim parapet */
+      ;[[11.5,TH+0.40,0,0.20,0.36,13.8],[17.9,TH+0.40,0,0.20,0.36,13.8],
+        [14.7,TH+0.40,-7.1,6.6,0.36,0.20],[14.7,TH+0.40,7.1,6.6,0.36,0.20]
       ].forEach(([x,y,z,w,h,d]) => at(box(w,h,d,darkMat),x,y,z))
 
       /* ── BRIDGE — connects main box to tower ─────────────────── */
-      at(box(2.0,0.22,9.8,toonMat,8), 10.8, EL, 0)  /* bridge deck     */
-      at(box(2.0,0.14,9.8,darkMat,8), 10.8, EL+4.40, 0) /* bridge soffit  */
+      at(box(2.0,0.22,9.8,toonMat,8), 10.8, EL, 0)           /* bridge deck   */
+      at(box(2.0,0.18,9.8,toonMat,8), 10.8, EL+4.80, 0)      /* bridge ceiling */
 
       /* ── MAIN ROOF (asymmetric cantilever) ───────────────────── */
       at(box(24.0,0.36,11.8,toonMat,8),  0.5, EL+5.10, 0)  /* slab */
@@ -334,9 +362,11 @@ export function Scene3D({ progressRef }: Props) {
         scene.add(new THREE.LineSegments(pg,inkMat))
       })
 
-      /* ── PERIMETER WALLS ──────────────────────────────────────── */
+      /* ── PERIMETER WALLS ─────────────────────────────────────────
+         Right wall moved to x=19.5 — previously at x=14.5 which was
+         INSIDE the secondary tower (x=11.7–17.7), causing clipping.  */
       at(box(0.18,0.75,12.0,toonMat,10),-15.5,0.55,4.5)
-      at(box(0.18,0.75,12.0,toonMat,10), 14.5,0.55,4.5)
+      at(box(0.18,0.75,12.0,toonMat,10), 19.5,0.55,4.5)
 
       /* ── CAMERA SYSTEM ────────────────────────────────────────── */
       const lerp=(a:number,b:number,t:number)=>a+(b-a)*t
