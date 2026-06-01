@@ -23,8 +23,14 @@ export function Navigator() {
     const overlay = overlayRef.current
     if (!overlay) return
 
-    const links = linksRef.current.filter(Boolean)
+    const links = linksRef.current.filter(Boolean) as HTMLElement[]
     const meta  = metaRef.current
+
+    /* Kill any in-progress tweens before starting new ones.
+       Without this, a tween that started during the previous open/close still
+       owns the clipPath property and the new tween races against it — the
+       overlay appears frozen at a mid-point ("cut in half") on reuse. */
+    gsap.killTweensOf([overlay, ...links, ...(meta ? [meta] : [])])
 
     if (open) {
       /* Reveal overlay from top */
