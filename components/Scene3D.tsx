@@ -3,55 +3,76 @@
 import { useEffect, useRef } from 'react'
 
 /*
-  Scene3D — "The Pavilion" — Hybrid sketch+realism renderer
-  ──────────────────────────────────────────────────────────
-  Architecture: Asymmetric elevated pavilion inspired by
-    Farnsworth House × Villa dall'Ava × Tadao Ando concrete
+  Scene3D — "Casa Horizonte"
+  ──────────────────────────
+  Architectural sketch of a modernist villa in the tradition of
+  Mies van der Rohe × Tadao Ando × Brazilian modernism.
 
-  Rendering: Two-pass hybrid
-    Pass 1 → PBR scene with shadows, MeshStandardMaterial
-    Pass 2 → EdgesGeometry ink lines on top (crisp architectural lines)
-    Result: Architectural sketch WITH real shadows and depth
+  Rendering: proven toon shader + selective ink edge lines.
+  • World-space flat normals → crisp 4-step toon shading
+  • EdgesGeometry LineSegments on each structural element
+  • Black ink lines, pure white background
+  • Result: hand-drawn architectural section perspective
 
-  The sketch lines give the drawing quality.
-  The PBR shading gives depth, weight and realism.
-  Together they look like a hand-rendered section perspective.
+  Building: asymmetric composition
+  • Long elevated glass pavilion on pilotis (Farnsworth DNA)
+  • Dramatic cantilevering left terrace
+  • Taller solid secondary tower (right, perpendicular)
+  • Ceremonial entry: reflecting pool → stepping stone path → stair
+  • Entry canopy, pendant lights, corten sculptures
 */
 
 const LERP = 0.10
 const SNAP = 0.001
 
 const CAM_STOPS = [
-  { pos: [22, 10, 24],  look: [4, 3.5,  0] }, /* three-quarter front   */
-  { pos: [ 0,  4, 20],  look: [1, 3.0,  3] }, /* zoom — entrance/stair */
-  { pos: [24,  6,  8],  look: [14,4.0,  0] }, /* right — secondary vol */
-  { pos: [10, 22, 20],  look: [4, 2.0,  0] }, /* high aerial           */
-  { pos: [-15, 7, 18],  look: [-2,3.0,  0] }, /* left — terrace        */
-  { pos: [ 4, 30,0.5],  look: [4, 0.0,  0] }, /* top-down plan         */
+  { pos: [24, 10, 26], look: [4, 3.5,  0] }, /* three-quarter front    */
+  { pos: [ 0,  4, 20], look: [0, 3.0,  3] }, /* zoom — entrance        */
+  { pos: [26,  6,  8], look: [15,4.0,  0] }, /* right — tower          */
+  { pos: [12, 22, 22], look: [4, 2.0,  0] }, /* aerial                 */
+  { pos: [-16, 7, 18], look: [-3,3.0,  0] }, /* left — terrace         */
+  { pos: [ 4, 32, 0.5],look: [4, 0.0,  0] }, /* top-down plan          */
 ]
 
-/* Refined architectural palette */
-const C = {
-  /* Surfaces */
-  offWhite:     0xF8F4EE,   /* main walls — warm plaster             */
-  concrete:     0xD8D3CB,   /* roof slab — béton brut                */
-  darkConcrete: 0x4A4642,   /* fascia, frame — dark poured concrete  */
-  warmGray:     0xC2BCB4,   /* floor plates, soffits                 */
-  sand:         0xD8CEBC,   /* left terrace deck                     */
-  stone:        0xCCC8C0,   /* stair treads, plinth                  */
-  /* Accents */
-  terracotta:   0xB86A48,   /* secondary volume — refined terracotta */
-  corten:       0x8C5535,   /* corten steel — sculptures, fins       */
-  glass:        0xA8C8D0,   /* curtain wall glass — cool blue-green  */
-  bronze:       0x7A6040,   /* handles, rails                        */
-  brass:        0xC4A03C,   /* pendant lights                        */
-  /* Site */
-  groundWarm:   0xD4CEBC,   /* paving — warm limestone               */
-  water:        0x3C5868,   /* reflecting pool — deep slate          */
-  soil:         0x6A5440,   /* planters                              */
-  moss:         0x7A8C68,   /* planter tops — low vegetation         */
-  nearBlack:    0x1E1C1A,   /* monoliths, door frame                 */
-}
+/* World-space toon vertex shader */
+const VERT = /* glsl */`
+  varying vec3 vWorldNormal;
+  void main() {
+    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    gl_Position  = projectionMatrix * viewMatrix * modelMatrix * vec4(position,1.0);
+  }
+`
+/* 4-step toon — strong contrast for sketch depth */
+const TOON_FRAG = /* glsl */`
+  uniform vec3 uLight;
+  varying vec3 vWorldNormal;
+  void main() {
+    float d = max(dot(normalize(vWorldNormal), uLight), 0.0);
+    vec3 c;
+    if      (d > 0.62) c = vec3(1.00);
+    else if (d > 0.38) c = vec3(0.87);
+    else if (d > 0.12) c = vec3(0.64);
+    else               c = vec3(0.40);
+    gl_FragColor = vec4(c, 1.0);
+  }
+`
+/* Dark architectural elements (columns, frames, door) */
+const DARK_FRAG = /* glsl */`
+  uniform vec3 uLight;
+  varying vec3 vWorldNormal;
+  void main() {
+    float d = max(dot(normalize(vWorldNormal), uLight), 0.0);
+    vec3 c;
+    if (d > 0.55) c = vec3(0.22);
+    else if (d > 0.25) c = vec3(0.14);
+    else c = vec3(0.06);
+    gl_FragColor = vec4(c, 1.0);
+  }
+`
+/* Glass — translucent pale blue */
+const GLASS_FRAG = /* glsl */`
+  void main() { gl_FragColor = vec4(0.76, 0.87, 0.90, 0.38); }
+`
 
 interface Props { progressRef: React.MutableRefObject<number> }
 
@@ -72,291 +93,258 @@ export function Scene3D({ progressRef }: Props) {
 
       /* ── Renderer ─────────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({ antialias: true })
-      renderer.setSize(W, H); renderer.setPixelRatio(dpr)
-      renderer.shadowMap.enabled = true
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap
-      renderer.outputColorSpace = THREE.SRGBColorSpace
-      renderer.toneMapping = THREE.ACESFilmicToneMapping
-      renderer.toneMappingExposure = 1.05
+      renderer.setSize(W, H)
+      renderer.setPixelRatio(dpr)
+      renderer.setClearColor(0xffffff, 1)
       mount.appendChild(renderer.domElement)
 
       const scene = new THREE.Scene()
       scene.background = new THREE.Color(0xffffff)
-      /* Subtle fog — creates atmospheric depth on long views */
-      scene.fog = new THREE.FogExp2(0xffffff, 0.008)
 
       const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 500)
       const p0 = CAM_STOPS[0]
       camera.position.set(p0.pos[0], p0.pos[1], p0.pos[2])
       camera.lookAt(p0.look[0], p0.look[1], p0.look[2])
 
-      /* ── Material factories ───────────────────────────────────── */
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function pbr(color: number, roughness = 0.75, metalness = 0, opts: any = {}) {
-        return new THREE.MeshStandardMaterial({ color, roughness, metalness, ...opts })
-      }
+      /* ── Shared materials ─────────────────────────────────────── */
+      const uLight = new THREE.Vector3(0.55, 1.0, 0.75).normalize()
 
-      /* Pre-built materials */
-      const mats = {
-        wall:     pbr(C.offWhite,   0.85, 0.00),
-        concrete: pbr(C.concrete,   0.72, 0.02),
-        darkConc: pbr(C.darkConcrete,0.40,0.08),
-        warmGray: pbr(C.warmGray,   0.80, 0.01),
-        sand:     pbr(C.sand,       0.88, 0.00),
-        stone:    pbr(C.stone,      0.68, 0.03),
-        terra:    pbr(C.terracotta, 0.82, 0.00),
-        corten:   pbr(C.corten,     0.72, 0.20),
-        glass:    pbr(C.glass,      0.04, 0.15, { transparent:true, opacity:0.42 }),
-        bronze:   pbr(C.bronze,     0.35, 0.65),
-        brass:    pbr(C.brass,      0.28, 0.80,
-                      { emissive: new THREE.Color(C.brass), emissiveIntensity: 0.15 }),
-        ground:   pbr(C.groundWarm, 0.92, 0.00),
-        water:    pbr(C.water,      0.04, 0.35, { transparent:true, opacity:0.90 }),
-        soil:     pbr(C.soil,       0.90, 0.00),
-        moss:     pbr(C.moss,       0.88, 0.00),
-        nearBlack:pbr(C.nearBlack,  0.55, 0.05),
-        cream:    pbr(0xEDEAE2,     0.75, 0.00),
-      }
+      const toonMat = new THREE.ShaderMaterial({
+        uniforms:       { uLight: { value: uLight } },
+        vertexShader:   VERT,
+        fragmentShader: TOON_FRAG,
+        side: THREE.FrontSide,
+      })
+      const darkMat = new THREE.ShaderMaterial({
+        uniforms:       { uLight: { value: uLight } },
+        vertexShader:   VERT,
+        fragmentShader: DARK_FRAG,
+        side: THREE.FrontSide,
+      })
+      const glassMat = new THREE.ShaderMaterial({
+        vertexShader: `void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+        fragmentShader: GLASS_FRAG,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      })
+      const inkMat = new THREE.LineBasicMaterial({ color: 0x0a0a0a })
 
-      /* ── Mesh helpers ─────────────────────────────────────────── */
+      /* ── Helpers ──────────────────────────────────────────────── */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lineMat = new THREE.LineBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.55 })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function addMesh(geo: any, mat: any, x=0,y=0,z=0,
-                       rx=0,ry=0,rz=0, shadow=true) {
-        const m = new THREE.Mesh(geo, mat)
-        m.position.set(x,y,z); m.rotation.set(rx,ry,rz)
-        if (shadow) { m.castShadow = true; m.receiveShadow = true }
-        scene.add(m)
-        /* Ink edge lines — architectural sketch overlay */
-        const edges = new THREE.EdgesGeometry(geo, 20)
-        const lines = new THREE.LineSegments(edges, lineMat)
-        lines.position.set(x,y,z); lines.rotation.set(rx,ry,rz)
-        scene.add(lines)
-        return m
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function box(w: number, h: number, d: number, mat: any,
-                   x=0, y=0, z=0, rx=0, ry=0, rz=0) {
-        return addMesh(new THREE.BoxGeometry(w, h, d), mat, x, y, z, rx, ry, rz)
+      function solid(geo: any, mat: any = toonMat, angle = 18) {
+        const g = new THREE.Group()
+        g.add(new THREE.Mesh(geo, mat))
+        const e = new THREE.EdgesGeometry(geo, angle)
+        g.add(new THREE.LineSegments(e, inkMat))
+        return g
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function cyl(r: number, h: number, mat: any, x=0,y=0,z=0, segs=16) {
-        return addMesh(new THREE.CylinderGeometry(r,r,h,segs), mat, x, y, z)
+      function at(o: any, x: number, y: number, z: number) {
+        o.position.set(x, y, z); scene.add(o); return o
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      function rot(o: any, rx: number, ry: number, rz: number) {
+        o.rotation.set(rx, ry, rz); return o
+      }
+      function box(w: number, h: number, d: number, mat: any = toonMat, angle = 18) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return solid(new THREE.BoxGeometry(w, h, d), mat as any, angle)
+      }
+      function cyl(r: number, h: number, mat: any = darkMat, segs = 8) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return solid(new THREE.CylinderGeometry(r, r, h, segs), mat as any, 15)
       }
 
-      /* ── GROUND + PAVING ──────────────────────────────────────── */
-      const gnd = new THREE.Mesh(new THREE.PlaneGeometry(90, 70), mats.ground)
-      gnd.rotation.x = -Math.PI/2; gnd.receiveShadow = true
-      scene.add(gnd)
-      /* Paving grid lines */
-      const grid = new THREE.GridHelper(60, 20, 0xC0BBB0, 0xC8C4BB)
-      grid.position.y = 0.01
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(grid.material as any).opacity = 0.18;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(grid.material as any).transparent = true
-      scene.add(grid)
-
-      /* Plinth/podium */
-      box(28, 0.20, 17, mats.stone, 2, 0.10, 0)
+      /* ── GROUND PLANE ─────────────────────────────────────────── */
+      at(box(80, 0.06, 60, toonMat, 5), 0, -0.03, -5)
+      /* Raised paving forecourt */
+      at(box(30, 0.20, 20, toonMat, 10), 1, 0.10, 0)
 
       /* ── REFLECTING POOL ──────────────────────────────────────── */
-      box(9.0, 0.30, 5.8, mats.stone, -7.5, 0.15, 3.5)
-      /* Water surface */
-      const wtr = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 5.0), mats.water)
-      wtr.rotation.x = -Math.PI/2; wtr.position.set(-7.5, 0.31, 3.5); wtr.receiveShadow = true
-      scene.add(wtr)
+      at(box(10.0, 0.28, 6.2, toonMat, 10), -7.5, 0.14, 3.0)
+      /* Water surface — dark toned */
+      at(solid(new THREE.PlaneGeometry(9.2, 5.4), darkMat, 5)
+        .rotateX(-Math.PI/2), -7.5, 0.30, 3.0)
 
-      /* ── PILOTIS (10 slender columns) ────────────────────────── */
-      ;[-6.5,-3.5,-0.5,2.5,5.5,8.0].forEach(x =>
-        [-3.8,3.8].forEach(z => cyl(0.12, 1.8, mats.darkConc, x, 0.9, z))
+      /* ── STEPPING STONE PATH — entry axis ────────────────────── */
+      ;[-5.5,-4.0,-2.5,-1.0].forEach(x =>
+        at(box(0.9, 0.08, 0.9, toonMat, 10), x, 0.24, 6.0)
       )
-      cyl(0.12, 1.8, mats.darkConc, 3.0, 0.9, 0)
-      cyl(0.12, 1.8, mats.darkConc, 0.5, 0.9, 0)
 
-      /* ── FLOOR PLATE + CEILING ────────────────────────────────── */
-      box(21.5, 0.24, 9.6, mats.warmGray,  0.5, 1.90, 0)  /* elevated floor */
-      box(15.0, 0.18, 9.0, mats.warmGray,  4.0, 7.00, 0)  /* interior ceiling */
-      box(15.0, 0.10, 9.0, mats.warmGray,  4.0, 2.12, 0)  /* interior floor vis */
+      /* ── PILOTIS (12 slender columns) ────────────────────────── */
+      const EL = 1.85  /* elevation of main floor */
+      ;[-6.5,-3.5,-0.5,2.5,5.5,8.5].forEach(x =>
+        [-4.2,4.2].forEach(z =>
+          at(cyl(0.11, EL, darkMat, 8), x, EL/2, z)
+        )
+      )
 
-      /* ── MAIN BOX WALLS ──────────────────────────────────────── */
-      box(15.0, 5.0, 0.22, mats.wall,  4.00, 4.50, -4.42) /* back wall      */
-      box(0.22, 5.0, 9.20, mats.wall, -3.45, 4.50,  0)     /* left end wall  */
-      box(0.22, 5.0, 9.20, mats.wall, 11.45, 4.50,  0)     /* right end wall */
-      /* Interior cross-wall (visible through glass) */
-      box(0.18, 4.2, 8.8, mats.warmGray, 2.0, 4.15, 0)
+      /* ── FLOOR + CEILING PLATES ───────────────────────────────── */
+      at(box(22.0, 0.24, 10.0, toonMat, 8), 1.0, EL, 0)         /* floor */
+      at(box(15.0, 0.18, 10.0, toonMat, 8), 4.0, EL+4.80, 0)    /* ceiling */
 
-      /* ── CURTAIN WALL (front glass) ──────────────────────────── */
-      /* Glass panels in 4 sections (door bay offset) */
-      ;[[4.0,4.5,4.38,15.0,5.0]].forEach(([x,y,z,w,h]) => {
-        const gp = new THREE.Mesh(new THREE.BoxGeometry(w,h,0.10), mats.glass)
-        gp.position.set(x,y,z); scene.add(gp)
+      /* ── MAIN PAVILION WALLS ──────────────────────────────────── */
+      at(box(15.2, 4.8, 0.24, toonMat), 4.0, EL+2.40, -5.2)  /* back wall     */
+      at(box(0.24, 4.8, 10.2, toonMat),-3.5, EL+2.40,  0)    /* left end wall */
+      at(box(0.24, 4.8, 10.2, toonMat),11.6, EL+2.40,  0)    /* right end wall*/
+      /* Interior dividing wall — visible through glass */
+      at(box(0.18, 4.0, 9.8, toonMat), 2.0, EL+2.20, 0)
+
+      /* ── CURTAIN WALL (full-height glass, front face) ─────────── */
+      at(new THREE.Mesh(new THREE.BoxGeometry(15.2,4.80,0.10), glassMat),
+        4.0, EL+2.40, 5.24)
+      /* Vertical mullions (8 bays) */
+      for (let i=0; i<=7; i++)
+        at(box(0.06,4.80,0.12,darkMat,5), -3.5+i*(15/7), EL+2.40, 5.26)
+      /* Horizontal transoms (3) */
+      ;[EL+1.4, EL+2.8, EL+4.2].forEach(y =>
+        at(box(15.2,0.06,0.12,darkMat,5), 4.0, y, 5.26)
+      )
+
+      /* ── ENTRANCE DOOR — glass + dark frame, near stair ───────── */
+      /* Glass panel in leftmost bay */
+      at(new THREE.Mesh(new THREE.BoxGeometry(1.55,2.70,0.10), glassMat),
+        -2.65, EL+1.37, 5.28)
+      /* Aluminium frame — 4 sides */
+      at(box(0.06,2.78,0.12,darkMat,5), -3.48, EL+1.37, 5.29)  /* left  */
+      at(box(0.06,2.78,0.12,darkMat,5), -1.82, EL+1.37, 5.29)  /* right */
+      at(box(1.68,0.06,0.12,darkMat,5), -2.65, EL+2.74, 5.29)  /* top   */
+      at(box(1.68,0.06,0.12,darkMat,5), -2.65, EL+0.00, 5.29)  /* sill  */
+      at(box(1.55,0.05,0.10,darkMat,5), -2.65, EL+1.05, 5.29)  /* mid   */
+      /* Bronze push-bar handle */
+      at(box(0.05,0.42,0.05,darkMat), -1.88, EL+1.38, 5.36)
+      at(box(0.22,0.05,0.05,darkMat), -1.88, EL+1.58, 5.36)
+
+      /* ── PENDANT LIGHTS (inside, torus rings) ─────────────────── */
+      ;[[0,0.3],[2.5,-0.2],[5,0.4],[7.5,-0.3],[10,0.1]].forEach(([px,pz],i) => {
+        const drop = 1.2+[0.6,0.3,0.8,0.1,0.5][i]
+        const ry   = EL+4.80-drop
+        at(cyl(0.015, drop, darkMat, 4), px, EL+4.80-drop/2, pz)
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(0.22,0.04,8,24), toonMat)
+        ring.position.set(px,ry,pz); ring.rotation.x=Math.PI/2; scene.add(ring)
+        const re = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.TorusGeometry(0.22,0.04,8,24),10), inkMat)
+        re.position.set(px,ry,pz); re.rotation.x=Math.PI/2; scene.add(re)
       })
-      /* Vertical mullions — 8 bays */
+
+      /* ── LEFT TERRACE (open deck, elevated, asymmetric extend) ── */
+      at(box(7.0, 0.22, 10.2, toonMat, 8), -7.0, EL, 0)
+      /* Perimeter rail — top bar only */
+      at(box(7.0,0.06,0.06,darkMat), -7.0, EL+0.92,-5.20)
+      at(box(7.0,0.06,0.06,darkMat), -7.0, EL+0.92, 5.20)
+      at(box(0.06,0.58,10.2,darkMat),-10.6,EL+0.64, 0)
+      /* Rail posts — vertical spacing */
       for (let i=0;i<=7;i++) {
-        box(0.07,5.0,0.14,mats.darkConc, -3.5+i*(15/7), 4.5, 4.40)
-      }
-      /* Horizontal transoms — 3 rails */
-      ;[3.0,4.4,5.8].forEach(y =>
-        box(15.0, 0.07, 0.14, mats.darkConc, 4.0, y, 4.40)
-      )
-
-      /* ── ENTRANCE DOOR (glass, near stair, leftmost bay) ─────── */
-      /* Glass panel */
-      const dg = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.8, 0.10), mats.glass)
-      dg.position.set(-2.6, 3.40, 4.44); scene.add(dg)
-      /* Thin dark frame */
-      ;[[0.07,2.88,0.14,-3.44,3.40,4.44],[0.07,2.88,0.14,-1.76,3.40,4.44]].forEach(
-        ([w,h,d,x,y,z]) => box(w,h,d,mats.darkConc,x,y,z)
-      )
-      box(1.74,0.07,0.14,mats.darkConc,-2.60,4.76,4.44) /* top rail    */
-      box(1.74,0.07,0.14,mats.darkConc,-2.60,2.02,4.44) /* bottom rail */
-      box(1.60,0.05,0.10,mats.darkConc,-2.60,3.10,4.44) /* mid rail    */
-      /* L-handle in bronze */
-      box(0.05,0.42,0.05,mats.bronze,-1.85,3.38,4.52)
-      box(0.22,0.05,0.05,mats.bronze,-1.85,3.58,4.52)
-
-      /* ── PENDANT LIGHTS (inside) ──────────────────────────────── */
-      const stemMat = pbr(C.nearBlack, 0.6)
-      ;[[-0.5,0],[2,0.3],[4.5,0],[7,-0.3],[9,0.2]].forEach(([px,pz],i) => {
-        const h = 1.4+[0.6,0.3,0.8,0.1,0.5][i]
-        /* Stem */
-        cyl(0.014, h, stemMat, px, 7-h/2, pz, 6)
-        /* Brass ring */
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.24,0.04,8,28), mats.brass)
-        ring.position.set(px, 7-h, pz); ring.rotation.x=Math.PI/2; scene.add(ring)
-        /* Warm point glow */
-        const pl = new THREE.PointLight(0xFFCC70, 0.50, 5)
-        pl.position.set(px, 7-h, pz); scene.add(pl)
-      })
-
-      /* ── LEFT TERRACE ─────────────────────────────────────────── */
-      box(6.2, 0.20, 9.6, mats.sand, -6.5, 1.90, 0)
-      /* Railing — thin flat bar */
-      box(6.0, 0.06, 0.06, mats.bronze, -6.5, 2.92, -4.38)
-      box(6.0, 0.06, 0.06, mats.bronze, -6.5, 2.92,  4.38)
-      box(0.06, 0.52, 9.60, mats.bronze, -9.45, 2.66, 0)
-      /* Rail posts */
-      for (let i=0;i<=6;i++) {
-        box(0.05,0.50,0.05,mats.bronze,-9.35+i*0.32,2.65,-4.38)
-        box(0.05,0.50,0.05,mats.bronze,-9.35+i*0.32,2.65, 4.38)
+        at(box(0.05,0.56,0.05,darkMat),-10.55+i*0.4, EL+0.62,-5.20)
+        at(box(0.05,0.56,0.05,darkMat),-10.55+i*0.4, EL+0.62, 5.20)
       }
 
       /* ── EXTERIOR STAIRCASE ───────────────────────────────────── */
       /* Side wall */
-      box(0.15, 2.10, 4.0, mats.darkConc, -6.4, 1.05, 5.9)
-      /* 6 treads ascending toward building */
+      at(box(0.14,EL+0.4,4.2,darkMat,10), -6.4, (EL+0.4)/2, 5.9)
+      /* 6 treads ascending toward building (i=0 far+low, i=5 near+high) */
       for (let i=0;i<6;i++) {
-        box(1.85, 0.16, 0.62, mats.stone, -5.5, 0.30+i*0.30, 7.50-i*0.62)
+        at(box(1.90,0.16,0.65,toonMat), -5.4, 0.28+i*0.30, 7.60-i*0.65)
         /* Tread nose */
-        box(1.85, 0.04, 0.06, mats.darkConc, -5.5, 0.22+i*0.30, 7.82-i*0.62)
+        at(box(1.90,0.04,0.06,darkMat), -5.4, 0.20+i*0.30, 7.93-i*0.65)
       }
-      /* Landing at top */
-      box(1.85, 0.20, 0.90, mats.stone, -5.5, 1.90, 4.45)
+      /* Landing slab at top */
+      at(box(1.90,0.22,0.95,toonMat), -5.4, EL+0.04, 4.50)
 
-      /* ── SECONDARY VOLUME (terracotta, right) ────────────────── */
-      /* Walls */
-      ;[[11.45,5.25,0],[17.45,5.25,0]].forEach(([x,y,z]) =>
-        box(0.22, 6.5, 13.2, mats.terra, x, y, z)
+      /* ── ENTRY CANOPY (thin projecting slab over door) ─────────── */
+      at(box(5.2,0.14,3.0,toonMat,8), -3.4, EL+3.85, 6.0)
+      /* Two slim support columns */
+      at(cyl(0.07,EL+3.75,darkMat,6), -1.5, (EL+3.75)/2, 7.3)
+      at(cyl(0.07,EL+3.75,darkMat,6), -5.2, (EL+3.75)/2, 7.3)
+
+      /* ── SECONDARY TOWER (right, perpendicular, taller) ─────────
+         Inspired by Tadao Ando — solid concrete forms, slot windows  */
+      const TH = 7.2   /* tower height */
+      ;[[11.7,TH/2,0],[17.7,TH/2,0]].forEach(([x,y,z]) =>
+        at(box(0.24,TH,13.5,toonMat,10),x,y,z)
       )
-      box(6.2, 6.5, 0.22, mats.terra, 14.45, 5.25,-6.50)  /* back  */
-      box(6.2, 0.22, 13.2, mats.terra, 14.45, 8.62, 0)     /* top closing strip */
-      box(6.2, 1.40, 0.22, mats.terra, 14.45, 2.50, 6.50)  /* bottom fill  */
+      at(box(6.24, TH, 0.24, toonMat, 10), 14.7, TH/2,-7.0)  /* back  */
+      at(box(6.24, 0.24, 13.5, toonMat, 8), 14.7, TH+0.14, 0)/* roof  */
+      at(box(6.24, 1.40, 0.24, toonMat), 14.7, 2.6, 7.0)      /* base sill */
 
-      /* Window slits × 3 */
-      ;[3.8,5.2,6.6].forEach(y => {
-        const wg = new THREE.Mesh(new THREE.BoxGeometry(5.0,0.55,0.10), mats.glass)
-        wg.position.set(14.45,y,6.52); scene.add(wg)
-        box(5.0,0.10,0.16,mats.darkConc,14.45,y+0.33,6.52)
-        box(5.0,0.10,0.16,mats.darkConc,14.45,y-0.33,6.52)
+      /* Vertical slot windows — 4 deep reveals on front face */
+      ;[-1.5, 0.5, 2.5].forEach(wx =>
+        at(new THREE.Mesh(new THREE.BoxGeometry(0.8,2.8,0.12),glassMat),
+          14.7+wx, TH*0.55, 7.16)
+      )
+      ;[-1.5, 0.5, 2.5].forEach(wx => {
+        ;[[-0.43,2.8,0.16],[ 0.43,2.8,0.16]].forEach(([dx,h,d]) =>
+          at(box(0.06,h,d,darkMat,5), 14.7+wx+dx, TH*0.55, 7.18)
+        )
+        at(box(0.88,0.06,0.16,darkMat,5),14.7+wx,TH*0.55+1.4,7.18)
+        at(box(0.88,0.06,0.16,darkMat,5),14.7+wx,TH*0.55-1.4,7.18)
       })
 
-      /* Louvres — 9 cream horizontal fins, slightly angled */
+      /* Horizontal fin shading — 8 cream louvres on tower front */
+      for (let i=0;i<8;i++)
+        rot(at(box(6.0,0.10,0.95,toonMat),14.7,TH-0.5-i*0.62,7.5),
+          -0.18,0,0)
+
+      /* Tower secondary roof + parapet */
+      ;[[11.5,TH+0.42,0,0.20,0.42,13.8],[17.9,TH+0.42,0,0.20,0.42,13.8],
+        [14.7,TH+0.42,-7.2,6.6,0.42,0.20],[14.7,TH+0.42,7.2,6.6,0.42,0.20]
+      ].forEach(([x,y,z,w,h,d]) => at(box(w,h,d,darkMat),x,y,z))
+
+      /* ── BRIDGE — connects main box to tower ─────────────────── */
+      at(box(2.0,0.22,9.8,toonMat,8), 10.8, EL, 0)  /* bridge deck     */
+      at(box(2.0,0.14,9.8,darkMat,8), 10.8, EL+4.40, 0) /* bridge soffit  */
+
+      /* ── MAIN ROOF (asymmetric cantilever) ───────────────────── */
+      at(box(24.0,0.36,11.8,toonMat,8),  0.5, EL+5.10, 0)  /* slab */
+      /* Fascia — slim dark frame */
+      ;[[0.5,EL+4.92,-6.2,24.0,0.28,0.24],[0.5,EL+4.92,6.2,24.0,0.28,0.24],
+        [-9.6,EL+4.92,0,0.24,0.28,11.8],[10.7,EL+4.92,0,0.24,0.28,11.8]
+      ].forEach(([x,y,z,w,h,d]) => at(box(w,h,d,darkMat),x,y,z))
+      /* Soffit lines — 8 explicit horizontal line segments */
       for (let i=0;i<9;i++) {
-        box(5.8, 0.10, 0.90, mats.cream, 14.45, 7.55-i*0.52, 6.9,
-            -0.20, 0, 0)
+        const sz = -5.8+i*1.46
+        const sg = new THREE.BufferGeometry()
+        sg.setAttribute('position', new THREE.BufferAttribute(
+          new Float32Array([-9.5,EL+4.96,sz, 10.6,EL+4.96,sz]),3))
+        scene.add(new THREE.LineSegments(sg,inkMat))
       }
-
-      /* ── SECONDARY ROOF + PARAPET ─────────────────────────────── */
-      box(6.8, 0.30, 13.8, mats.concrete, 14.45, 8.78, 0)
-      ;[[11.20,8.98,0,0.20,0.42,13.8],[17.70,8.98,0,0.20,0.42,13.8],
-        [14.45,8.98,-7.1,6.8,0.42,0.20],[14.45,8.98,7.1,6.8,0.42,0.20]
-      ].forEach(([x,y,z,w,h,d]) => box(w,h,d,mats.darkConc,x,y,z))
-
-      /* ── MAIN ROOF (asymmetric — extends further left) ────────── */
-      box(23.0, 0.36, 10.8, mats.concrete, 1.0, 7.18, 0)  /* slab */
-      /* Slim fascia — concrete colour, not charcoal, for elegance */
-      ;[[1.0,7.00,-5.6,23.0,0.30,0.24],[1.0,7.00,5.6,23.0,0.30,0.24],
-        [-9.0,7.00,0,0.24,0.30,10.8],[10.1,7.00,0,0.24,0.30,10.8]
-      ].forEach(([x,y,z,w,h,d]) => box(w,h,d,mats.darkConc,x,y,z))
-      /* Underside — warm canopy tone */
-      box(22.6, 0.06, 10.4, pbr(0xB8B2A8,0.88), 1.0, 6.82, 0, 0,0,0)
-      /* Skylight strip — dark tinted */
-      box(7.0, 0.14, 1.4, pbr(C.water,0.04,0.3,{transparent:true,opacity:0.85}), 4, 7.38,-0.5)
-
-      /* ── ENTRY CANOPY ─────────────────────────────────────────── */
-      /* Thin projecting slab above the door/stair */
-      box(5.0, 0.14, 2.8, mats.concrete, -3.5, 5.80, 5.8)
-      /* Two slim columns supporting it */
-      ;[-1.5,-5.5].forEach(x => cyl(0.08,3.70,mats.darkConc,x,2.90,6.8))
+      /* Skylight strip */
+      at(solid(new THREE.BoxGeometry(7,0.14,1.5),darkMat,5), 4, EL+5.28,-0.6)
 
       /* ── SCULPTURES & SITE ART ────────────────────────────────── */
-      /* Tall corten steel monolith — left of stair */
-      box(0.32, 3.2, 0.80, mats.corten, -4.2, 1.60, 7.8)
-      /* Low corten slab — angled near pool */
-      box(0.28, 1.60, 0.60, mats.corten, -2.5, 0.80, 8.5)
-      /* Gold disk on dark pedestal */
-      box(0.40, 0.90, 0.40, mats.nearBlack, 8.5, 0.45, 7.5)
-      const disk = new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,0.09,48), mats.brass)
-      disk.position.set(8.5,0.95,7.5); disk.rotation.y=0.5; scene.add(disk)
-      const dl = new THREE.LineSegments(new THREE.EdgesGeometry(
-        new THREE.CylinderGeometry(0.55,0.55,0.09,48),10), lineMat)
-      dl.position.set(8.5,0.95,7.5); dl.rotation.y=0.5; scene.add(dl)
+      /* Tall corten monolith — left of entry path */
+      at(box(0.30,3.60,0.75,darkMat,12), -4.5, 1.80, 8.5)
+      /* Horizontal corten slab on ground */
+      at(box(0.26,1.80,0.60,darkMat,12), -2.8, 0.90, 9.2)
+      /* Brass disk on slim pedestal — right forecourt */
+      at(box(0.38,0.92,0.38,darkMat), 9.5, 0.46, 8.0)
+      const disk = solid(new THREE.CylinderGeometry(0.58,0.58,0.10,40),toonMat,15)
+      disk.rotation.y=0.6; at(disk, 9.5, 0.97, 8.0)
 
       /* ── PLANTERS ─────────────────────────────────────────────── */
-      ;[[5.5,0.42,8.2],[1.8,0.42,8.8],[-1.8,0.42,8.3]].forEach(([px,py,pz]) => {
-        box(2.4, 0.58, 0.95, mats.soil, px, py, pz)
-        /* Green planting surface */
-        const gp = new THREE.Mesh(new THREE.PlaneGeometry(2.4,0.95), mats.moss)
-        gp.rotation.x=-Math.PI/2; gp.position.set(px,py+0.32,pz); scene.add(gp)
+      ;[[6.5,0.38,8.8],[2.5,0.38,9.4],[-1.0,0.38,8.8]].forEach(([px,py,pz]) => {
+        at(box(2.4,0.55,0.90,toonMat), px, py, pz)
+        /* Planting grid */
+        const pg = new THREE.BufferGeometry()
+        const pts: number[] = []
+        ;[-0.25,0,0.25].forEach(dz => pts.push(px-1.1,py+0.30,pz+dz,px+1.1,py+0.30,pz+dz))
+        pg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts),3))
+        scene.add(new THREE.LineSegments(pg,inkMat))
       })
 
       /* ── PERIMETER WALLS ──────────────────────────────────────── */
-      box(0.18, 0.70, 10.0, mats.stone, -15.0, 0.55, 5.0)
-      box(0.18, 0.70, 10.0, mats.stone,  13.5, 0.55, 5.0)
+      at(box(0.18,0.75,12.0,toonMat,10),-15.5,0.55,4.5)
+      at(box(0.18,0.75,12.0,toonMat,10), 14.5,0.55,4.5)
 
-      /* ── LIGHTING RIG ─────────────────────────────────────────── */
-      /* Key: warm late-afternoon sun from upper right */
-      const key = new THREE.DirectionalLight(0xFFF2DC, 2.0)
-      key.position.set(20,25,18); key.castShadow=true
-      key.shadow.mapSize.set(4096,4096)
-      key.shadow.camera.left=-40; key.shadow.camera.right=40
-      key.shadow.camera.top= 35; key.shadow.camera.bottom=-28
-      key.shadow.camera.far= 100; key.shadow.bias=-0.0005
-      key.shadow.normalBias=0.015
-      scene.add(key)
-      /* Cool sky fill — defines shadow faces */
-      const fill=new THREE.DirectionalLight(0xD5E8F5,0.50)
-      fill.position.set(-20,12,8); scene.add(fill)
-      /* Rim — back warm light wraps secondary volume */
-      const rim=new THREE.DirectionalLight(0xFFE4C0,0.65)
-      rim.position.set(8,16,-25); scene.add(rim)
-      /* Soft ambient */
-      scene.add(new THREE.AmbientLight(0xF2EDE6,0.48))
-      /* Sky/ground hemisphere */
-      scene.add(new THREE.HemisphereLight(0xFFF8F0,0xD4CEC8,0.25))
-      /* Underside fill (simulates AO under box) */
-      scene.add(Object.assign(new THREE.PointLight(0xF0EAE0,0.30,14),
-        { position: new THREE.Vector3(2,1.6,0) }))
-
-      /* ── Camera system ───────────────────────────────────────── */
+      /* ── CAMERA SYSTEM ────────────────────────────────────────── */
       const lerp=(a:number,b:number,t:number)=>a+(b-a)*t
       const cam={x:p0.pos[0],y:p0.pos[1],z:p0.pos[2],
                  lx:p0.look[0],ly:p0.look[1],lz:p0.look[2]}
-      const snap=(c:number,t:number)=>{const d=t-c;return Math.abs(d)<SNAP?t:c+d*LERP}
+      const snap=(c:number,t:number)=>{
+        const d=t-c; return Math.abs(d)<SNAP?t:c+d*LERP
+      }
 
       function animate(){
         rafId=requestAnimationFrame(animate)
@@ -379,7 +367,8 @@ export function Scene3D({ progressRef }: Props) {
       function onResize(){
         const nW=mount!.clientWidth,nH=mount!.clientHeight
         camera.aspect=nW/nH; camera.updateProjectionMatrix()
-        renderer.setSize(nW,nH); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2))
+        renderer.setSize(nW,nH)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio,2))
       }
       window.addEventListener('resize',onResize)
 
