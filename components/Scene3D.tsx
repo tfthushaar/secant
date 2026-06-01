@@ -153,15 +153,22 @@ export function Scene3D({ progressRef }: Props) {
         hm.position.set(4, y, 4.38); scene.add(hm)
       })
 
-      /* ── Entrance door (near stair) ───────────────────────────── */
-      const door = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.5, 0.1), mat(C.doorWalnut, { roughness: 0.6 }))
-      door.position.set(-2.6, 3.75, 4.4); scene.add(door)
-      ;[[-1.5, 3.75, 4.38],[-3.7, 3.75, 4.38]].forEach(([x,y,z]) => {
-        const fr = new THREE.Mesh(new THREE.BoxGeometry(0.1, 3.6, 0.12), mat(C.charcoal, { roughness: 0.4 }))
-        fr.position.set(x,y,z); scene.add(fr)
-      })
-      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.06, 0.06), mat(C.railBronze, { roughness: 0.3, metalness: 0.7 }))
-      handle.position.set(-2.0, 3.6, 4.48); scene.add(handle)
+      /* ── Entrance door — glass panel with dark frame, near stair ─ */
+      /* Door is a glass panel matching the curtain wall, set in the  */
+      /* leftmost bay where the staircase arrives at EL=2.0           */
+      const doorGlassMat = mat(C.aquaGlass, { transparent: true, opacity: 0.55, roughness: 0.04, metalness: 0.12 })
+      const dg = new THREE.Mesh(new THREE.BoxGeometry(1.55, 2.7, 0.10), doorGlassMat)
+      dg.position.set(-2.6, 3.35, 4.41); scene.add(dg)
+      /* Dark aluminium frame around door */
+      addBox(0.07, 2.78, 0.13, C.charcoal, -3.40, 3.35, 4.42) /* left stile  */
+      addBox(0.07, 2.78, 0.13, C.charcoal, -1.80, 3.35, 4.42) /* right stile */
+      addBox(1.69, 0.07, 0.13, C.charcoal, -2.60, 4.71, 4.42) /* top rail    */
+      addBox(1.69, 0.07, 0.13, C.charcoal, -2.60, 2.00, 4.42) /* bottom rail */
+      /* Horizontal mid-rail */
+      addBox(1.55, 0.05, 0.10, C.charcoal, -2.60, 3.0, 4.42)
+      /* Bronze L-handle */
+      addBox(0.05, 0.40, 0.05, C.railBronze, -1.90, 3.35, 4.50)
+      addBox(0.22, 0.05, 0.05, C.railBronze, -1.90, 3.55, 4.50)
 
       /* ── Pendant lights ───────────────────────────────────────── */
       const pMat = mat(C.pendantBrass, { roughness: 0.3, metalness: 0.8, emissive: new THREE.Color(C.pendantBrass), emissiveIntensity: 0.2 })
@@ -196,16 +203,27 @@ export function Scene3D({ progressRef }: Props) {
       )
       addBox(0.05, 0.5, 9, C.railBronze, -9.45, 2.4, 0, { roughness: 0.3, metalness: 0.6 })
 
-      /* ── Exterior staircase ───────────────────────────────────── */
+      /* ── Exterior staircase ───────────────────────────────────────
+         Steps ASCEND toward the building:
+         i=0 lowest (far from building, z=7.45), i=5 highest (z=4.35)
+         y rises 0.3→1.8 (from ground to EL=2.0 landing)              */
       const ssm = mat(C.stairSide, { roughness: 0.5 })
       const ss = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.1, 3.8), ssm)
-      ss.position.set(-5.5, 1.05, 6.2); ss.castShadow = true; scene.add(ss)
-      const trMat = mat(C.stone, { roughness: 0.7 })
+      ss.position.set(-6.4, 1.05, 5.9); ss.castShadow = true; scene.add(ss)
+      const trMat = mat(C.stone, { roughness: 0.65, metalness: 0.05 })
       for (let i = 0; i < 6; i++) {
-        const tr = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.15, 0.62), trMat)
-        tr.position.set(-5.5, 0.3 + i*0.3, 4.35 + i*0.62)
+        /* i=0 is LOWEST/FURTHEST; i=5 is HIGHEST/NEAREST to building */
+        const tr = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.15, 0.60), trMat)
+        tr.position.set(-5.5, 0.3 + i * 0.30, 7.45 - i * 0.62)
         tr.castShadow = true; tr.receiveShadow = true; scene.add(tr)
+        /* Tread nose (slight overhang lip for realism) */
+        const nose = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.04, 0.06),
+          mat(C.charcoal, { roughness: 0.6 }))
+        nose.position.set(-5.5, 0.3 + i*0.30 - 0.07, 7.45 - i*0.62 + 0.32)
+        scene.add(nose)
       }
+      /* Landing at top connecting stair to elevated floor */
+      addBox(1.8, 0.18, 0.8, C.stone, -5.5, 1.88, 4.42, { roughness: 0.65 })
 
       /* ── Secondary volume ─────────────────────────────────────── */
       ;[[11.45,5.25,0],[17.45,5.25,0]].forEach(([x,y,z]) =>
@@ -233,13 +251,17 @@ export function Scene3D({ progressRef }: Props) {
         [14.45,8.94,-6.9,6.8,0.5,0.18],[14.45,8.94,6.9,6.8,0.5,0.18]
       ].forEach(([x,y,z,w,h,d]) => addBox(w,h,d,C.charcoal,x,y,z,{roughness:0.4}))
 
-      /* ── Main roof (asymmetric) ───────────────────────────────── */
-      addBox(22, 0.3, 10.2, C.concreteSlab, 1.5, 7.14, 0, { roughness: 0.75 })
-      ;[[1.5,6.88,-5.3,22,0.55,0.2],[1.5,6.88,5.3,22,0.55,0.2],
-        [-8.55,6.88,0,0.2,0.55,10.2],[11.55,6.88,0,0.2,0.55,10.2]
-      ].forEach(([x,y,z,w,h,d]) => addBox(w,h,d,C.charcoal,x,y,z,{roughness:0.4}))
-      addBox(22, 0.05, 10.2, C.canopyUnder, 1.5, 6.6, 0, { roughness: 0.9 })
-      addBox(8, 0.15, 1.0, C.skylight, 4, 7.32, -0.5, { roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.85 })
+      /* ── Main roof (asymmetric) — concrete slab + slim dark fascia */
+      addBox(22, 0.35, 10.2, C.concreteSlab, 1.5, 7.14, 0, { roughness: 0.70, metalness: 0.02 })
+      /* Fascia height reduced 0.55 → 0.32 so slab dominates visually */
+      ;[[1.5,6.97,-5.3,22,0.32,0.22],[1.5,6.97,5.3,22,0.32,0.22],
+        [-8.55,6.97,0,0.22,0.32,10.2],[11.55,6.97,0,0.22,0.32,10.2]
+      ].forEach(([x,y,z,w,h,d]) => addBox(w,h,d,C.charcoal,x,y,z,{roughness:0.35,metalness:0.05}))
+      /* Canopy underside — warm concrete shadow */
+      addBox(21.6, 0.05, 9.8, C.canopyUnder, 1.5, 6.80, 0, { roughness: 0.88 })
+      /* Skylight strip — dark tinted glass */
+      addBox(6, 0.12, 1.2, C.skylight, 4, 7.33, -0.5,
+        { roughness: 0.04, metalness: 0.25, transparent: true, opacity: 0.88 })
 
       /* ── Sculptures ───────────────────────────────────────────── */
       addBox(0.4, 2.8, 0.4, C.nearBlack, -4.0, 1.4, 7.5, { roughness: 0.8 })
@@ -260,20 +282,29 @@ export function Scene3D({ progressRef }: Props) {
         top.rotation.x = -Math.PI/2; top.position.set(px, py+0.32, pz); scene.add(top)
       })
 
-      /* ── Lighting ─────────────────────────────────────────────── */
-      const key = new THREE.DirectionalLight(0xFFF5E8, 2.8)
-      key.position.set(18, 20, 15); key.castShadow = true
-      key.shadow.mapSize.set(2048, 2048)
-      key.shadow.camera.left = -30; key.shadow.camera.right = 30
-      key.shadow.camera.top  =  30; key.shadow.camera.bottom = -30
-      key.shadow.camera.far  = 80;  key.shadow.bias = -0.001
+      /* ── Lighting — refined for realism ─────────────────────────── */
+      /* Key: warm afternoon sun */
+      const key = new THREE.DirectionalLight(0xFFF3DC, 2.2)
+      key.position.set(18, 22, 16); key.castShadow = true
+      key.shadow.mapSize.set(4096, 4096)
+      key.shadow.camera.left = -35; key.shadow.camera.right = 35
+      key.shadow.camera.top  =  30; key.shadow.camera.bottom = -25
+      key.shadow.camera.far  = 90;  key.shadow.bias = -0.0005
+      key.shadow.normalBias = 0.02
       scene.add(key)
-      const fill = new THREE.DirectionalLight(0xE8EFF5, 0.6)
-      fill.position.set(-15, 8, 5); scene.add(fill)
-      const rim = new THREE.DirectionalLight(0xFFF0D8, 0.9)
-      rim.position.set(5, 12, -20); scene.add(rim)
-      scene.add(new THREE.AmbientLight(0xF5EEE4, 0.45))
-      scene.add(new THREE.HemisphereLight(0xFFF5E0, 0xD8D2C8, 0.3))
+      /* Fill: cool sky from left */
+      const fill = new THREE.DirectionalLight(0xD8EAF5, 0.55)
+      fill.position.set(-18, 10, 6); scene.add(fill)
+      /* Rim: warm back-light defines secondary volume edge */
+      const rim = new THREE.DirectionalLight(0xFFE8C8, 0.7)
+      rim.position.set(6, 14, -22); scene.add(rim)
+      /* Soft ambient */
+      scene.add(new THREE.AmbientLight(0xF0EAE0, 0.50))
+      /* Sky/ground hemisphere — warm top, cool bottom bounce */
+      scene.add(new THREE.HemisphereLight(0xFFF8F0, 0xD0CCCA, 0.28))
+      /* Subtle fill under the elevated box to soften column shadows */
+      const underFill = new THREE.PointLight(0xF5EFE6, 0.35, 12)
+      underFill.position.set(2, 1.5, 0); scene.add(underFill)
 
       /* ── Camera lerp + snap ───────────────────────────────────── */
       const lerp = (a: number, b: number, t: number) => a + (b-a)*t
