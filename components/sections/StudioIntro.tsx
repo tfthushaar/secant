@@ -38,7 +38,8 @@ function Rule() {
   cleanly against the 3D model background without masking the model at all.
 */
 /* Minimal shadow — just enough to lift text off the model, not a glow */
-const TEXT_SHADOW = '0 1px 4px rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.6)'
+/* Stronger halo for legibility over the PBR-rendered model */
+const TEXT_SHADOW = '0 1px 8px rgba(255,255,255,0.98), 0 0 24px rgba(255,255,255,0.85), 0 0 48px rgba(255,255,255,0.55)'
 
 /* ── Section 1: Manifesto — left content, model right ──────────── */
 function Manifesto() {
@@ -68,14 +69,14 @@ function Manifesto() {
         opacity: 0,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(50% 0.007 74)', margin: '0 0 2rem',
+          color: 'oklch(38% 0.007 74)', margin: '0 0 2rem',
           textShadow: TEXT_SHADOW,
         }}>Design Philosophy</p>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
           fontSize: 'clamp(2rem, 4.5vw, 5.5rem)',
           lineHeight: 1.08, letterSpacing: '-0.015em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
@@ -83,15 +84,15 @@ function Manifesto() {
         }}>
           Designing spaces<br />
           that inspire,<br />
-          <span style={{ fontWeight: 400, color: 'oklch(44% 0.007 74)' }}>
+          <span style={{ fontWeight: 480, color: 'oklch(36% 0.007 74)' }}>
             endure, and evolve.
           </span>
         </h2>
 
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 480,
           fontSize: 'clamp(0.85rem, 1.1vw, 1rem)', lineHeight: 1.85,
-          color: 'oklch(42% 0.007 74)', margin: '0 0 2.5rem', maxWidth: '38ch',
+          color: 'oklch(30% 0.007 74)', margin: '0 0 2.5rem', maxWidth: '38ch',
           textShadow: TEXT_SHADOW,
         }}>
           Every project begins with prolonged observation — of the site,
@@ -102,9 +103,9 @@ function Manifesto() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
           <Rule />
           <span style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
             fontSize: '0.6rem', letterSpacing: '0.35em', textTransform: 'uppercase',
-            color: 'oklch(52% 0.007 74)', textShadow: TEXT_SHADOW,
+            color: 'oklch(40% 0.007 74)', textShadow: TEXT_SHADOW,
           }}>Founded 1999 · Bangalore</span>
         </div>
       </div>
@@ -131,7 +132,7 @@ function Stats() {
 
   const items = [
     { n: '25+', label: 'Years of Practice', sub: 'Est. 1999, Bangalore' },
-    { n: '38',  label: 'Completed Projects', sub: 'Across South Asia' },
+    { n: '500+',  label: 'Completed Projects', sub: 'Across South Asia' },
     { n: '6',   label: 'Project Typologies', sub: 'Residential to Institutional' },
     { n: '3',   label: 'Design Partners', sub: 'Integrated studio model' },
   ]
@@ -149,9 +150,9 @@ function Stats() {
         opacity: 0,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(50% 0.007 74)', margin: '0 0 2.5rem',
+          color: 'oklch(38% 0.007 74)', margin: '0 0 2.5rem',
           textShadow: TEXT_SHADOW,
         }}>Practice</p>
 
@@ -166,21 +167,21 @@ function Stats() {
               paddingRight: 'clamp(0.8rem, 2vw, 1.5rem)',
             }}>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
                 fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1,
                 color: 'oklch(8% 0.007 72)', margin: '0 0 0.45rem',
                 letterSpacing: '-0.02em', textShadow: TEXT_SHADOW,
               }}>{n}</p>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 560,
                 fontSize: 'clamp(0.7rem, 0.85vw, 0.82rem)', letterSpacing: '0.05em',
-                color: 'oklch(22% 0.007 72)', margin: '0 0 0.18rem',
+                color: 'oklch(16% 0.007 72)', margin: '0 0 0.18rem',
                 textShadow: TEXT_SHADOW,
               }}>{label}</p>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
                 fontSize: '0.6rem', letterSpacing: '0.03em',
-                color: 'oklch(56% 0.007 74)', margin: 0, textShadow: TEXT_SHADOW,
+                color: 'oklch(44% 0.007 74)', margin: 0, textShadow: TEXT_SHADOW,
               }}>{sub}</p>
             </div>
           ))}
@@ -228,17 +229,18 @@ function Services() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '2.5rem' }}>
           <Rule />
           <p style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
             fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-            color: 'oklch(50% 0.007 74)', margin: 0,
+            color: 'oklch(38% 0.007 74)', margin: 0, textShadow: TEXT_SHADOW,
           }}>Services</p>
         </div>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
           fontSize: 'clamp(1.8rem, 3.5vw, 4rem)',
           lineHeight: 1.1, letterSpacing: '-0.01em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
+          textShadow: TEXT_SHADOW,
         }}>
           Full-spectrum<br />architecture.
         </h2>
@@ -251,14 +253,15 @@ function Services() {
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500,
                 fontSize: 'clamp(0.82rem, 1.1vw, 1rem)',
-                color: 'oklch(24% 0.007 72)', margin: 0, letterSpacing: '0.01em',
+                color: 'oklch(16% 0.007 72)', margin: 0, letterSpacing: '0.01em',
+                textShadow: TEXT_SHADOW,
               }}>{s}</p>
               <span style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
                 fontSize: '0.52rem', letterSpacing: '0.3em',
-                color: 'oklch(64% 0.006 74)',
+                color: 'oklch(52% 0.006 74)', textShadow: TEXT_SHADOW,
               }}>0{i + 1}</span>
             </div>
           ))}
@@ -297,35 +300,38 @@ function Contact() {
         opacity: 0,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 450,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(50% 0.007 74)', margin: '0 0 2rem',
+          color: 'oklch(38% 0.007 74)', margin: '0 0 2rem',
+          textShadow: TEXT_SHADOW,
         }}>Studio</p>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
           fontSize: 'clamp(2rem, 4.5vw, 5rem)',
           lineHeight: 1.06, letterSpacing: '-0.015em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
+          textShadow: TEXT_SHADOW,
         }}>
           Begin a<br />collaboration.
         </h2>
 
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 350,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
           fontSize: 'clamp(0.82rem, 1vw, 0.95rem)', lineHeight: 1.9,
-          color: 'oklch(42% 0.007 74)', margin: '0 0 2.5rem', maxWidth: '36ch',
+          color: 'oklch(28% 0.007 74)', margin: '0 0 2.5rem', maxWidth: '36ch',
+          textShadow: TEXT_SHADOW,
         }}>
-          535, 3rd Main, &#39;A&#39; Block (FF)<br />
-          Rajajinagar 2nd Stage<br />
-          Bangalore 560010, Karnataka
+          565, 1st Floor, 10th Cross Rd<br />
+          A Block, Milk Colony, Subramanyanagar<br />
+          Rajajinagar, Bengaluru, Karnataka 560010
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <Link href="/work" style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
             fontSize: '0.62rem', letterSpacing: '0.38em', textTransform: 'uppercase',
-            color: 'oklch(32% 0.007 72)', textDecoration: 'none',
+            color: 'oklch(22% 0.007 72)', textDecoration: 'none',
             display: 'inline-flex', alignItems: 'center', gap: '1rem',
             borderBottom: '1px solid oklch(82% 0.006 76)', paddingBottom: '0.5rem',
             width: 'fit-content',

@@ -41,12 +41,13 @@ export function Hero() {
           <div ref={titleRef} style={{ opacity: 0 }}>
             <h1 style={{
               fontFamily:    'var(--font-sans), "Helvetica Neue", Arial, sans-serif',
-              fontWeight:    200,
+              fontWeight:    300,
               fontSize:      'clamp(5rem, 14vw, 16rem)',
               lineHeight:    0.88, letterSpacing: '0.06em',
               textTransform: 'uppercase',
               color:         'oklch(8.5% 0.007 72)',
               margin: 0, userSelect: 'none',
+              textShadow:    '0 2px 16px rgba(255,255,255,0.92), 0 0 40px rgba(255,255,255,0.7)',
             }}>
               SECANT
             </h1>
@@ -57,17 +58,19 @@ export function Hero() {
             display: 'flex', alignItems: 'center', gap: '2rem',
           }}>
             <span style={{
-              fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
+              fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500,
               fontSize: 'clamp(0.7rem,1vw,0.95rem)',
               letterSpacing: '0.3em', textTransform: 'uppercase',
-              color: 'oklch(40% 0.007 74)',
+              color: 'oklch(32% 0.007 74)',
+              textShadow: '0 1px 8px rgba(255,255,255,0.95)',
             }}>Architecture Studio</span>
-            <span style={{ width: '3rem', height: '1px', background: 'oklch(78% 0.007 74)', display: 'block', flexShrink: 0 }} />
+            <span style={{ width: '3rem', height: '1px', background: 'oklch(68% 0.007 74)', display: 'block', flexShrink: 0 }} />
             <span style={{
-              fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+              fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
               fontSize: 'clamp(0.65rem,0.9vw,0.85rem)',
               letterSpacing: '0.28em', textTransform: 'uppercase',
-              color: 'oklch(50% 0.007 74)',
+              color: 'oklch(42% 0.007 74)',
+              textShadow: '0 1px 8px rgba(255,255,255,0.95)',
             }}>Bengaluru · Est. 1999</span>
           </div>
         </div>
@@ -76,9 +79,10 @@ export function Hero() {
         <div ref={scatterRef} style={{ opacity: 0, position: 'relative' }}>
           <span style={{
             position: 'absolute', bottom: 0, left: 0,
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
             fontSize: '0.58rem', letterSpacing: '0.38em', textTransform: 'uppercase',
-            color: 'oklch(46% 0.007 74)',
+            color: 'oklch(36% 0.007 74)',
+            textShadow: '0 1px 6px rgba(255,255,255,0.95)',
           }}>12°58&apos;N · 77°35&apos;E</span>
 
           <span style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', color: 'oklch(50% 0.007 74)' }} aria-hidden="true">
@@ -93,17 +97,19 @@ export function Hero() {
 
           <span style={{
             position: 'absolute', bottom: 0, right: 0,
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
             fontSize: 'clamp(0.6rem,0.9vw,0.85rem)',
             letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: 'oklch(38% 0.007 74)',
+            color: 'oklch(30% 0.007 74)',
+            textShadow: '0 1px 6px rgba(255,255,255,0.95)',
           }}>Space · Composed</span>
 
           <span className="hidden sm:block" style={{
             position: 'absolute', bottom: '2.5rem', right: 0,
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
             fontSize: '0.54rem', letterSpacing: '0.4em', textTransform: 'uppercase',
-            color: 'oklch(48% 0.007 74)',
+            color: 'oklch(38% 0.007 74)',
+            textShadow: '0 1px 6px rgba(255,255,255,0.95)',
             writingMode: 'vertical-rl', textOrientation: 'mixed', transform: 'rotate(180deg)',
           }}>01 / Home</span>
         </div>
