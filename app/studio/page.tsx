@@ -54,7 +54,7 @@ export default function StudioPage() {
         </div>
 
         {/* Two-column */}
-        <div style={{
+        <div className="studio-2col" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: 'clamp(3rem,6vw,8rem)', alignItems: 'start',
@@ -87,7 +87,7 @@ export default function StudioPage() {
         </div>
 
         {/* Contact */}
-        <div id="contact" style={{
+        <div id="contact" className="studio-2col" style={{
           marginTop: 'clamp(6rem,12vh,11rem)',
           paddingTop: 'clamp(3rem,6vh,5rem)',
           borderTop: `1px solid ${LINE}`,

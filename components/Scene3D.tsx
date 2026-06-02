@@ -41,6 +41,19 @@ const CAM_STOPS = [
   { pos: [12, 30,  2],  look: [12, 0.0, -4]  }, /* end — top-down plan                  */
 ]
 
+/* Mobile camera stops — pulled further back, centred on building.
+   Portrait aspect ≈ 0.89 means horizontal FoV shrinks to ~36° at 40°
+   vertical. Using 62° FOV + these positions keeps the full building
+   visible and centred in the narrower mobile canvas. */
+const CAM_STOPS_MOBILE = [
+  { pos: [10,  10, 42],  look: [10, 2.0, -2]  }, /* hero: full building centred   */
+  { pos: [ 5,   7, 36],  look: [ 8, 1.8,  0]  }, /* manifesto: entrance / gate    */
+  { pos: [30,   5, 10],  look: [14, 2.0, -3]  }, /* stats: right-side profile     */
+  { pos: [10,  20, 22],  look: [10, 0.5, -3]  }, /* services: aerial              */
+  { pos: [-4,   6, 22],  look: [ 4, 3.0, -2]  }, /* contact: left wing + stair    */
+  { pos: [10,  28,  3],  look: [10, 0.0, -4]  }, /* end: top-down plan            */
+]
+
 /* ── World-space toon vertex shader (shared by toon + dark) ─────── */
 const VERT = /* glsl */`
   varying vec3 vWorldNormal;
@@ -108,6 +121,11 @@ export function Scene3D({ progressRef }: Props) {
       const H   = mount.clientHeight || window.innerHeight
       const dpr = Math.min(window.devicePixelRatio, 2)
 
+      /* Portrait / narrow viewport = mobile — use wider FOV + zoomed-out stops */
+      const isMobileView = W < H || W < 560
+      const stops  = isMobileView ? CAM_STOPS_MOBILE : CAM_STOPS
+      const camFov = isMobileView ? 62 : 40
+
       /* ── Renderer ─────────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
@@ -125,8 +143,8 @@ export function Scene3D({ progressRef }: Props) {
       scene.background = new THREE.Color(0xfaf8f5)
 
       /* ── Camera ───────────────────────────────────────────────── */
-      const p0 = CAM_STOPS[0]
-      const camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 500)
+      const p0 = stops[0]
+      const camera = new THREE.PerspectiveCamera(camFov, W / H, 0.1, 500)
       camera.position.set(p0.pos[0], p0.pos[1], p0.pos[2])
       camera.lookAt(p0.look[0], p0.look[1], p0.look[2])
 
@@ -237,14 +255,14 @@ export function Scene3D({ progressRef }: Props) {
       function animate() {
         rafId = requestAnimationFrame(animate)
         const p  = Math.round(Math.max(0, Math.min(1, progressRef.current)) * 1000) / 1000
-        const N  = CAM_STOPS.length
+        const N  = stops.length
         const fp = p * (N - 1)
         const i0 = Math.floor(fp)
         const i1 = Math.min(i0 + 1, N - 1)
         const tt = fp - i0
         const e  = tt < 0.5 ? 2 * tt * tt : 1 - 2 * (1 - tt) * (1 - tt)
-        const a  = CAM_STOPS[i0]
-        const b  = CAM_STOPS[i1]
+        const a  = stops[i0]
+        const b  = stops[i1]
         cam.x  = lerp(a.pos[0],  b.pos[0],  e)
         cam.y  = lerp(a.pos[1],  b.pos[1],  e)
         cam.z  = lerp(a.pos[2],  b.pos[2],  e)

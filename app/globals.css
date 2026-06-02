@@ -162,6 +162,12 @@ a:hover, button:hover { opacity: 0.6; }
 
   /* Work page: arch coverflow cards */
   .arch-card-img { width: 260px !important; height: 165px !important; }
+
+  /* Studio page: collapse two-column grids to single column */
+  .studio-2col {
+    grid-template-columns: 1fr !important;
+    gap: clamp(2rem, 5vw, 3rem) !important;
+  }
 }
 
 /* ─── Utilities ─────────────────────────────────────────────────────────────  */
