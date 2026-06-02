@@ -3,41 +3,88 @@
 import { useEffect, useRef } from 'react'
 
 /*
-  Scene3D — PBR render of public/assets/base.glb
-  ─────────────────────────────────────────────
-  Full physically-based rendering pipeline:
-  · ACES Filmic tone mapping
-  · PCFSoft shadow maps (2048 px, radius 4)
-  · Directional sun + hemisphere + fill + ambient
-  · Glass: MeshPhysicalMaterial with transmission
-  · Fog to blend model edges with page background
+  Scene3D — architectural sketch renderer for public/assets/base.glb
+  ──────────────────────────────────────────────────────────────────
+  Sketch pipeline:
+  · Custom toon GLSL (smooth gradient, not posterised)
+  · Dark ink EdgeGeometry LineSegments on every mesh
+  · Pure white / warm-off-white background — reads as paper
+  · No PBR, no shadows, no tone-mapping
 
-  Coordinate space (after GLTF Y-up conversion from Blender Z-up):
-    X 0–22  (left → right)
-    Y 0–7   (ground → roof)
-    Z −11–+6 (back → front; compound wall at +6, front façade at −2)
+  Z-fighting / flicker fix (two layers):
+  1. logarithmicDepthBuffer: true  — massively improves depth precision,
+     eliminates fighting between close coplanar surfaces in the GLB
+  2. polygonOffset on toonMat + darkMat — pushes face fragments slightly
+     away from camera in the depth buffer, so ink LineSegments at the
+     exact same position always render in front → zero flicker on edges
+
+  Material name rules (read from Blender export):
+    contains "glass" / "water" → glassMat  (faint translucent wash)
+    contains "steel" / "concdark" / "dark" → darkMat (charcoal)
+    everything else → toonMat (off-white toon)
+
+  Camera coordinates (Three.js Y-up after GLTF conversion from Blender Z-up):
+    X same  |  Y = Blender Z (height)  |  Z = −Blender Y
+    Building front face  : Z =  0   Pool / forecourt : Z = +5
+    Gate                 : Z = +9   Building centre X:  ≈ 10
 */
 
-const LERP = 0.07
+const LERP = 0.08
 const SNAP = 0.0008
 
-/*
-  Six scroll-driven positions for the new Casa Terracotta model.
-  Three.js coordinates (Y-up, after GLTF conversion from Blender Z-up):
-    Building front face : Z =  0  (Blender Y=0)
-    Pool / forecourt    : Z = +5  (Blender Y=-5)
-    Gate                : Z = +9  (Blender Y=-9)
-    Building centre X   :  ≈ 13
-    Building height Y   :  0–5.8
-*/
 const CAM_STOPS = [
-  { pos: [32,  8, 24],  look: [10, 2.5,  2]  }, /* hero — three-quarter, pool foreground  */
-  { pos: [8,   3, 22],  look: [8,  2.0,  4]  }, /* manifesto — entrance zoom + gate       */
-  { pos: [36,  4, -4],  look: [20, 2.0, -4]  }, /* stats — carport / right profile        */
-  { pos: [12, 22, 20],  look: [12, 0.5, -2]  }, /* services — aerial overview             */
-  { pos: [-4,  5, 18],  look: [4,  3.5, -2]  }, /* contact — left terrace + stair         */
-  { pos: [12, 30,  2],  look: [12, 0.0, -4]  }, /* end — top-down plan                    */
+  { pos: [32,  8, 24],  look: [10, 2.5,  2]  }, /* hero — three-quarter front, pool fg  */
+  { pos: [8,   3, 22],  look: [8,  2.0,  4]  }, /* manifesto — entrance + gate          */
+  { pos: [36,  4, -4],  look: [20, 2.0, -4]  }, /* stats — carport / right profile      */
+  { pos: [12, 22, 20],  look: [12, 0.5, -2]  }, /* services — aerial overview           */
+  { pos: [-4,  6, 18],  look: [4,  3.5, -2]  }, /* contact — left wing + stair          */
+  { pos: [12, 30,  2],  look: [12, 0.0, -4]  }, /* end — top-down plan                  */
 ]
+
+/* ── World-space toon vertex shader (shared by toon + dark) ─────── */
+const VERT = /* glsl */`
+  varying vec3 vWorldNormal;
+  void main() {
+    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    gl_Position  = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
+  }
+`
+
+/* Off-white toon — smooth gradient, reads as hand-drawn mass model */
+const TOON_FRAG = /* glsl */`
+  uniform vec3 uLight;
+  varying vec3 vWorldNormal;
+  void main() {
+    float d = clamp(dot(normalize(vWorldNormal), uLight), 0.0, 1.0);
+    vec3 shadow = vec3(0.80, 0.79, 0.77);
+    vec3 lit    = vec3(1.00, 1.00, 0.99);
+    gl_FragColor = vec4(mix(shadow, lit, d), 1.0);
+  }
+`
+
+/* Dark / charcoal elements (steel, concrete trim) */
+const DARK_FRAG = /* glsl */`
+  uniform vec3 uLight;
+  varying vec3 vWorldNormal;
+  void main() {
+    float d = clamp(dot(normalize(vWorldNormal), uLight), 0.0, 1.0);
+    float b = mix(0.08, 0.34, d);
+    gl_FragColor = vec4(vec3(b), 1.0);
+  }
+`
+
+/* Glass — solid sketch-blue toon, same pipeline as toonMat.
+   Opaque + depthWrite prevents every source of glass flicker. */
+const GLASS_FRAG = /* glsl */`
+  uniform vec3 uLight;
+  varying vec3 vWorldNormal;
+  void main() {
+    float d = clamp(dot(normalize(vWorldNormal), uLight), 0.0, 1.0);
+    vec3 shadow = vec3(0.68, 0.80, 0.88);
+    vec3 lit    = vec3(0.84, 0.92, 0.97);
+    gl_FragColor = vec4(mix(shadow, lit, d), 1.0);
+  }
+`
 
 interface Props { progressRef: React.MutableRefObject<number> }
 
@@ -62,29 +109,20 @@ export function Scene3D({ progressRef }: Props) {
       const dpr = Math.min(window.devicePixelRatio, 2)
 
       /* ── Renderer ─────────────────────────────────────────────── */
-      /* logarithmicDepthBuffer eliminates Z-fighting between coplanar
-         facade overlays (glass panels, slat cladding) and solid body   */
-      const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true })
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        /* logarithmicDepthBuffer: massively improves depth-buffer
+           precision → eliminates Z-fighting between coplanar GLB
+           surfaces that cause the panel flicker                   */
+        logarithmicDepthBuffer: true,
+      })
       renderer.setSize(W, H)
       renderer.setPixelRatio(dpr)
-
-      /* PBR quality settings */
-      renderer.shadowMap.enabled = true
-      renderer.shadowMap.type    = THREE.PCFSoftShadowMap
-      renderer.toneMapping          = THREE.ACESFilmicToneMapping
-      renderer.toneMappingExposure  = 1.15
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(renderer as any).outputColorSpace = 'srgb'
-
-      renderer.setClearColor(0xf5f3f0, 1)
+      renderer.setClearColor(0xfaf8f5, 1)
       mount.appendChild(renderer.domElement)
 
-      /* ── Scene ────────────────────────────────────────────────── */
       const scene = new THREE.Scene()
-      scene.background = new THREE.Color(0xf5f3f0)
-      /* Subtle fog — same hue as background, fades distant geometry
-         naturally so the model blends into the white page   */
-      scene.fog = new THREE.FogExp2(0xf5f3f0, 0.008)
+      scene.background = new THREE.Color(0xfaf8f5)
 
       /* ── Camera ───────────────────────────────────────────────── */
       const p0 = CAM_STOPS[0]
@@ -92,55 +130,54 @@ export function Scene3D({ progressRef }: Props) {
       camera.position.set(p0.pos[0], p0.pos[1], p0.pos[2])
       camera.lookAt(p0.look[0], p0.look[1], p0.look[2])
 
-      /* ── LIGHTING ─────────────────────────────────────────────── */
+      /* ── Shared light direction ───────────────────────────────── */
+      const uLight = new THREE.Vector3(0.55, 1.0, 0.75).normalize()
 
-      /* Primary sun — warm golden-hour directional, casts soft shadows */
-      const sun = new THREE.DirectionalLight(0xfffbf0, 3.8)
-      sun.position.set(18, 32, 18)
-      sun.castShadow = true
-      sun.shadow.mapSize.set(2048, 2048)
-      sun.shadow.camera.near   = 1
-      sun.shadow.camera.far    = 120
-      sun.shadow.camera.left   = -45
-      sun.shadow.camera.right  =  45
-      sun.shadow.camera.top    =  45
-      sun.shadow.camera.bottom = -45
-      sun.shadow.bias          = -0.0004
-      sun.shadow.radius        = 4      /* soft penumbra */
-      scene.add(sun)
+      /* ── Sketch materials ─────────────────────────────────────── */
 
-      /* Sky hemisphere — warm sky above, cool concrete bounce below */
-      const hemi = new THREE.HemisphereLight(0xc8d8f0, 0xcfc6b0, 1.4)
-      scene.add(hemi)
-
-      /* Secondary fill — cool blue from front-left (simulates open sky) */
-      const fill = new THREE.DirectionalLight(0xd0e6ff, 1.0)
-      fill.position.set(-18, 14, 28)
-      scene.add(fill)
-
-      /* Ambient — prevents pure black in shadows */
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5))
-
-      /* ── GLASS MATERIAL (applied to glass meshes after GLB loads) ── */
-      const glassMat = new THREE.MeshPhysicalMaterial({
-        color:               0x9fcce0,
-        metalness:           0.0,
-        roughness:           0.05,
-        transmission:        0.88,
-        thickness:           0.6,
-        ior:                 1.50,
-        transparent:         true,
-        opacity:             0.35,
-        side:                THREE.DoubleSide,
-        depthWrite:          false,
-        /* polygon offset pushes glass fragments toward camera so they
-           always render in front of the solid body behind them        */
+      /* polygonOffset pushes face fragments slightly BACK in depth
+         buffer → ink LineSegments at identical Z always win → no flicker */
+      const toonMat = new THREE.ShaderMaterial({
+        uniforms:            { uLight: { value: uLight } },
+        vertexShader:        VERT,
+        fragmentShader:      TOON_FRAG,
+        side:                THREE.FrontSide,
         polygonOffset:       true,
-        polygonOffsetFactor: -2,
-        polygonOffsetUnits:  -2,
+        polygonOffsetFactor: 2,
+        polygonOffsetUnits:  2,
       })
 
-      /* ── LOAD GLB ─────────────────────────────────────────────── */
+      const darkMat = new THREE.ShaderMaterial({
+        uniforms:            { uLight: { value: uLight } },
+        vertexShader:        VERT,
+        fragmentShader:      DARK_FRAG,
+        side:                THREE.FrontSide,
+        polygonOffset:       true,
+        polygonOffsetFactor: 2,
+        polygonOffsetUnits:  2,
+      })
+
+      /* Glass: opaque solid-blue shader — no transparency, no depthWrite:false.
+         This is the definitive fix: transparent+depthWrite:false is what
+         causes sort-order flicker every frame on overlapping glass meshes. */
+      const glassMat = new THREE.ShaderMaterial({
+        uniforms:            { uLight: { value: uLight } },
+        vertexShader:        VERT,
+        fragmentShader:      GLASS_FRAG,
+        transparent:         false,
+        side:                THREE.FrontSide,
+        depthWrite:          true,
+        polygonOffset:       true,
+        polygonOffsetFactor: 2,
+        polygonOffsetUnits:  2,
+      })
+
+      /* Ink lines — pencil weight, soft opacity */
+      const inkMat = new THREE.LineBasicMaterial({
+        color: 0x1a1714, transparent: true, opacity: 0.28,
+      })
+
+      /* ── Load GLB ─────────────────────────────────────────────── */
       const loader = new GLTFLoader()
       loader.load(
         '/assets/base.glb',
@@ -151,31 +188,34 @@ export function Scene3D({ progressRef }: Props) {
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           model.traverse((child: any) => {
-            const mesh = child
-            if (!mesh.isMesh) return
+            if (!child.isMesh) return
 
             const matName: string = (
-              Array.isArray(mesh.material)
-                ? mesh.material[0]?.name
-                : mesh.material?.name
+              Array.isArray(child.material)
+                ? child.material[0]?.name
+                : child.material?.name
             )?.toLowerCase() ?? ''
 
-            /* Replace glass / water with proper transmission material */
+            /* Assign sketch shader by material name */
             if (matName.includes('glass') || matName.includes('water')) {
-              mesh.material  = glassMat
-              mesh.castShadow    = false
-              mesh.receiveShadow = true
-              return
+              child.material = glassMat
+            } else if (
+              matName.includes('steel') ||
+              matName.includes('concdark') ||
+              matName.includes('concretedark') ||
+              matName.includes('dark') ||
+              matName.includes('poolrim')
+            ) {
+              child.material = darkMat
+            } else {
+              child.material = toonMat
             }
 
-            /* All solid geometry casts and receives shadows */
-            mesh.castShadow    = true
-            mesh.receiveShadow = true
-
-            /* Ground plane — receive only (no self-cast artefacts) */
-            if (matName.includes('grass') || mesh.name?.toLowerCase().includes('ground')) {
-              mesh.castShadow = false
-            }
+            /* Ink edge lines — added as child so they share the mesh
+               transform; polygonOffset on the face mat means lines
+               always render on top at zero extra cost               */
+            const edges = new THREE.EdgesGeometry(child.geometry, 15)
+            child.add(new THREE.LineSegments(edges, inkMat))
           })
 
           scene.add(model)
@@ -184,7 +224,7 @@ export function Scene3D({ progressRef }: Props) {
         (err: unknown) => console.warn('GLB load error', err)
       )
 
-      /* ── CAMERA ANIMATION ─────────────────────────────────────── */
+      /* ── Camera animation ─────────────────────────────────────── */
       const lerp = (a: number, b: number, t: number) => a + (b - a) * t
       const cam = {
         x:  p0.pos[0],  y:  p0.pos[1],  z:  p0.pos[2],
@@ -202,7 +242,6 @@ export function Scene3D({ progressRef }: Props) {
         const i0 = Math.floor(fp)
         const i1 = Math.min(i0 + 1, N - 1)
         const tt = fp - i0
-        /* Ease-in-out between stops */
         const e  = tt < 0.5 ? 2 * tt * tt : 1 - 2 * (1 - tt) * (1 - tt)
         const a  = CAM_STOPS[i0]
         const b  = CAM_STOPS[i1]
@@ -220,7 +259,7 @@ export function Scene3D({ progressRef }: Props) {
       }
       animate()
 
-      /* ── RESIZE ───────────────────────────────────────────────── */
+      /* ── Resize ───────────────────────────────────────────────── */
       function onResize() {
         if (!mount) return
         const nW = mount.clientWidth
@@ -250,10 +289,6 @@ export function Scene3D({ progressRef }: Props) {
   }, [progressRef])
 
   return (
-    <div
-      ref={mountRef}
-      style={{ width: '100%', height: '100%' }}
-      aria-hidden="true"
-    />
+    <div ref={mountRef} style={{ width: '100%', height: '100%' }} aria-hidden="true" />
   )
 }

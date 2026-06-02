@@ -7,6 +7,7 @@ export const viewport: Viewport = {
 }
 import { ebGaramond, raleway } from '@/lib/fonts'
 import { CustomCursor } from '@/components/CustomCursor'
+import { TransitionBlink } from '@/components/TransitionBlink'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -36,7 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="grain">
         <CustomCursor />
-        {children}
+        <TransitionBlink>
+          {children}
+        </TransitionBlink>
       </body>
     </html>
   )

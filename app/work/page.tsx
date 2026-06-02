@@ -1,11 +1,11 @@
 'use client'
 
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { Navigator } from '@/components/Navigator'
+import { useNavigate } from '@/components/TransitionBlink'
 import { CATEGORY_CONFIG, getItemsByCategory } from '@/lib/projects'
 
 const TiltedCard = dynamic(() => import('@/components/TiltedCard'), {
@@ -19,7 +19,7 @@ const DIMS_DESKTOP = { w: 500, h: 316, s: 520 }
 const DIMS_MOBILE  = { w: 240, h: 152, s: 248 }
 
 export default function WorkPage() {
-  const router       = useRouter()
+  const { navigate } = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
   const trackRef     = useRef<HTMLDivElement>(null)
 
@@ -162,11 +162,8 @@ export default function WorkPage() {
     }
     const cat = CATEGORY_CONFIG[idx]
     if (!cat) return
-    gsap.to(containerRef.current, {
-      opacity: 0, y: -16, duration: 0.4, ease: 'power2.in',
-      onComplete: () => router.push(`/work/${cat.slug}`),
-    })
-  }, [snapIdx, router])
+    navigate(`/work/${cat.slug}`)
+  }, [snapIdx, navigate])
 
   const { w: CARD_W, h: CARD_H } = isMobile ? DIMS_MOBILE : DIMS_DESKTOP
 

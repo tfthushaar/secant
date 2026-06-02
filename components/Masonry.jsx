@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { gsap } from 'gsap'
+import { useNavigate } from './TransitionBlink'
 import './Masonry.css'
 
 const useMeasure = () => {
@@ -36,7 +36,7 @@ const Masonry = ({
   hoverScale = 0.97,
   blurToFocus = true,
 }) => {
-  const router = useRouter()
+  const { navigate } = useNavigate()
   const [containerRef, { width, height }] = useMeasure()
   const [aspectRatios, setAspectRatios] = useState({})
   const [ready, setReady] = useState(false)
@@ -179,12 +179,12 @@ const Masonry = ({
           key={item.id}
           data-masonry-key={item.id}
           className="masonry-item"
-          onClick={() => router.push(item.link)}
+          onClick={() => navigate(item.link)}
           onMouseEnter={() => handleMouseEnter(item)}
           onMouseLeave={() => handleMouseLeave(item)}
           role="button"
           tabIndex={0}
-          onKeyDown={e => { if (e.key === 'Enter') router.push(item.link) }}
+          onKeyDown={e => { if (e.key === 'Enter') navigate(item.link) }}
         >
           <div
             ref={el => { if (el) imgRefs.current[item.id] = el }}

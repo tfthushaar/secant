@@ -2,15 +2,16 @@
 
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
 import { workItems, CATEGORY_CONFIG } from '@/lib/projects'
 import { Navigator } from '@/components/Navigator'
 import { PageTransition } from '@/components/PageTransition'
+import { useNavigate } from '@/components/TransitionBlink'
 import { useIsMobile } from '@/hooks/useIsMobile'
 
 interface Props { slug: string }
 
 export function RenderDetailClient({ slug }: Props) {
+  const { navigate } = useNavigate()
   const isMobile = useIsMobile()
   const idx      = workItems.findIndex((w) => w.id === slug)
   if (idx === -1) notFound()
@@ -36,17 +37,22 @@ export function RenderDetailClient({ slug }: Props) {
         padding: '0 clamp(7rem,10vw,9rem) 0 clamp(1.2rem,4vw,2.5rem)',
         background: BG, borderBottom: `1px solid ${LINE}`,
       }}>
-        <Link href={catConfig ? `/work/${catConfig.slug}` : '/work'} style={{
-          fontWeight: 450, fontSize: '0.6rem', letterSpacing: '0.3em',
-          textTransform: 'uppercase', color: SOFT,
-          textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem',
-        }}>
+        <a
+          href={catConfig ? `/work/${catConfig.slug}` : '/work'}
+          onClick={e => { e.preventDefault(); navigate(catConfig ? `/work/${catConfig.slug}` : '/work') }}
+          style={{
+            fontWeight: 450, fontSize: '0.6rem', letterSpacing: '0.3em',
+            textTransform: 'uppercase', color: SOFT,
+            textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem',
+            cursor: 'pointer',
+          }}
+        >
           <svg width="14" height="7" viewBox="0 0 14 7" fill="none">
             <line x1="14" y1="3.5" x2="0" y2="3.5" stroke="currentColor" strokeWidth="0.8"/>
             <polyline points="4,1 1,3.5 4,6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
           </svg>
           {catConfig?.label ?? 'Work'}
-        </Link>
+        </a>
       </header>
 
       {/* Main layout: side-by-side on desktop, stacked on mobile */}
@@ -128,14 +134,22 @@ export function RenderDetailClient({ slug }: Props) {
                 display: 'flex', flexDirection: 'column', gap: '1rem',
                 marginTop: isMobile ? '1.5rem' : 0,
               }}>
-                <Link href={`/work/render/${prev.id}`} style={{ fontWeight: 450, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                <a
+                  href={`/work/render/${prev.id}`}
+                  onClick={e => { e.preventDefault(); navigate(`/work/render/${prev.id}`) }}
+                  style={{ fontWeight: 450, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem', cursor: 'pointer' }}
+                >
                   <svg width="14" height="7" viewBox="0 0 14 7" fill="none"><line x1="14" y1="3.5" x2="0" y2="3.5" stroke="currentColor" strokeWidth="0.8"/><polyline points="4,1 1,3.5 4,6" stroke="currentColor" strokeWidth="0.8" fill="none"/></svg>
                   {prev.title}
-                </Link>
-                <Link href={`/work/render/${next.id}`} style={{ fontWeight: 450, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                </a>
+                <a
+                  href={`/work/render/${next.id}`}
+                  onClick={e => { e.preventDefault(); navigate(`/work/render/${next.id}`) }}
+                  style={{ fontWeight: 450, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem', cursor: 'pointer' }}
+                >
                   {next.title}
                   <svg width="14" height="7" viewBox="0 0 14 7" fill="none"><line x1="0" y1="3.5" x2="14" y2="3.5" stroke="currentColor" strokeWidth="0.8"/><polyline points="10,1 13,3.5 10,6" stroke="currentColor" strokeWidth="0.8" fill="none"/></svg>
-                </Link>
+                </a>
               </div>
             )
           })()}

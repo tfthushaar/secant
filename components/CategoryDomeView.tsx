@@ -1,11 +1,10 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
 import { gsap } from 'gsap'
 import { Navigator } from '@/components/Navigator'
+import { useNavigate } from '@/components/TransitionBlink'
 import type { CategoryConfig, WorkItem } from '@/lib/projects'
 
 const Masonry = dynamic(() => import('@/components/Masonry'), { ssr: false, loading: () => null })
@@ -16,7 +15,7 @@ interface Props {
 }
 
 export function CategoryDomeView({ config, items }: Props) {
-  const router       = useRouter()
+  const { navigate } = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -53,19 +52,23 @@ export function CategoryDomeView({ config, items }: Props) {
         borderBottom: '1px solid oklch(90% 0.006 76)',
         position: 'relative', zIndex: 10,
       }}>
-        <Link href="/work" style={{
-          fontFamily: 'var(--font-sans), sans-serif',
-          fontWeight: 400, fontSize: '0.62rem', letterSpacing: '0.28em',
-          textTransform: 'uppercase', color: 'oklch(40% 0.007 72)',
-          textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem',
-          transition: 'color 0.2s',
-        }}>
+        <a
+          href="/work"
+          onClick={e => { e.preventDefault(); navigate('/work') }}
+          style={{
+            fontFamily: 'var(--font-sans), sans-serif',
+            fontWeight: 400, fontSize: '0.62rem', letterSpacing: '0.28em',
+            textTransform: 'uppercase', color: 'oklch(40% 0.007 72)',
+            textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem',
+            transition: 'color 0.2s', cursor: 'pointer',
+          }}
+        >
           <svg width="14" height="7" viewBox="0 0 14 7" fill="none">
             <line x1="14" y1="3.5" x2="0" y2="3.5" stroke="currentColor" strokeWidth="0.9"/>
             <polyline points="4,1 1,3.5 4,6" stroke="currentColor" strokeWidth="0.9" fill="none"/>
           </svg>
           Work
-        </Link>
+        </a>
 
         <span style={{
           fontFamily: 'var(--font-display), Georgia, serif',

@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { gsap } from 'gsap'
+import { useNavigate } from '@/components/TransitionBlink'
 
 const NAV_LINKS = [
   { label: 'Home',    href: '/',               num: '00' },
@@ -12,6 +12,7 @@ const NAV_LINKS = [
 ]
 
 export function Navigator() {
+  const { navigate } = useNavigate()
   const [open, setOpen] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
   const linksRef   = useRef<(HTMLDivElement | null)[]>([])
@@ -163,9 +164,9 @@ export function Navigator() {
                 marginRight: 'calc(-1 * clamp(2rem,8vw,7rem))',
               }}
             >
-              <Link
+              <a
                 href={href}
-                onClick={() => setOpen(false)}
+                onClick={e => { e.preventDefault(); setOpen(false); navigate(href) }}
                 /* nav-row-link class adds full-row white hover via globals.css */
                 className="nav-row-link"
                 style={{
@@ -205,7 +206,7 @@ export function Navigator() {
                 >
                   {label}
                 </span>
-              </Link>
+              </a>
             </div>
           ))}
         </nav>
