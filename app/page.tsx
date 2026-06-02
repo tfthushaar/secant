@@ -10,7 +10,6 @@ import { Navigator }    from '@/components/Navigator'
 import { SmoothScroll } from '@/components/SmoothScroll'
 import { Hero }         from '@/components/sections/Hero'
 import { StudioIntro }  from '@/components/sections/StudioIntro'
-import { useIsMobile }  from '@/hooks/useIsMobile'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -28,7 +27,6 @@ const Scene3D = dynamic(
 export default function Home() {
   const [loaderDone, setLoaderDone] = useState(false)
   const progressRef = useRef(0)
-  const isMobile    = useIsMobile()
 
   useEffect(() => {
     document.body.classList.add('is-loading')
@@ -58,19 +56,12 @@ export default function Home() {
     <>
       <Loader onComplete={handleLoaderComplete} />
 
-      {/*
-        Fixed 3D background.
-        On mobile: model is confined to the top 52% of the viewport.
-        The StudioIntro sections pin their text to the bottom of each 100svh
-        section — that lower area is clean white (body background), so text
-        is perfectly readable with no backdrop overlays needed.
-      */}
+      {/* Fixed full-screen 3D background — same on mobile and desktop */}
       <div style={{
         position: 'fixed',
-        top: 0, left: 0, right: 0,
-        height: isMobile ? '52vh' : '100vh',
+        inset: 0,
         zIndex: 0,
-        background: '#ffffff', pointerEvents: 'none',
+        background: '#faf8f5', pointerEvents: 'none',
         opacity: loaderDone ? 1 : 0,
         transition: 'opacity 0.3s ease',
       }}>
