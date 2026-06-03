@@ -9,9 +9,10 @@ interface LoaderProps { onComplete: () => void }
 const WORD       = 'SECANT'
 const TYPE_SPEED = 0.10
 const HOLD       = 0.35
-const MOVE_DUR   = 0.80
+const MOVE_DUR   = 0.75   /* slide to hero position */
+const REVEAL_DUR = 0.55   /* colour + bg fade (happens after slide) */
 
-/* oklch(8.5% 0.007 72) as hex so GSAP interpolates through RGB (no rainbow) */
+/* oklch(8.5% 0.007 72) as hex — GSAP interpolates RGB, no rainbow */
 const HERO_COLOR = '#1a1816'
 
 export function Loader({ onComplete }: LoaderProps) {
@@ -40,7 +41,7 @@ export function Loader({ onComplete }: LoaderProps) {
       tl.call(() => { text.textContent += char }, [], i * TYPE_SPEED)
     })
 
-    /* ── Phase 2: all at once — slide + fade bg + colour ────── */
+    /* ── Phase 2: slide to hero position (white on black) ──── */
     const slideAt = WORD.length * TYPE_SPEED + HOLD
 
     tl.call(() => {
@@ -54,27 +55,36 @@ export function Loader({ onComplete }: LoaderProps) {
         dy = heroRect.top  - textRect.top
       }
 
-      /* All three happen simultaneously */
       gsap.to(wrap, {
         x: `+=${dx}`, y: `+=${dy}`,
         duration: MOVE_DUR, ease: 'power3.inOut',
       })
-      gsap.to(root, {
-        backgroundColor: 'rgba(0,0,0,0)',
-        duration: MOVE_DUR, ease: 'power2.inOut',
-      })
-      gsap.to(text, {
-        color: HERO_COLOR,
-        duration: MOVE_DUR, ease: 'power2.inOut',
-      })
-
     }, [], slideAt)
 
-    /* ── Phase 3: remove loader ─────────────────────────────── */
-    const doneAt = slideAt + MOVE_DUR
-    tl.set(root,  { pointerEvents: 'none' }, doneAt)
-    tl.set(root,  { display: 'none' }, doneAt + 0.05)
-    tl.call(onComplete, [], doneAt + 0.1)
+    /* ── Phase 3: after slide — colour + bg fade simultaneously  */
+    /*    onComplete fires so Hero can start fading in at same time */
+    const revealAt = slideAt + MOVE_DUR
+
+    tl.call(() => {
+      /* Colour: white → dark */
+      gsap.to(text, {
+        color: HERO_COLOR,
+        duration: REVEAL_DUR, ease: 'power2.inOut',
+      })
+      /* Background: black → transparent */
+      gsap.to(root, {
+        backgroundColor: 'rgba(0,0,0,0)',
+        duration: REVEAL_DUR, ease: 'power2.inOut',
+      })
+    }, [], revealAt)
+
+    /* Fire onComplete exactly when reveal starts so hero fades in together */
+    tl.call(onComplete, [], revealAt)
+
+    /* Remove loader after reveal completes */
+    const doneAt = revealAt + REVEAL_DUR
+    tl.set(root, { pointerEvents: 'none' }, revealAt)
+    tl.set(root, { display: 'none' }, doneAt + 0.05)
 
     return () => { tl.kill() }
   }, [onComplete])
