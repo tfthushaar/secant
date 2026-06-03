@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import { HERO_FONT, HERO_PADDING, getHeroPaddingPx } from '@/lib/heroConstants'
+import { HERO_FONT } from '@/lib/heroConstants'
 
 interface LoaderProps { onComplete: () => void }
 
@@ -10,21 +10,19 @@ const WORD       = 'SECANT'
 const TYPE_SPEED = 0.10   /* s per letter */
 const HOLD       = 0.40   /* hold after typing completes */
 const MOVE_DUR   = 0.72   /* text slide duration */
-const SETTLE     = 0.28   /* pause after text settles before fading */
-const FADE_DUR   = 0.40   /* fade out duration */
+const SETTLE     = 0.30   /* pause after text settles before fading */
+const FADE_DUR   = 0.60   /* background fade duration — longer = smoother */
 
 export function Loader({ onComplete }: LoaderProps) {
-  const rootRef   = useRef<HTMLDivElement>(null)
-  const wrapRef   = useRef<HTMLDivElement>(null)
-  const textRef   = useRef<HTMLSpanElement>(null)
-  const cursorRef = useRef<HTMLSpanElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const textRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
-    const root   = rootRef.current
-    const wrap   = wrapRef.current
-    const text   = textRef.current
-    const cursor = cursorRef.current
-    if (!root || !wrap || !text || !cursor) return
+    const root = rootRef.current
+    const wrap = wrapRef.current
+    const text = textRef.current
+    if (!root || !wrap || !text) return
 
     /* Reduced-motion: skip straight to reveal */
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -36,12 +34,6 @@ export function Loader({ onComplete }: LoaderProps) {
     /* GSAP handles centering so transforms compose cleanly */
     gsap.set(wrap, { xPercent: -50, yPercent: -50 })
 
-    /* ── Cursor blink ───────────────────────────────────────── */
-    const blink = gsap.to(cursor, {
-      opacity: 0, duration: 0.42,
-      repeat: -1, yoyo: true, ease: 'power2.inOut',
-    })
-
     const tl = gsap.timeline()
 
     /* ── Phase 1: type SECANT ───────────────────────────────── */
@@ -49,58 +41,55 @@ export function Loader({ onComplete }: LoaderProps) {
       tl.call(() => { text.textContent += char }, [], i * TYPE_SPEED)
     })
 
-    /* ── Phase 2: move to hero position + fade black ────────── */
+    /* ── Phase 2: slide to exact hero h1 position ───────────── */
     const slideAt = WORD.length * TYPE_SPEED + HOLD
 
     tl.call(() => {
-      blink.kill()
-      gsap.set(cursor, { autoAlpha: 0 })
+      /* Measure the actual hero h1 DOM element — pixel-perfect */
+      const heroEl  = document.getElementById('hero-secant')
+      const textRect = text.getBoundingClientRect()
 
-      /* Get exact hero padding using same constants as Hero component */
-      const vpW  = window.innerWidth
-      const vpH  = window.innerHeight
-      const pad  = getHeroPaddingPx(vpW, vpH)
+      let dx = 0
+      let dy = 0
 
-      /* After typing, wrap has its real dimensions */
-      const rect = wrap.getBoundingClientRect()
+      if (heroEl) {
+        const heroRect = heroEl.getBoundingClientRect()
+        /* Simple delta: how far loader text needs to move so its
+           top-left aligns with the hero h1's top-left             */
+        dx = heroRect.left - textRect.left
+        dy = heroRect.top  - textRect.top
+      }
 
-      /* With position:absolute top:50% left:50% and xPercent/yPercent:-50,
-         element's visual top-left = (vpW/2 - w/2 + x, vpH/2 - h/2 + y).
-         Solve for x, y that place top-left at (pad.left, pad.top):     */
-      const targetX = pad.left - vpW / 2 + rect.width  / 2
-      const targetY = pad.top  - vpH / 2 + rect.height / 2
-
-      /* Text flies to hero position (stays white during move) */
+      /* Text flies to exact hero position */
       gsap.to(wrap, {
-        x: targetX,
-        y: targetY,
+        x: `+=${dx}`,
+        y: `+=${dy}`,
         duration: MOVE_DUR,
         ease: 'power3.inOut',
         onComplete: () => {
-          /* Instantly switch color to dark after animation completes */
+          /* Switch to dark instantly once settled */
           if (text) text.style.color = 'oklch(8.5% 0.007 72)'
         },
       })
 
-      /* Black background fades AFTER text settles (overlaps with settle pause) */
+      /* Black background fades smoothly AFTER text settles */
       gsap.to(root, {
         backgroundColor: 'rgba(0,0,0,0)',
         duration: FADE_DUR,
-        ease: 'sine.inOut',
+        ease: 'power1.inOut',
         delay: MOVE_DUR + SETTLE,
       })
 
     }, [], slideAt)
 
-    /* ── Phase 3: hand off to Hero, then remove ───────────────── */
-    tl.set(root, { pointerEvents: 'none' }, slideAt + MOVE_DUR)
-    tl.to(root, { autoAlpha: 0, duration: 0.2 }, slideAt + MOVE_DUR + SETTLE + FADE_DUR)
-    tl.set(root, { display: 'none' }, slideAt + MOVE_DUR + SETTLE + FADE_DUR + 0.2)
+    /* ── Phase 3: remove loader, hand off ───────────────────── */
+    const doneAt = slideAt + MOVE_DUR + SETTLE + FADE_DUR
+    tl.set(root,  { pointerEvents: 'none' }, slideAt + MOVE_DUR)
+    tl.to(root,   { autoAlpha: 0, duration: 0.15 }, doneAt)
+    tl.set(root,  { display: 'none' }, doneAt + 0.15)
+    tl.call(onComplete, [], doneAt + 0.2)
 
-    /* Call onComplete to unmount the Loader component from DOM */
-    tl.call(onComplete, [], slideAt + MOVE_DUR + SETTLE + FADE_DUR + 0.25)
-
-    return () => { tl.kill(); blink.kill() }
+    return () => { tl.kill() }
   }, [onComplete])
 
   return (
@@ -109,35 +98,20 @@ export function Loader({ onComplete }: LoaderProps) {
       style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#000000' }}
       aria-hidden="true"
     >
-      {/* SECANT — centred by GSAP, slides to hero position on reveal */}
+      {/* SECANT — centred by GSAP, slides to exact hero h1 position */}
       <div
         ref={wrapRef}
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          display: 'flex',
-          alignItems: 'baseline',
-        }}
+        style={{ position: 'absolute', top: '50%', left: '50%' }}
       >
         <span
           ref={textRef}
           style={{
             ...HERO_FONT,
             color: '#ffffff',
+            display: 'block',
             WebkitFontSmoothing: 'antialiased',
-            textRendering: 'optimizeLegibility',
-          }}
+          } as React.CSSProperties}
         />
-        <span
-          ref={cursorRef}
-          style={{
-            ...HERO_FONT,
-            fontWeight: 100,
-            color: 'rgba(255,255,255,0.55)',
-            marginLeft: '3px',
-          }}
-        >_</span>
       </div>
     </div>
   )

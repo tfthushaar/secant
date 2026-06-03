@@ -38,7 +38,7 @@ export function Hero() {
         {/* SECANT wordmark */}
         <div>
           <div ref={titleRef} style={{ opacity: 0 }}>
-            <h1 style={{
+            <h1 id="hero-secant" style={{
               fontFamily:    'var(--font-sans), "Helvetica Neue", Arial, sans-serif',
               fontWeight:    300,
               fontSize:      'clamp(5rem, 14vw, 16rem)',
