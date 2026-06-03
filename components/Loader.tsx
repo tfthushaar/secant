@@ -83,7 +83,7 @@ export function Loader({ onComplete }: LoaderProps) {
       const targetX = xPad - vpW / 2 + rect.width  / 2
       const targetY = yPad - vpH / 2 + rect.height / 2
 
-      /* Text flies to hero position */
+      /* Text flies to hero position (stays white during move) */
       gsap.to(wrap, {
         x: targetX,
         y: targetY,
@@ -91,11 +91,11 @@ export function Loader({ onComplete }: LoaderProps) {
         ease: 'power3.inOut',
       })
 
-      /* Colour: white → hero dark charcoal (smooth, starts immediately) */
+      /* Colour: switch to dark after text settles (no animation, instant) */
       gsap.to(text, {
         color: 'oklch(8.5% 0.007 72)',
-        duration: MOVE_DUR,
-        ease: 'sine.inOut',
+        duration: 0,
+        delay: MOVE_DUR,
       })
 
       /* Black background fades AFTER text settles (overlaps with settle pause) */
@@ -136,7 +136,12 @@ export function Loader({ onComplete }: LoaderProps) {
       >
         <span
           ref={textRef}
-          style={{ ...HERO_FONT, color: '#ffffff' }}
+          style={{
+            ...HERO_FONT,
+            color: '#ffffff',
+            WebkitFontSmoothing: 'antialiased',
+            textRendering: 'optimizeLegibility',
+          }}
         />
         <span
           ref={cursorRef}
