@@ -2,13 +2,12 @@
 
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
+import { HERO_PADDING, HERO_FONT as HeroFontStyle } from '@/lib/heroConstants'
 
 /*
   Hero — 100 vh transparent panel over the fixed 3D model.
   No pin. No ScrollTrigger. Camera is driven by page-level scroll in page.tsx.
 */
-
-const X = 'clamp(18px, 3.7vw, 72px)'
 
 export function Hero() {
   const titleRef   = useRef<HTMLDivElement>(null)
@@ -34,7 +33,7 @@ export function Hero() {
       <div style={{
         position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-        padding: `clamp(4.5rem,8vh,6rem) ${X} clamp(1.5rem,3vh,2.5rem)`,
+        padding: `${HERO_PADDING.top} ${HERO_PADDING.left} ${HERO_PADDING.bottom}`,
       }}>
         {/* SECANT wordmark */}
         <div>

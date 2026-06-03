@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
+import { HERO_FONT, HERO_PADDING, getHeroPaddingPx } from '@/lib/heroConstants'
 
 interface LoaderProps { onComplete: () => void }
 
@@ -11,17 +12,6 @@ const HOLD       = 0.40   /* hold after typing completes */
 const MOVE_DUR   = 0.72   /* text slide duration */
 const SETTLE     = 0.28   /* pause after text settles before fading */
 const FADE_DUR   = 0.40   /* fade out duration */
-
-/* Font exactly matches Hero's h1 */
-const HERO_FONT: React.CSSProperties = {
-  fontFamily:      'var(--font-sans), "Helvetica Neue", Arial, sans-serif',
-  fontWeight:      300,
-  fontSize:        'clamp(5rem, 14vw, 16rem)',
-  lineHeight:      0.88,
-  letterSpacing:   '0.06em',
-  textTransform:   'uppercase',
-  userSelect:      'none',
-}
 
 export function Loader({ onComplete }: LoaderProps) {
   const rootRef   = useRef<HTMLDivElement>(null)
@@ -66,22 +56,19 @@ export function Loader({ onComplete }: LoaderProps) {
       blink.kill()
       gsap.set(cursor, { autoAlpha: 0 })
 
-      /* Calculate the exact hero SECANT top-left in viewport px.
-         Hero padding: padding: clamp(4.5rem,8vh,6rem) clamp(18px,3.7vw,72px) ...
-         — recompute from window so it matches any screen size. */
+      /* Get exact hero padding using same constants as Hero component */
       const vpW  = window.innerWidth
       const vpH  = window.innerHeight
-      const xPad = Math.min(Math.max(18, vpW * 0.037), 72)   /* clamp(18px,3.7vw,72px)    */
-      const yPad = Math.min(Math.max(72, vpH * 0.08),  96)   /* clamp(4.5rem,8vh,6rem)     */
+      const pad  = getHeroPaddingPx(vpW, vpH)
 
       /* After typing, wrap has its real dimensions */
       const rect = wrap.getBoundingClientRect()
 
       /* With position:absolute top:50% left:50% and xPercent/yPercent:-50,
          element's visual top-left = (vpW/2 - w/2 + x, vpH/2 - h/2 + y).
-         Solve for x, y that place top-left at (xPad, yPad):            */
-      const targetX = xPad - vpW / 2 + rect.width  / 2
-      const targetY = yPad - vpH / 2 + rect.height / 2
+         Solve for x, y that place top-left at (pad.left, pad.top):     */
+      const targetX = pad.left - vpW / 2 + rect.width  / 2
+      const targetY = pad.top  - vpH / 2 + rect.height / 2
 
       /* Text flies to hero position (stays white during move) */
       gsap.to(wrap, {
