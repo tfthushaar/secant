@@ -77,7 +77,7 @@ function Manifesto() {
 
         <h2 style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
-          fontSize: 'clamp(2rem, 4.5vw, 5.5rem)',
+          fontSize: 'clamp(1.7rem, 3.8vw, 4.6rem)',
           lineHeight: 1.08, letterSpacing: '-0.015em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
           textShadow: TEXT_SHADOW,
@@ -91,7 +91,7 @@ function Manifesto() {
 
         <p style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 480,
-          fontSize: 'clamp(0.85rem, 1.1vw, 1rem)', lineHeight: 1.85,
+          fontSize: 'clamp(0.75rem, 0.95vw, 0.88rem)', lineHeight: 1.85,
           color: 'oklch(30% 0.007 74)', margin: '0 0 2.5rem', maxWidth: '38ch',
           textShadow: TEXT_SHADOW,
         }}>
@@ -168,13 +168,13 @@ function Stats() {
             }}>
               <p style={{
                 fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
-                fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1,
+                fontSize: 'clamp(1.8rem, 3.8vw, 3.2rem)', lineHeight: 1,
                 color: 'oklch(8% 0.007 72)', margin: '0 0 0.45rem',
                 letterSpacing: '-0.02em', textShadow: TEXT_SHADOW,
               }}>{n}</p>
               <p style={{
                 fontFamily: 'var(--font-sans), sans-serif', fontWeight: 560,
-                fontSize: 'clamp(0.7rem, 0.85vw, 0.82rem)', letterSpacing: '0.05em',
+                fontSize: 'clamp(0.6rem, 0.72vw, 0.7rem)', letterSpacing: '0.05em',
                 color: 'oklch(16% 0.007 72)', margin: '0 0 0.18rem',
                 textShadow: TEXT_SHADOW,
               }}>{label}</p>
@@ -237,7 +237,7 @@ function Services() {
 
         <h2 style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
-          fontSize: 'clamp(1.8rem, 3.5vw, 4rem)',
+          fontSize: 'clamp(1.5rem, 3vw, 3.4rem)',
           lineHeight: 1.1, letterSpacing: '-0.01em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
           textShadow: TEXT_SHADOW,
@@ -254,7 +254,7 @@ function Services() {
             }}>
               <p style={{
                 fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500,
-                fontSize: 'clamp(0.82rem, 1.1vw, 1rem)',
+                fontSize: 'clamp(0.72rem, 0.95vw, 0.88rem)',
                 color: 'oklch(16% 0.007 72)', margin: 0, letterSpacing: '0.01em',
                 textShadow: TEXT_SHADOW,
               }}>{s}</p>
@@ -308,7 +308,7 @@ function Contact() {
 
         <h2 style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
-          fontSize: 'clamp(2rem, 4.5vw, 5rem)',
+          fontSize: 'clamp(1.7rem, 3.8vw, 4.2rem)',
           lineHeight: 1.06, letterSpacing: '-0.015em',
           color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
           textShadow: TEXT_SHADOW,
@@ -319,7 +319,7 @@ function Contact() {
         <div style={{ margin: '0 0 2rem' }}>
           <p style={{
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
-            fontSize: 'clamp(0.82rem, 1vw, 0.95rem)', lineHeight: 1.9,
+            fontSize: 'clamp(0.72rem, 0.88vw, 0.82rem)', lineHeight: 1.9,
             color: 'oklch(28% 0.007 74)', margin: '0 0 0.6rem', maxWidth: '36ch',
             textShadow: TEXT_SHADOW,
           }}>
@@ -329,7 +329,7 @@ function Contact() {
           </p>
           <a href="tel:+919845812688" style={{
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
-            fontSize: 'clamp(0.82rem, 1vw, 0.95rem)',
+            fontSize: 'clamp(0.72rem, 0.88vw, 0.82rem)',
             color: 'oklch(28% 0.007 74)', textDecoration: 'none',
             textShadow: TEXT_SHADOW,
           }}>

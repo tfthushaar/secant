@@ -59,7 +59,7 @@ export function Hero() {
           }}>
             <span style={{
               fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500,
-              fontSize: 'clamp(0.7rem,1vw,0.95rem)',
+              fontSize: 'clamp(0.6rem,0.85vw,0.8rem)',
               letterSpacing: '0.3em', textTransform: 'uppercase',
               color: 'oklch(32% 0.007 74)',
               textShadow: '0 1px 8px rgba(255,255,255,0.95)',
@@ -67,7 +67,7 @@ export function Hero() {
             <span style={{ width: '3rem', height: '1px', background: 'oklch(68% 0.007 74)', display: 'block', flexShrink: 0 }} />
             <span style={{
               fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
-              fontSize: 'clamp(0.65rem,0.9vw,0.85rem)',
+              fontSize: 'clamp(0.55rem,0.75vw,0.72rem)',
               letterSpacing: '0.28em', textTransform: 'uppercase',
               color: 'oklch(42% 0.007 74)',
               textShadow: '0 1px 8px rgba(255,255,255,0.95)',
