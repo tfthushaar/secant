@@ -8,8 +8,9 @@ interface LoaderProps { onComplete: () => void }
 const WORD       = 'SECANT'
 const TYPE_SPEED = 0.10   /* s per letter */
 const HOLD       = 0.40   /* hold after typing completes */
-const MOVE_DUR   = 0.72   /* background fade + text slide duration */
-const FADE_LAG   = 0.22   /* delay before fading loader after onComplete */
+const MOVE_DUR   = 0.72   /* text slide duration */
+const SETTLE     = 0.28   /* pause after text settles before fading */
+const FADE_DUR   = 0.40   /* fade out duration */
 
 /* Font exactly matches Hero's h1 */
 const HERO_FONT: React.CSSProperties = {
@@ -82,13 +83,6 @@ export function Loader({ onComplete }: LoaderProps) {
       const targetX = xPad - vpW / 2 + rect.width  / 2
       const targetY = yPad - vpH / 2 + rect.height / 2
 
-      /* Black background disappears, revealing the 3D world */
-      gsap.to(root, {
-        backgroundColor: 'rgba(0,0,0,0)',
-        duration: MOVE_DUR * 0.85,
-        ease: 'power2.inOut',
-      })
-
       /* Text flies to hero position */
       gsap.to(wrap, {
         x: targetX,
@@ -97,21 +91,28 @@ export function Loader({ onComplete }: LoaderProps) {
         ease: 'power3.inOut',
       })
 
-      /* Colour: white → hero dark charcoal */
+      /* Colour: white → hero dark charcoal (smooth, starts immediately) */
       gsap.to(text, {
         color: 'oklch(8.5% 0.007 72)',
         duration: MOVE_DUR,
-        ease: 'power2.inOut',
+        ease: 'sine.inOut',
+      })
+
+      /* Black background fades AFTER text settles (overlaps with settle pause) */
+      gsap.to(root, {
+        backgroundColor: 'rgba(0,0,0,0)',
+        duration: FADE_DUR,
+        ease: 'sine.inOut',
+        delay: MOVE_DUR + SETTLE,
       })
 
     }, [], slideAt)
 
-    /* ── Phase 3: hand off to Hero, then fade out ───────────── */
+    /* ── Phase 3: hand off to Hero ───────────────────────────── */
     tl.call(onComplete, [], slideAt + MOVE_DUR)
 
-    /* Loader fades out while Hero's SECANT is already visible
-       behind it — creates a seamless crossfade handoff          */
-    tl.to(root, { autoAlpha: 0, duration: 0.35 }, slideAt + MOVE_DUR + FADE_LAG)
+    /* Loader fully fades out after black is gone */
+    tl.to(root, { autoAlpha: 0, duration: 0.2 }, slideAt + MOVE_DUR + SETTLE + FADE_DUR)
 
     return () => { tl.kill(); blink.kill() }
   }, [onComplete])
