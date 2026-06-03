@@ -2,28 +2,35 @@
 
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import { HERO_PADDING, HERO_FONT as HeroFontStyle } from '@/lib/heroConstants'
+import { HERO_PADDING } from '@/lib/heroConstants'
+
+interface HeroProps { loaderDone?: boolean }
 
 /*
   Hero — 100 vh transparent panel over the fixed 3D model.
-  No pin. No ScrollTrigger. Camera is driven by page-level scroll in page.tsx.
+  SECANT h1 starts hidden and is revealed by Loader (direct handoff, no double).
+  Sub and scatter animate in only after loaderDone.
 */
 
-export function Hero() {
+export function Hero({ loaderDone = false }: HeroProps) {
   const titleRef   = useRef<HTMLDivElement>(null)
   const subRef     = useRef<HTMLDivElement>(null)
   const scatterRef = useRef<HTMLDivElement>(null)
 
+  /* Keep everything hidden — loader hands off SECANT directly */
   useEffect(() => {
-    const els = [titleRef.current, subRef.current, scatterRef.current]
-    gsap.set(els, { autoAlpha: 0 })
-    const tl = gsap.timeline({ delay: 0.2 })
-    tl
-      .to(titleRef.current,   { autoAlpha: 1, duration: 1.1, ease: 'power3.out' }, 0)
-      .to(subRef.current,     { autoAlpha: 1, duration: 0.9, ease: 'power3.out' }, 0.35)
-      .to(scatterRef.current, { autoAlpha: 1, duration: 0.7, ease: 'power2.out' }, 0.7)
-    return () => { tl.kill() }
+    gsap.set([titleRef.current, subRef.current, scatterRef.current], { autoAlpha: 0 })
   }, [])
+
+  /* After loader fully done: reveal sub + scatter (SECANT already shown by loader) */
+  useEffect(() => {
+    if (!loaderDone) return
+    const tl = gsap.timeline()
+    tl
+      .to(subRef.current,     { autoAlpha: 1, duration: 0.7, ease: 'power3.out' }, 0)
+      .to(scatterRef.current, { autoAlpha: 1, duration: 0.6, ease: 'power2.out' }, 0.2)
+    return () => { tl.kill() }
+  }, [loaderDone])
 
   return (
     <section style={{
@@ -37,7 +44,7 @@ export function Hero() {
       }}>
         {/* SECANT wordmark */}
         <div>
-          <div ref={titleRef} style={{ opacity: 0 }}>
+          <div ref={titleRef} data-hero-title style={{ opacity: 0 }}>
             <h1 id="hero-secant" style={{
               fontFamily:    'var(--font-sans), "Helvetica Neue", Arial, sans-serif',
               fontWeight:    300,

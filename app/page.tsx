@@ -72,7 +72,7 @@ export default function Home() {
         <Navigation />
         <Navigator />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <Hero />
+          <Hero loaderDone={loaderDone} />
           <StudioIntro />
         </div>
       </SmoothScroll>
