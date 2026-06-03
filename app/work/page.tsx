@@ -290,7 +290,7 @@ export default function WorkPage() {
                   <p style={{
                     fontFamily: 'var(--font-display), Georgia, serif',
                     fontWeight: 400,
-                    fontSize: `${Math.round((isMobile ? 14 : 18) * (1 - Math.abs(i - snapIdx) * 0.12))}px`,
+                    fontSize: `${Math.round((isMobile ? 20 : 26) * (1 - Math.abs(i - snapIdx) * 0.12))}px`,
                     lineHeight: 1.1,
                     color: 'oklch(10% 0.007 72)',
                     margin: 0, letterSpacing: '0.01em',
@@ -299,9 +299,9 @@ export default function WorkPage() {
                   </p>
                   <p style={{
                     fontFamily: 'var(--font-sans), sans-serif',
-                    fontWeight: 300, fontSize: isMobile ? '8px' : '9px',
+                    fontWeight: 300, fontSize: isMobile ? '10px' : '11px',
                     letterSpacing: '0.35em', textTransform: 'uppercase',
-                    color: 'oklch(48% 0.007 74)', opacity: 0.55, margin: '4px 0 0',
+                    color: 'oklch(48% 0.007 74)', opacity: 0.7, margin: '6px 0 0',
                   }}>
                     {count} works
                   </p>

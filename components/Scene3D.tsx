@@ -38,7 +38,7 @@ const CAM_STOPS = [
   { pos: [36,  4, -4],  look: [20, 2.0, -4]  }, /* stats — carport / right profile      */
   { pos: [12, 22, 20],  look: [12, 0.5, -2]  }, /* services — aerial overview           */
   { pos: [-4,  6, 18],  look: [4,  3.5, -2]  }, /* contact — left wing + stair          */
-  { pos: [12, 30,  2],  look: [12, 0.0, -4]  }, /* end — top-down plan                  */
+  { pos: [-2, 16, 22],  look: [10, 1.5, -3]  }, /* end — diagonal aerial, full building */
 ]
 
 /* Mobile camera stops — pulled further back, centred on building.
@@ -51,7 +51,7 @@ const CAM_STOPS_MOBILE = [
   { pos: [30,   5, 10],  look: [14, 2.0, -3]  }, /* stats: right-side profile     */
   { pos: [10,  20, 22],  look: [10, 0.5, -3]  }, /* services: aerial              */
   { pos: [-4,   6, 22],  look: [ 4, 3.0, -2]  }, /* contact: left wing + stair    */
-  { pos: [10,  28,  3],  look: [10, 0.0, -4]  }, /* end: top-down plan            */
+  { pos: [-2,  14, 28],  look: [10, 1.5, -3]  }, /* end: diagonal aerial          */
 ]
 
 /* ── World-space toon vertex shader (shared by toon + dark) ─────── */
