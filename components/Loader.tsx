@@ -89,13 +89,10 @@ export function Loader({ onComplete }: LoaderProps) {
         y: targetY,
         duration: MOVE_DUR,
         ease: 'power3.inOut',
-      })
-
-      /* Colour: switch to dark after text settles (no animation, instant) */
-      gsap.to(text, {
-        color: 'oklch(8.5% 0.007 72)',
-        duration: 0,
-        delay: MOVE_DUR,
+        onComplete: () => {
+          /* Instantly switch color to dark after animation completes */
+          if (text) text.style.color = 'oklch(8.5% 0.007 72)'
+        },
       })
 
       /* Black background fades AFTER text settles (overlaps with settle pause) */
