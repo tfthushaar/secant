@@ -8,6 +8,7 @@ export const viewport: Viewport = {
 import { ebGaramond, raleway } from '@/lib/fonts'
 import { CustomCursor } from '@/components/CustomCursor'
 import { TransitionBlink } from '@/components/TransitionBlink'
+import { LoaderWrapper } from '@/components/LoaderWrapper'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -36,10 +37,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="grain">
-        <CustomCursor />
-        <TransitionBlink>
-          {children}
-        </TransitionBlink>
+        <LoaderWrapper>
+          <CustomCursor />
+          <TransitionBlink>
+            {children}
+          </TransitionBlink>
+        </LoaderWrapper>
       </body>
     </html>
   )
