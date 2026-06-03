@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Navigator } from '@/components/Navigator'
 import { PageTransition } from '@/components/PageTransition'
+import { ContactForm } from '@/components/ContactForm'
 
 export default function StudioPage() {
   const BG   = 'oklch(97.2% 0.006 78)'
@@ -53,7 +54,7 @@ export default function StudioPage() {
           </h1>
         </div>
 
-        {/* Two-column */}
+        {/* Two-column: about text + image */}
         <div className="studio-2col" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
@@ -87,37 +88,61 @@ export default function StudioPage() {
         </div>
 
         {/* Contact */}
-        <div id="contact" className="studio-2col" style={{
+        <div id="contact" style={{
           marginTop: 'clamp(6rem,12vh,11rem)',
           paddingTop: 'clamp(3rem,6vh,5rem)',
           borderTop: `1px solid ${LINE}`,
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
-          gap: 'clamp(3rem,6vw,8rem)', alignItems: 'end',
         }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-display), Georgia, serif', fontWeight: 300, fontSize: 'clamp(2.2rem,5vw,5rem)', lineHeight: 1.05, letterSpacing: '-0.015em', color: INK, marginBottom: '2rem' }}>
+          <div style={{ marginBottom: 'clamp(2.5rem,5vh,4rem)' }}>
+            <div style={{ fontFamily: 'var(--font-display), Georgia, serif', fontWeight: 300, fontSize: 'clamp(2.2rem,5vw,5rem)', lineHeight: 1.05, letterSpacing: '-0.015em', color: INK }}>
               Begin a project.
             </div>
-            <a href="mailto:contact@secant.studio" style={{
-              fontWeight: 300, fontSize: 'clamp(0.9rem,1.6vw,1.25rem)',
-              letterSpacing: '0.04em', color: INK,
-              textDecoration: 'none', transition: 'opacity 0.2s', display: 'inline-block',
-            }}>
-              contact@secant.studio
-            </a>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div>
-              <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Visit</div>
-              <address style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.7, color: SOFT, fontStyle: 'normal' }}>
-                Indiranagar, Bengaluru<br />Karnataka 560 038, India
-              </address>
-            </div>
-            <div>
-              <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Commissions</div>
-              <p style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.7, color: SOFT }}>
-                Accepting enquiries for projects commencing 2025.
-              </p>
+
+          <div className="studio-2col" style={{
+            display: 'grid',
+            gridTemplateColumns: '3fr 2fr',
+            gap: 'clamp(3rem,6vw,8rem)',
+            alignItems: 'start',
+          }}>
+            {/* Form */}
+            <ContactForm />
+
+            {/* Contact details */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingTop: '0.5rem' }}>
+              <div>
+                <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Phone</div>
+                <a
+                  href="tel:+919845812688"
+                  style={{
+                    fontWeight: 300,
+                    fontSize: 'clamp(0.9rem,1.4vw,1.1rem)',
+                    color: INK,
+                    textDecoration: 'none',
+                    letterSpacing: '0.02em',
+                    display: 'inline-block',
+                  }}
+                >
+                  +91 98458 12688
+                </a>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Visit</div>
+                <address style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.8, color: SOFT, fontStyle: 'normal' }}>
+                  565, 1st Floor, 10th Cross Rd<br />
+                  A Block, Milk Colony, Subramanyanagar<br />
+                  Rajajinagar, Bengaluru<br />
+                  Karnataka 560010
+                </address>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Commissions</div>
+                <p style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.7, color: SOFT }}>
+                  Accepting enquiries for projects commencing 2025.
+                </p>
+              </div>
             </div>
           </div>
         </div>
