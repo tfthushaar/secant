@@ -92,11 +92,13 @@ export function Loader({ onComplete }: LoaderProps) {
 
     }, [], slideAt)
 
-    /* ── Phase 3: hand off to Hero ───────────────────────────── */
-    tl.call(onComplete, [], slideAt + MOVE_DUR)
-
-    /* Loader fully fades out after black is gone */
+    /* ── Phase 3: hand off to Hero, then remove ───────────────── */
+    tl.set(root, { pointerEvents: 'none' }, slideAt + MOVE_DUR)
     tl.to(root, { autoAlpha: 0, duration: 0.2 }, slideAt + MOVE_DUR + SETTLE + FADE_DUR)
+    tl.set(root, { display: 'none' }, slideAt + MOVE_DUR + SETTLE + FADE_DUR + 0.2)
+
+    /* Call onComplete to unmount the Loader component from DOM */
+    tl.call(onComplete, [], slideAt + MOVE_DUR + SETTLE + FADE_DUR + 0.25)
 
     return () => { tl.kill(); blink.kill() }
   }, [onComplete])
