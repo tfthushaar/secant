@@ -129,10 +129,11 @@ export function Scene3D({ progressRef }: Props) {
       /* ── Renderer ─────────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
-        /* logarithmicDepthBuffer: massively improves depth-buffer
-           precision → eliminates Z-fighting between coplanar GLB
-           surfaces that cause the panel flicker                   */
-        logarithmicDepthBuffer: true,
+        /* logarithmicDepthBuffer intentionally removed: it requires
+           custom ShaderMaterial shaders to include logdepthbuf_*
+           GLSL chunks — without them the depth values are wrong on
+           many GPUs, causing a blank scene. Glass z-fighting is
+           fixed by making glass opaque, so this is no longer needed. */
       })
       renderer.setSize(W, H)
       renderer.setPixelRatio(dpr)

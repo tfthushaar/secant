@@ -59,7 +59,7 @@ export default function Home() {
       {/* Fixed full-screen 3D background — same on mobile and desktop */}
       <div style={{
         position: 'fixed',
-        inset: 0,
+        top: 0, right: 0, bottom: 0, left: 0,
         zIndex: 0,
         background: '#faf8f5', pointerEvents: 'none',
         opacity: loaderDone ? 1 : 0,
