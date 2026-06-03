@@ -172,6 +172,62 @@ export const workItems: WorkItem[] = [
     image:       '/assets/web/small/interior-02.jpg',
     detailImage: '/assets/web/originals/interiors/interior-02.jpg',
   },
+  {
+    id: 'interior-03',
+    title: 'Interior Study III',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-03.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-03.jpg',
+  },
+  {
+    id: 'interior-04',
+    title: 'Interior Study IV',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-04.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-04.jpg',
+  },
+  {
+    id: 'interior-05',
+    title: 'Interior Study V',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-05.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-05.jpg',
+  },
+  {
+    id: 'interior-06',
+    title: 'Interior Study VI',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-06.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-06.jpg',
+  },
+  {
+    id: 'interior-07',
+    title: 'Interior Study VII',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-07.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-07.jpg',
+  },
+  {
+    id: 'interior-08',
+    title: 'Interior Study VIII',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-08.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-08.jpg',
+  },
+  {
+    id: 'interior-09',
+    title: 'Interior Study IX',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-09.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-09.jpg',
+  },
+  {
+    id: 'interior-10',
+    title: 'Interior Study X',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-10.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-10.jpg',
+  },
 
   /* ── RESIDENCES ───────────────────────────────────────────────────────────── */
   {
