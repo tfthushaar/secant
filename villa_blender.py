@@ -1,33 +1,27 @@
 """
-SECANT Architects LLP — L-shaped Institutional Building (v3)
+SECANT Architects LLP — L-shaped Institutional Building (v4)
 =============================================================
-Sketch-accurate plan: Wing is NOT deep — it has the SAME depth as the
-main block, just its front face is set back 2 m. Both share the same
-back wall. The L-shape is a subtle front-face step, not a deep extension.
+PLAN (top view, Y = depth, X = width):
 
-PLAN (top view):
-  +────────────50 m──────────────+──14 m──+
-  │          Main Block front    │        │
-  │          Y = 0 (datum)       │  Wing  │
-  │                              │ front  │
-  +──────────────────────────────+ Y=2.0  │
-  back wall ≈ Y = 13.3           │        │
-                                 + Y=15.3 +  ← wing back extends 2 m more
+  +──────────── 50 m ────────────+
+  |       MAIN BLOCK             |   ← front face at Y = 0  (FAD)
+  |       Y: 0.30 → 13.30        |   ← back  face at Y = 13.30
+  +──────────────────────────────+
+                                 +──── 14 m ────+
+                                 | RIGHT WING   |
+                                 | front Y=-2.0 |  ← protrudes 2m forward
+                                 | back  Y=13.30|  ← same back wall as main
+                                 +──────────────+
 
-ROOF ELEMENTS (both visible in sketch):
-  · Stair/services tower on main block (~1/4 from left), vertical fins
-  · Smaller stair/lift box on wing roof, vertical fins
+TWO WINDOW TYPES:
+  · Floors 0–3 : full curtain wall — spandrel (0.28m) + tall glass (3.12m)
+  · Floor 4    : strip windows — narrow horizontal glass (1.40m) mid-floor,
+                 solid spandrel below + solid panel above up to overhang
 
-Z-FIGHT PREVENTION:
-  · Main body front at  Y = +0.30
-  · Piers front at      Y = -0.22   (offset 0.52 m clear of body)
-  · Glass front at      Y = -0.10   (offset 0.40 m clear of body)
-  · No two surfaces share a plane
+WING LEFT SIDE: windows visible from camera (gap between main + wing)
+WING FACADE: tighter bay spacing (fins closer) — distinct from main block
 
-THREE.JS MATERIAL NAMES:
-  · "glass" → glassMat (opaque sketch-blue)
-  · "dark"  → darkMat  (charcoal ink)
-  · else    → toonMat  (off-white)
+Z-FIGHT: body pulled 0.30m back, piers at -0.22, glass at -0.10 from datum
 """
 
 import bpy, math, mathutils
@@ -51,13 +45,12 @@ def mat(name, rgb):
     diff.inputs['Roughness'].default_value = 0.92
     return m
 
-PLASTER = mat('Plaster',  (0.96, 0.94, 0.90))   # off-white body
-CONC    = mat('Concrete', (0.76, 0.74, 0.70))   # medium grey slab
-DARK    = mat('dark',     (0.18, 0.16, 0.14))   # piers / spandrels / fascia
-GLASS   = mat('glass',    (0.72, 0.84, 0.93))   # opaque sketch-blue
-GROUND  = mat('Ground',   (0.84, 0.82, 0.78))   # pale site
+PLASTER = mat('Plaster',  (0.96, 0.94, 0.90))
+CONC    = mat('Concrete', (0.76, 0.74, 0.70))
+DARK    = mat('dark',     (0.18, 0.16, 0.14))
+GLASS   = mat('glass',    (0.72, 0.84, 0.93))
+GROUND  = mat('Ground',   (0.84, 0.82, 0.78))
 
-# ── Box helper ────────────────────────────────────────────────────────────────
 def box(name, cx, cy, zb, w, d, h, m):
     bpy.ops.mesh.primitive_cube_add(size=1, location=(cx, cy, zb + h * 0.5))
     o = bpy.context.active_object
@@ -69,152 +62,214 @@ def box(name, cx, cy, zb, w, d, h, m):
 # ══════════════════════════════════════════════════════════════════════════════
 # DIMENSIONS
 # ══════════════════════════════════════════════════════════════════════════════
-FL      = 3.40          # floor height
-NFLOORS = 5             # 5 storeys
-BH      = FL * NFLOORS  # 17.0 m
+FL      = 3.40
+NFLOORS = 5
+BH      = FL * NFLOORS   # 17.0 m
 
-# ── Main block ────────────────────────────────────────────────────────────────
-MW      = 50.0           # main block width (X)
-MD      = 13.0           # main block depth (Y)
+# Main block
+MW      = 50.0
+MD      = 13.0
 MCX     = 0.0
-BODY_Y0 = 0.30           # body front face pulled 0.30 m behind facade datum
-BODY_Y1 = BODY_Y0 + MD  # = 13.30 (back wall)
+FAD     = 0.0            # main facade datum (front face reference)
+BODY_Y0 = FAD + 0.30     # body pulled 0.30 behind datum
+BODY_Y1 = BODY_Y0 + MD   # back wall = 13.30
 
-# ── Right wing ────────────────────────────────────────────────────────────────
-WW      = 14.0           # wing width (X)
-WD      = 13.0           # SAME depth as main block
-WCX     = MCX + MW / 2 + WW / 2   # = 32.0
+# Right wing — front protrudes 2m, back flush with main
+WW          = 14.0
+WCX         = MCX + MW / 2 + WW / 2    # = 32.0
+WING_FAD    = FAD - 2.0                 # = -2.0  (2m forward of main)
+WING_BODY_Y0 = WING_FAD + 0.30         # = -1.70
+WING_BODY_Y1 = BODY_Y1                 # = 13.30  ← same back wall
+WD           = WING_BODY_Y1 - WING_BODY_Y0   # = 15.0
 
-WING_FAD    = -2.00      # wing facade datum: 2 m IN FRONT of main facade
-WING_BODY_Y0 = WING_FAD + 0.30    # = -1.70
-WING_BODY_Y1 = WING_BODY_Y0 + WD  # = 11.30  (wing back, 2 m short of main back)
+# Facade geometry
+PIER_W  = 0.46
+PIER_D  = 0.22     # piers protrude 0.22m in front of datum → front face at datum-0.22
+GLASS_D = 0.10     # glass front at datum-0.10
 
-# ── Facade geometry ───────────────────────────────────────────────────────────
-FAD      = 0.0    # main facade datum
-PIER_W   = 0.46   # vertical pier face width
-PIER_D   = 0.22   # pier protrudes 0.22 m in front of datum (front at -0.22)
-GLASS_D  = 0.10   # glass panel thickness (front at -0.10)
-BAY_W    = 3.10   # pier centre-to-centre spacing
-GWIN_W   = BAY_W - PIER_W   # glass panel width ≈ 2.64
-SPAN_H   = 0.28   # spandrel height per floor
-GWIN_H   = FL - SPAN_H      # glass height per floor ≈ 3.12
+# Main block: wider bays
+MBAY_W  = 3.10
+MGWIN_W = MBAY_W - PIER_W   # ≈ 2.64
 
-# ── Roof overhang ─────────────────────────────────────────────────────────────
-OH_PROJ  = 2.60   # projection forward of facade datum
-OH_T     = 0.48   # slab thickness
+# Wing: tighter bays (denser fins, different facade character)
+WBAY_W  = 2.20
+WGWIN_W = WBAY_W - PIER_W   # ≈ 1.74
+
+SPAN_H  = 0.28
+GWIN_H  = FL - SPAN_H       # standard glass height = 3.12
+
+# Top-floor strip window
+STRIP_H   = 1.40   # glass height for top floor
+STRIP_BOT = 1.20   # height of solid panel below the strip glass
+# solid above = FL - STRIP_BOT - STRIP_H = 0.80
+
+# Roof overhang
+OH_PROJ = 2.60
+OH_T    = 0.48
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. GROUND
 # ══════════════════════════════════════════════════════════════════════════════
-box('Ground', MCX, 8.0, -0.06, 130.0, 80.0, 0.06, GROUND)
+box('Ground', MCX, 8.0, -0.06, 140.0, 80.0, 0.06, GROUND)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 2. MAIN BLOCK
+# 2. MAIN BLOCK BODY
 # ══════════════════════════════════════════════════════════════════════════════
 box('Body_Main', MCX, BODY_Y0 + MD / 2, 0, MW, MD, BH, PLASTER)
 
-n_bays   = int(MW / BAY_W)
-bay_span = MW / n_bays
+n_mbays   = int(MW / MBAY_W)
+mbay_span = MW / n_mbays
 
-# ── Spandrels + glass per floor ───────────────────────────────────────────────
-for fl in range(NFLOORS):
+# ── Floors 0–3: standard curtain wall ────────────────────────────────────────
+for fl in range(NFLOORS - 1):   # 0,1,2,3
     zb = fl * FL
-    box(f'dark_SpMain_F{fl}', MCX, FAD - 0.07, zb, MW, 0.14, SPAN_H, DARK)
-    for bi in range(n_bays):
-        gx = MCX - MW / 2 + (bi + 0.5) * bay_span
+    # Spandrel at floor level
+    box(f'dark_SpM_F{fl}', MCX, FAD - 0.07, zb, MW, 0.14, SPAN_H, DARK)
+    # Glass panels
+    for bi in range(n_mbays):
+        gx = MCX - MW / 2 + (bi + 0.5) * mbay_span
         box(f'glass_MW_F{fl}_B{bi}', gx, FAD - GLASS_D / 2,
-            zb + SPAN_H, GWIN_W, GLASS_D, GWIN_H, GLASS)
+            zb + SPAN_H, MGWIN_W, GLASS_D, GWIN_H, GLASS)
 
-# Top spandrel
-box('dark_SpMain_Top', MCX, FAD - 0.07, BH, MW, 0.14, SPAN_H, DARK)
+# ── Floor 4 (top): strip windows ─────────────────────────────────────────────
+zb4 = (NFLOORS - 1) * FL   # = 13.6
+# Solid spandrel at floor level (same as other floors)
+box('dark_SpM_F4', MCX, FAD - 0.07, zb4, MW, 0.14, SPAN_H, DARK)
+# Solid panel below strip glass
+box('Plaster_TopBotPanel', MCX, FAD - GLASS_D / 2, zb4 + SPAN_H,
+    MW, GLASS_D, STRIP_BOT - SPAN_H, PLASTER)
+# Horizontal strip glass
+for bi in range(n_mbays):
+    gx = MCX - MW / 2 + (bi + 0.5) * mbay_span
+    box(f'glass_MW_F4_B{bi}', gx, FAD - GLASS_D / 2,
+        zb4 + STRIP_BOT, MGWIN_W, GLASS_D, STRIP_H, GLASS)
+# Dark horizontal transom above strip glass
+box('dark_TopTransom', MCX, FAD - 0.07, zb4 + STRIP_BOT + STRIP_H,
+    MW, 0.14, FL - STRIP_BOT - STRIP_H, DARK)
 
-# ── Vertical piers (full height) ──────────────────────────────────────────────
-for bi in range(n_bays + 1):
-    px = MCX - MW / 2 + bi * bay_span
+# Top spandrel line
+box('dark_SpM_Top', MCX, FAD - 0.07, BH, MW, 0.14, SPAN_H, DARK)
+
+# ── Full-height vertical piers ────────────────────────────────────────────────
+for bi in range(n_mbays + 1):
+    px = MCX - MW / 2 + bi * mbay_span
     box(f'dark_PM_{bi:02d}', px, FAD - PIER_D / 2, 0, PIER_W, PIER_D, BH, DARK)
 
-# ── Side & back faces ─────────────────────────────────────────────────────────
+# ── Side faces ────────────────────────────────────────────────────────────────
 box('Conc_MainSideL', MCX - MW / 2 - 0.18, BODY_Y0 + MD / 2, 0, 0.36, MD, BH, CONC)
 box('Conc_MainBack',  MCX, BODY_Y1 + 0.18, 0, MW, 0.36, BH, CONC)
 
 # ── Parapet ───────────────────────────────────────────────────────────────────
-box('dark_ParMainF', MCX, FAD - 0.13, BH, MW + 0.30, 0.26, 0.55, DARK)
-box('dark_ParMainB', MCX, BODY_Y1 + 0.13, BH, MW + 0.30, 0.26, 0.55, DARK)
-box('dark_ParMainL', MCX - MW / 2 - 0.13, BODY_Y0 + MD / 2, BH, 0.26, MD + 0.50, 0.55, DARK)
+box('dark_ParMF', MCX, FAD - 0.13, BH, MW + 0.30, 0.26, 0.55, DARK)
+box('dark_ParMB', MCX, BODY_Y1 + 0.13, BH, MW + 0.30, 0.26, 0.55, DARK)
+box('dark_ParML', MCX - MW / 2 - 0.13, BODY_Y0 + MD / 2, BH, 0.26, MD + 0.50, 0.55, DARK)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 3. MAIN BLOCK ROOF OVERHANG
-#    Slab runs from back wall to 2.60 m in front of facade datum
 # ══════════════════════════════════════════════════════════════════════════════
-OH_FRONT = FAD - OH_PROJ          # = -2.60
-OH_BACK  = BODY_Y1                # = 13.30
-OH_D     = OH_BACK - OH_FRONT     # = 15.90
+OH_FRONT = FAD - OH_PROJ
+OH_BACK  = BODY_Y1
+OH_D     = OH_BACK - OH_FRONT
 OH_CY    = (OH_FRONT + OH_BACK) / 2
-OH_W     = MW + 0.70              # slightly wider
+OH_W     = MW + 0.70
 
 box('Conc_RoofSlab', MCX, OH_CY, BH, OH_W, OH_D, OH_T, CONC)
-# Fascia edges
 box('dark_FasciaF', MCX, OH_FRONT + 0.13, BH, OH_W, 0.26, OH_T + 0.10, DARK)
 box('dark_FasciaL', MCX - OH_W / 2 + 0.13, OH_CY, BH, 0.26, OH_D, OH_T + 0.10, DARK)
-# Soffit visible under projecting portion
-box('dark_Soffit', MCX, (OH_FRONT + FAD) / 2, BH - 0.03,
-    OH_W, OH_PROJ, 0.05, DARK)
+box('dark_Soffit',  MCX, (OH_FRONT + FAD) / 2, BH - 0.03, OH_W, OH_PROJ, 0.05, DARK)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 4. STAIR / SERVICES TOWER — main block roof
-#    Visible in sketch ~1/4 from left, vertical fin louvers
+# 4. STAIR TOWER — main block roof (~1/4 from left)
 # ══════════════════════════════════════════════════════════════════════════════
-T1_CX = MCX - MW / 2 + MW * 0.27   # ~1/4 from left = x ≈ -11.5
-T1_CY = BODY_Y0 + MD / 2
-T1_W  = 5.20
-T1_D  = MD * 0.48
-T1_H  = 4.00
-
-box('Plaster_Tower1', T1_CX, T1_CY, BH + OH_T, T1_W, T1_D, T1_H, PLASTER)
-# Vertical fins on front face
-n_fins1 = 11
-for fi in range(n_fins1 + 1):
-    fx = T1_CX - T1_W / 2 + fi * (T1_W / n_fins1)
-    box(f'dark_T1Fin_{fi:02d}', fx, T1_CY - T1_D / 2 - 0.08,
-        BH + OH_T, 0.08, 0.20, T1_H, DARK)
-# Tower top cap
-box('dark_Tower1Top', T1_CX, T1_CY, BH + OH_T + T1_H, T1_W + 0.36, T1_D + 0.36, 0.24, DARK)
+T1X = MCX - MW / 2 + MW * 0.27
+T1Y = BODY_Y0 + MD / 2
+T1W, T1D, T1H = 5.20, MD * 0.46, 4.00
+box('Plaster_Tower1', T1X, T1Y, BH + OH_T, T1W, T1D, T1H, PLASTER)
+for fi in range(12):
+    fx = T1X - T1W / 2 + fi * (T1W / 11)
+    box(f'dark_T1F_{fi:02d}', fx, T1Y - T1D / 2 - 0.09, BH + OH_T, 0.08, 0.22, T1H, DARK)
+box('dark_T1Cap', T1X, T1Y, BH + OH_T + T1H, T1W + 0.36, T1D + 0.36, 0.24, DARK)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 5. RIGHT WING
-#    Same depth as main block, front set back 2 m, back extends 2 m further
+# 5. RIGHT WING BODY
 # ══════════════════════════════════════════════════════════════════════════════
-WING_CY = WING_BODY_Y0 + WD / 2   # = 8.80
+WING_CY = (WING_BODY_Y0 + WING_BODY_Y1) / 2   # = 5.80
 
 box('Body_Wing', WCX, WING_CY, 0, WW, WD, BH, PLASTER)
 
-n_wbays   = int(WW / BAY_W)
+n_wbays   = int(WW / WBAY_W)
 wbay_span = WW / n_wbays
 
-for fl in range(NFLOORS):
+# ── Wing front facade: floors 0–3 curtain wall ───────────────────────────────
+for fl in range(NFLOORS - 1):
     zb = fl * FL
-    box(f'dark_SpWing_F{fl}', WCX, WING_FAD - 0.07, zb, WW, 0.14, SPAN_H, DARK)
+    box(f'dark_SpW_F{fl}', WCX, WING_FAD - 0.07, zb, WW, 0.14, SPAN_H, DARK)
     for bi in range(n_wbays):
         gx = WCX - WW / 2 + (bi + 0.5) * wbay_span
         box(f'glass_WW_F{fl}_B{bi}', gx, WING_FAD - GLASS_D / 2,
-            zb + SPAN_H, WW / n_wbays - PIER_W, GLASS_D, GWIN_H, GLASS)
+            zb + SPAN_H, WGWIN_W, GLASS_D, GWIN_H, GLASS)
 
-box('dark_SpWing_Top', WCX, WING_FAD - 0.07, BH, WW, 0.14, SPAN_H, DARK)
+# ── Wing front: top floor strip windows ──────────────────────────────────────
+box('dark_SpW_F4', WCX, WING_FAD - 0.07, zb4, WW, 0.14, SPAN_H, DARK)
+box('Plaster_WTopBot', WCX, WING_FAD - GLASS_D / 2, zb4 + SPAN_H,
+    WW, GLASS_D, STRIP_BOT - SPAN_H, PLASTER)
+for bi in range(n_wbays):
+    gx = WCX - WW / 2 + (bi + 0.5) * wbay_span
+    box(f'glass_WW_F4_B{bi}', gx, WING_FAD - GLASS_D / 2,
+        zb4 + STRIP_BOT, WGWIN_W, GLASS_D, STRIP_H, GLASS)
+box('dark_WTopTrans', WCX, WING_FAD - 0.07, zb4 + STRIP_BOT + STRIP_H,
+    WW, 0.14, FL - STRIP_BOT - STRIP_H, DARK)
+box('dark_SpW_Top', WCX, WING_FAD - 0.07, BH, WW, 0.14, SPAN_H, DARK)
 
+# ── Wing front piers ──────────────────────────────────────────────────────────
 for bi in range(n_wbays + 1):
     px = WCX - WW / 2 + bi * wbay_span
     box(f'dark_PW_{bi:02d}', px, WING_FAD - PIER_D / 2, 0, PIER_W, PIER_D, BH, DARK)
 
+# ── Wing LEFT SIDE (faces the gap — visible from camera) ─────────────────────
+WLEFT_X  = WCX - WW / 2   # = 25.0
+WLEFT_DX = FAD - WING_FAD  # = 2.0  (depth of the step between facades)
+WLEFT_CX = WLEFT_X - PIER_D / 2
+WLEFT_CY = (WING_FAD + FAD) / 2   # = -1.0
+
+# Solid band for the face exposed by the step
+box('Conc_WingStep', WLEFT_X - 0.16, WLEFT_CY, 0, 0.32, WLEFT_DX, BH, CONC)
+
+# Windows on wing left side (4 bays running along Y depth of wing)
+W_SIDE_BAYS = 4
+w_side_span = WD / W_SIDE_BAYS
+for fl in range(NFLOORS - 1):
+    zb = fl * FL
+    for bi in range(W_SIDE_BAYS):
+        gy = WING_BODY_Y0 + (bi + 0.5) * w_side_span
+        box(f'glass_WSide_F{fl}_B{bi}', WLEFT_X - GLASS_D / 2, gy,
+            zb + SPAN_H, GLASS_D, w_side_span - PIER_W, GWIN_H, GLASS)
+        box(f'dark_WSideSp_F{fl}_B{bi}', WLEFT_X - 0.07, gy, zb,
+            0.14, w_side_span - 0.10, SPAN_H, DARK)
+# Top floor strip on left side
+for bi in range(W_SIDE_BAYS):
+    gy = WING_BODY_Y0 + (bi + 0.5) * w_side_span
+    box(f'glass_WSide_F4_B{bi}', WLEFT_X - GLASS_D / 2, gy,
+        zb4 + STRIP_BOT, GLASS_D, w_side_span - PIER_W, STRIP_H, GLASS)
+# Horizontal piers on left side
+for bi in range(W_SIDE_BAYS + 1):
+    py = WING_BODY_Y0 + bi * w_side_span
+    box(f'dark_WsidePier_{bi}', WLEFT_X - PIER_D / 2, py, 0, PIER_D, PIER_W, BH, DARK)
+
+# ── Wing right side + back ────────────────────────────────────────────────────
 box('Conc_WingSideR', WCX + WW / 2 + 0.18, WING_CY, 0, 0.36, WD, BH, CONC)
 box('Conc_WingBack',  WCX, WING_BODY_Y1 + 0.18, 0, WW, 0.36, BH, CONC)
 
-box('dark_ParWingF', WCX, WING_FAD - 0.13, BH, WW + 0.30, 0.26, 0.55, DARK)
-box('dark_ParWingR', WCX + WW / 2 + 0.13, WING_CY, BH, 0.26, WD + 0.50, 0.55, DARK)
-box('dark_ParWingB', WCX, WING_BODY_Y1 + 0.13, BH, WW + 0.30, 0.26, 0.55, DARK)
+# ── Wing parapets ─────────────────────────────────────────────────────────────
+box('dark_ParWF', WCX, WING_FAD - 0.13, BH, WW + 0.30, 0.26, 0.55, DARK)
+box('dark_ParWR', WCX + WW / 2 + 0.13, WING_CY, BH, 0.26, WD + 0.50, 0.55, DARK)
+box('dark_ParWB', WCX, WING_BODY_Y1 + 0.13, BH, WW + 0.30, 0.26, 0.55, DARK)
 
-# ── Wing roof overhang ────────────────────────────────────────────────────────
-W_OH_FRONT = WING_FAD - OH_PROJ   # = -0.60
-W_OH_BACK  = WING_BODY_Y1         # = 15.30
+# ══════════════════════════════════════════════════════════════════════════════
+# 6. WING ROOF OVERHANG
+# ══════════════════════════════════════════════════════════════════════════════
+W_OH_FRONT = WING_FAD - OH_PROJ   # = -4.60
+W_OH_BACK  = WING_BODY_Y1         # = 13.30
 W_OH_D     = W_OH_BACK - W_OH_FRONT
 W_OH_CY    = (W_OH_FRONT + W_OH_BACK) / 2
 
@@ -225,32 +280,16 @@ box('dark_WSoffit', WCX, (W_OH_FRONT + WING_FAD) / 2, BH - 0.03,
     WW + 0.50, OH_PROJ, 0.05, DARK)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 6. STAIR / LIFT TOWER — wing roof  (smaller, same language)
+# 7. STAIR TOWER — wing roof
 # ══════════════════════════════════════════════════════════════════════════════
-T2_CX = WCX
-T2_CY = WING_CY
-T2_W  = 3.60
-T2_D  = WD * 0.38
-T2_H  = 3.20
-
-box('Plaster_Tower2', T2_CX, T2_CY, BH + OH_T, T2_W, T2_D, T2_H, PLASTER)
-n_fins2 = 8
-for fi in range(n_fins2 + 1):
-    fx = T2_CX - T2_W / 2 + fi * (T2_W / n_fins2)
-    box(f'dark_T2Fin_{fi:02d}', fx, T2_CY - T2_D / 2 - 0.08,
-        BH + OH_T, 0.07, 0.18, T2_H, DARK)
-box('dark_Tower2Top', T2_CX, T2_CY, BH + OH_T + T2_H, T2_W + 0.28, T2_D + 0.28, 0.20, DARK)
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 7. JUNCTION STRIP — thin concrete band bridging the step between blocks
-# ══════════════════════════════════════════════════════════════════════════════
-# Vertical connection at X = MCX + MW/2 = +25
-JX  = MCX + MW / 2
-JCY = (FAD + WING_FAD) / 2   # midpoint of the 2m step = 1.0
-JD  = WING_FAD - FAD + 0.60  # = 2.60
-
-box('Conc_Junction', JX, JCY + BODY_Y0, 0, 1.20, JD, BH, CONC)
-box('dark_JuncFront', JX, FAD - 0.14, 0, 1.20, 0.28, BH, DARK)
+T2X = WCX
+T2Y = WING_CY
+T2W, T2D, T2H = 3.60, WD * 0.26, 3.20
+box('Plaster_Tower2', T2X, T2Y, BH + OH_T, T2W, T2D, T2H, PLASTER)
+for fi in range(9):
+    fx = T2X - T2W / 2 + fi * (T2W / 8)
+    box(f'dark_T2F_{fi:02d}', fx, T2Y - T2D / 2 - 0.08, BH + OH_T, 0.07, 0.18, T2H, DARK)
+box('dark_T2Cap', T2X, T2Y, BH + OH_T + T2H, T2W + 0.28, T2D + 0.28, 0.20, DARK)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 8. LIGHTING
@@ -284,10 +323,10 @@ bg.inputs['Color'].default_value    = (0.96, 0.95, 0.92, 1.0)
 bg.inputs['Strength'].default_value = 0.55
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 10. CAMERA — front-left three-quarter, matches sketch viewpoint
+# 10. CAMERA
 # ══════════════════════════════════════════════════════════════════════════════
-CAM_POS = mathutils.Vector((-58.0, -40.0, 17.0))
-CAM_TGT = mathutils.Vector((WCX * 0.25, MD * 0.35, BH * 0.40))
+CAM_POS = mathutils.Vector((-60.0, -42.0, 17.0))
+CAM_TGT = mathutils.Vector((WCX * 0.2, MD * 0.3, BH * 0.38))
 bpy.ops.object.camera_add(location=CAM_POS)
 cam = bpy.context.active_object; cam.name = 'Camera'
 cam.data.lens = 38
@@ -298,11 +337,9 @@ bpy.context.scene.camera = cam
 # 11. RENDER + FREESTYLE
 # ══════════════════════════════════════════════════════════════════════════════
 sc = bpy.context.scene
-sc.render.engine        = 'CYCLES'
-sc.cycles.samples       = 64
+sc.render.engine = 'CYCLES'; sc.cycles.samples = 64
 sc.cycles.use_denoising = True
-sc.render.resolution_x  = 1920
-sc.render.resolution_y  = 1080
+sc.render.resolution_x = 1920; sc.render.resolution_y = 1080
 sc.view_settings.view_transform = 'Standard'
 try:   sc.view_settings.look = 'None'
 except: pass
@@ -312,11 +349,10 @@ except: pass
 
 sc.render.use_freestyle = True
 vl = sc.view_layers[0]; vl.use_freestyle = True
-fl = vl.freestyle_settings
-try:   fl.crease_angle = math.radians(28)
+fl_s = vl.freestyle_settings
+try:   fl_s.crease_angle = math.radians(28)
 except: pass
-
-ls1 = fl.linesets[0] if fl.linesets else fl.linesets.new('Silhouette')
+ls1 = fl_s.linesets[0] if fl_s.linesets else fl_s.linesets.new('Silhouette')
 ls1.name = 'Silhouette'
 ls1.select_silhouette = True;  ls1.select_crease = False
 ls1.select_border = True;      ls1.select_edge_mark = True
@@ -324,26 +360,25 @@ ls1.select_external_contour = True; ls1.select_material_boundary = False
 try:
     ly1 = ls1.linestyle; ly1.name = 'Ink_Thick'
     ly1.color = (0.04, 0.03, 0.01); ly1.alpha = 0.90; ly1.thickness = 2.2
-except Exception as e: print(f'LS1: {e}')
-
+except: pass
 try:
-    ls2 = fl.linesets.new('Details')
+    ls2 = fl_s.linesets.new('Details')
     ls2.select_silhouette = False; ls2.select_crease = True
-    ls2.select_border = False;     ls2.select_edge_mark = False
-    ls2.select_external_contour = False; ls2.select_material_boundary = False
+    ls2.select_border = ls2.select_edge_mark = ls2.select_external_contour = False
+    ls2.select_material_boundary = False
     ly2 = ls2.linestyle; ly2.name = 'Ink_Thin'
     ly2.color = (0.08, 0.06, 0.03); ly2.alpha = 0.62; ly2.thickness = 0.85
-except Exception as e: print(f'LS2: {e}')
+except: pass
 
 print()
 print('=' * 64)
-print('  SECANT LLP — L-shaped Institutional Building v3')
+print('  SECANT LLP — Institutional Building v4')
 print('=' * 64)
 objs = [o for o in bpy.data.objects if o.type == 'MESH']
-print(f'  Objects: {len(objs)}   Polys: {sum(len(o.data.polygons) for o in objs):,}')
-print(f'  Main  {MW:.0f}m × {MD:.0f}m × {BH:.1f}m ({NFLOORS} floors)')
-print(f'  Wing  {WW:.0f}m × {WD:.0f}m, front Y={WING_FAD:.1f} (setback {WING_FAD:.1f}m)')
-print(f'  Main back Y={BODY_Y1:.2f}  Wing back Y={WING_BODY_Y1:.2f}')
-print(f'  Overhang {OH_PROJ:.1f}m | Roof towers: 2')
-print('  F12 → Render | Export → glTF 2.0 → public/assets/base.glb')
+print(f'  Meshes: {len(objs)}   Polys: {sum(len(o.data.polygons) for o in objs):,}')
+print(f'  Main  {MW:.0f}m wide × {MD:.0f}m deep × {BH:.1f}m  (5 floors)')
+print(f'  Wing  {WW:.0f}m wide × {WD:.0f}m deep, front Y={WING_FAD:.1f}m (protrudes 2m)')
+print(f'  Both back walls at Y = {BODY_Y1:.2f}m')
+print(f'  Windows: floors 0-3 full curtain, floor 4 strip ({STRIP_H:.1f}m tall)')
+print('  F12 → Render | Export glTF 2.0 → public/assets/base.glb')
 print('=' * 64)
