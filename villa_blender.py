@@ -85,9 +85,9 @@ WW      = 14.0           # wing width (X)
 WD      = 13.0           # SAME depth as main block
 WCX     = MCX + MW / 2 + WW / 2   # = 32.0
 
-WING_FAD    = 2.00       # wing facade datum: 2 m behind main facade
-WING_BODY_Y0 = WING_FAD + 0.30    # = 2.30
-WING_BODY_Y1 = WING_BODY_Y0 + WD  # = 15.30  (wing back, 2 m past main back)
+WING_FAD    = -2.00      # wing facade datum: 2 m IN FRONT of main facade
+WING_BODY_Y0 = WING_FAD + 0.30    # = -1.70
+WING_BODY_Y1 = WING_BODY_Y0 + WD  # = 11.30  (wing back, 2 m short of main back)
 
 # ── Facade geometry ───────────────────────────────────────────────────────────
 FAD      = 0.0    # main facade datum
