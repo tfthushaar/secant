@@ -60,21 +60,22 @@ export function Hero({ loaderDone = false }: HeroProps) {
           </div>
 
           <div ref={subRef} style={{
-            opacity: 0, marginTop: 'clamp(0.6rem, 1.5vh, 1.2rem)',
-            display: 'flex', alignItems: 'center', gap: '2rem',
+            opacity: 0, marginTop: 'clamp(0.5rem, 1.5vh, 1.2rem)',
+            display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+            gap: 'clamp(0.6rem, 1.5vw, 2rem)',
           }}>
             <span style={{
               fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500,
-              fontSize: 'clamp(0.6rem,0.85vw,0.8rem)',
-              letterSpacing: '0.3em', textTransform: 'uppercase',
+              fontSize: 'clamp(0.55rem,0.85vw,0.8rem)',
+              letterSpacing: '0.28em', textTransform: 'uppercase',
               color: 'oklch(32% 0.007 74)',
               textShadow: '0 1px 8px rgba(255,255,255,0.95)',
             }}>Architecture Studio</span>
-            <span style={{ width: '3rem', height: '1px', background: 'oklch(68% 0.007 74)', display: 'block', flexShrink: 0 }} />
+            <span style={{ width: '2rem', height: '1px', background: 'oklch(68% 0.007 74)', display: 'block', flexShrink: 0 }} />
             <span style={{
               fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
-              fontSize: 'clamp(0.55rem,0.75vw,0.72rem)',
-              letterSpacing: '0.28em', textTransform: 'uppercase',
+              fontSize: 'clamp(0.5rem,0.75vw,0.72rem)',
+              letterSpacing: '0.24em', textTransform: 'uppercase',
               color: 'oklch(42% 0.007 74)',
               textShadow: '0 1px 8px rgba(255,255,255,0.95)',
             }}>Bengaluru · Est. 1999</span>

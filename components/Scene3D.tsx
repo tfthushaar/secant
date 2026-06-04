@@ -35,7 +35,7 @@ const SNAP = 0.0008
 /* Institutional building — Three.js Y-up
    Main facade Z=0 (+Z normal)  Wing front Z=+14  Building centre ≈ (7, 8.5, 0) */
 const CAM_STOPS = [
-  { pos: [-52, 11,  42],  look: [  5, 3,   0]  }, /* hero — perfect front-left 3/4, below SECANT */
+  { pos: [-65, 10,  52],  look: [  7, 16,  0]  }, /* hero — looks slightly up, building sits below SECANT */
   { pos: [-62,  6,  44],  look: [-20, 4,  -2]  }, /* manifesto — left facade close-up       */
   { pos: [ 68, 12,  22],  look: [ 28, 6,   3]  }, /* stats — right wing three-quarter       */
   { pos: [  7, 52,   4],  look: [  7, 0,  -1]  }, /* services — steep aerial overhead       */
@@ -47,14 +47,16 @@ const CAM_STOPS = [
    Portrait aspect ≈ 0.89 means horizontal FoV shrinks to ~36° at 40°
    vertical. Using 62° FOV + these positions keeps the full building
    visible and centred in the narrower mobile canvas. */
-/* Mobile: pulled back ~25%, wider FOV (62°) keeps building clear of SECANT text */
+/* Mobile: 75° vertical FOV, camera pulled far back so full 64m building
+   width fits in portrait viewport.  Look Y=4 keeps building in lower 60%,
+   well clear of the SECANT headline at the top. */
 const CAM_STOPS_MOBILE = [
-  { pos: [-65, 14,  52],  look: [  5, 2,   0]  }, /* hero: front-left 3/4   */
-  { pos: [-78,  7,  55],  look: [-20, 4,  -2]  }, /* manifesto: left facade */
-  { pos: [ 85, 14,  27],  look: [ 28, 6,   3]  }, /* stats: right wing      */
-  { pos: [  7, 65,   5],  look: [  7, 0,  -1]  }, /* services: aerial       */
-  { pos: [ 38, 12,  70],  look: [ 32, 7,   8]  }, /* contact: wing front    */
-  { pos: [-20, 42,  52],  look: [  8, 4,  -4]  }, /* end: diagonal aerial   */
+  { pos: [-105, 20, 85],  look: [  7, 4,  0]  }, /* hero: full building visible */
+  { pos: [-105,  8, 88],  look: [-10, 3, -2]  }, /* manifesto: left facade      */
+  { pos: [ 105, 16, 45],  look: [ 28, 5,  3]  }, /* stats: right wing           */
+  { pos: [   7, 80,  8],  look: [  7, 0, -1]  }, /* services: aerial            */
+  { pos: [  32, 12, 95],  look: [ 32, 6,  8]  }, /* contact: wing front         */
+  { pos: [ -25, 50, 82],  look: [  8, 3, -4]  }, /* end: diagonal aerial        */
 ]
 
 /* ── World-space toon vertex shader (shared by toon + dark) ─────── */
@@ -127,7 +129,9 @@ export function Scene3D({ progressRef }: Props) {
       /* Portrait / narrow viewport = mobile — use wider FOV + zoomed-out stops */
       const isMobileView = W < H || W < 560
       const stops  = isMobileView ? CAM_STOPS_MOBILE : CAM_STOPS
-      const camFov = isMobileView ? 62 : 40
+      /* 75° vertical FOV on portrait — gives ~39° horizontal on 375px phone,
+         enough to show the full 64m building width at the pull-back distances */
+      const camFov = isMobileView ? 75 : 40
 
       /* ── Renderer ─────────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({

@@ -61,7 +61,9 @@ function Manifesto() {
   return (
     <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
-        position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        padding: '2rem 1.5rem 2.5rem',
+        background: 'linear-gradient(to top, rgba(250,248,245,0.97) 55%, rgba(250,248,245,0.8) 80%, transparent 100%)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -71,15 +73,15 @@ function Manifesto() {
         <p style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(38% 0.007 74)', margin: '0 0 2rem',
+          color: 'oklch(38% 0.007 74)', margin: '0 0 1.2rem',
           textShadow: TEXT_SHADOW,
         }}>Design Philosophy</p>
 
         <h2 style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
-          fontSize: 'clamp(1.7rem, 3.8vw, 4.6rem)',
+          fontSize: 'clamp(1.5rem, 3.8vw, 4.6rem)',
           lineHeight: 1.08, letterSpacing: '-0.015em',
-          color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
+          color: 'oklch(8.5% 0.007 72)', margin: '0 0 1.2rem',
           textShadow: TEXT_SHADOW,
         }}>
           Designing spaces<br />
@@ -91,8 +93,8 @@ function Manifesto() {
 
         <p style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 480,
-          fontSize: 'clamp(0.75rem, 0.95vw, 0.88rem)', lineHeight: 1.85,
-          color: 'oklch(30% 0.007 74)', margin: '0 0 2.5rem', maxWidth: '38ch',
+          fontSize: 'clamp(0.75rem, 0.95vw, 0.88rem)', lineHeight: 1.75,
+          color: 'oklch(30% 0.007 74)', margin: '0 0 1.2rem', maxWidth: '38ch',
           textShadow: TEXT_SHADOW,
         }}>
           Every project begins with prolonged observation — of the site,
@@ -138,7 +140,9 @@ function Stats() {
   return (
     <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
-        position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        padding: '2rem 1.5rem 2.5rem',
+        background: 'linear-gradient(to top, rgba(250,248,245,0.97) 55%, rgba(250,248,245,0.8) 80%, transparent 100%)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -150,7 +154,7 @@ function Stats() {
         <p style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(38% 0.007 74)', margin: '0 0 2.5rem',
+          color: 'oklch(38% 0.007 74)', margin: '0 0 1.5rem',
           textShadow: TEXT_SHADOW,
         }}>Practice</p>
 
@@ -217,14 +221,16 @@ function Services() {
   return (
     <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
-        position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        padding: '2rem 1.5rem 2.5rem',
+        background: 'linear-gradient(to top, rgba(250,248,245,0.97) 55%, rgba(250,248,245,0.8) 80%, transparent 100%)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         left: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 560px)',
         opacity: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1.5rem' }}>
           <Rule />
           <p style={{
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
@@ -289,7 +295,9 @@ function Contact() {
   return (
     <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
-        position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        padding: '2rem 1.5rem 2.5rem',
+        background: 'linear-gradient(to top, rgba(250,248,245,0.97) 55%, rgba(250,248,245,0.8) 80%, transparent 100%)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -300,7 +308,7 @@ function Contact() {
         <p style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(38% 0.007 74)', margin: '0 0 2rem',
+          color: 'oklch(38% 0.007 74)', margin: '0 0 1.2rem',
           textShadow: TEXT_SHADOW,
         }}>Studio</p>
 
