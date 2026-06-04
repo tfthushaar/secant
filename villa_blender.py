@@ -195,7 +195,9 @@ box('dark_T1Cap', T1X, T1Y, BH + OH_T + T1H, T1W + 0.36, T1D + 0.36, 0.24, DARK)
 # ══════════════════════════════════════════════════════════════════════════════
 WING_CY = (WING_BODY_Y0 + WING_BODY_Y1) / 2   # = 5.80
 
-box('Body_Wing', WCX, WING_CY, 0, WW, WD, BH, PLASTER)
+# Pull left face back 0.30m so side facade elements (glass/piers at X≈25.0)
+# are 0.30m clear of the body face (at X=25.30) — zero z-fighting
+box('Body_Wing', WCX + 0.15, WING_CY, 0, WW - 0.30, WD, BH, PLASTER)
 
 n_wbays   = int(WW / WBAY_W)
 wbay_span = WW / n_wbays
@@ -235,10 +237,8 @@ WSIDE_Y1     = FAD               # =  0.0   (where main block front aligns)
 WSIDE_DEPTH  = WSIDE_Y1 - WSIDE_Y0  # = 9.70m of exposed side face
 WSIDE_CY     = (WSIDE_Y0 + WSIDE_Y1) / 2  # = -4.85
 
-# Solid face cladding (body behind the glazing)
-box('Conc_WingLeftFace', WLEFT_X - 0.16, WSIDE_CY, 0, 0.32, WSIDE_DEPTH, BH, CONC)
-
 # Side window bays — 3 bays × ~3.23m along the exposed depth
+# Body is now at X=25.30 so all elements with right face at X≤25.0 are clear
 WS_BAYS   = 3
 ws_span   = WSIDE_DEPTH / WS_BAYS   # ≈ 3.23m
 
