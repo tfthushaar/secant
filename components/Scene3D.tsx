@@ -32,30 +32,29 @@ import { useEffect, useRef } from 'react'
 const LERP = 0.08
 const SNAP = 0.0008
 
-/* New institutional building — Three.js Y-up (converted from Blender Z-up):
-   Main facade at Z=0 facing +Z  |  Wing front at Z=+14
-   X: -25→+39  Y: 0→17  Z: -13→+14  Building centre ≈ (7, 8.5, 0) */
+/* Institutional building — Three.js Y-up
+   Main facade Z=0 (+Z normal)  Wing front Z=+14  Building centre ≈ (7, 8.5, 0) */
 const CAM_STOPS = [
-  { pos: [-80, 22,  52],  look: [  5, 8,   0]  }, /* hero — front-left three-quarter        */
-  { pos: [-55,  8,  48],  look: [-18, 5,  -3]  }, /* manifesto — left facade close          */
-  { pos: [ 75, 15,  22],  look: [ 28, 7,   5]  }, /* stats — right wing three-quarter       */
-  { pos: [  5, 55,  -8],  look: [ 10, 0,  -2]  }, /* services — aerial overhead             */
-  { pos: [ 32, 12,  62],  look: [ 32, 8,  10]  }, /* contact — wing front face              */
-  { pos: [-18, 38,  48],  look: [ 10, 5,  -4]  }, /* end — diagonal aerial, full building   */
+  { pos: [-52, 11,  42],  look: [  5, 3,   0]  }, /* hero — perfect front-left 3/4, below SECANT */
+  { pos: [-62,  6,  44],  look: [-20, 4,  -2]  }, /* manifesto — left facade close-up       */
+  { pos: [ 68, 12,  22],  look: [ 28, 6,   3]  }, /* stats — right wing three-quarter       */
+  { pos: [  7, 52,   4],  look: [  7, 0,  -1]  }, /* services — steep aerial overhead       */
+  { pos: [ 30, 10,  56],  look: [ 32, 7,   8]  }, /* contact — wing front face              */
+  { pos: [-16, 34,  42],  look: [  8, 4,  -4]  }, /* end — diagonal aerial, full L shape    */
 ]
 
 /* Mobile camera stops — pulled further back, centred on building.
    Portrait aspect ≈ 0.89 means horizontal FoV shrinks to ~36° at 40°
    vertical. Using 62° FOV + these positions keeps the full building
    visible and centred in the narrower mobile canvas. */
-/* Mobile: pulled further back, wider FOV (62°) to fit tall narrow viewport */
+/* Mobile: pulled back ~25%, wider FOV (62°) keeps building clear of SECANT text */
 const CAM_STOPS_MOBILE = [
-  { pos: [-95, 24,  65],  look: [  5, 8,   0]  }, /* hero: front-left three-quarter */
-  { pos: [-65,  9,  60],  look: [-18, 5,  -3]  }, /* manifesto: left facade         */
-  { pos: [ 88, 16,  28],  look: [ 28, 7,   5]  }, /* stats: right wing              */
-  { pos: [  5, 65, -10],  look: [ 10, 0,  -2]  }, /* services: aerial               */
-  { pos: [ 35, 14,  75],  look: [ 32, 8,  10]  }, /* contact: wing front            */
-  { pos: [-22, 46,  60],  look: [ 10, 5,  -4]  }, /* end: diagonal aerial           */
+  { pos: [-65, 14,  52],  look: [  5, 2,   0]  }, /* hero: front-left 3/4   */
+  { pos: [-78,  7,  55],  look: [-20, 4,  -2]  }, /* manifesto: left facade */
+  { pos: [ 85, 14,  27],  look: [ 28, 6,   3]  }, /* stats: right wing      */
+  { pos: [  7, 65,   5],  look: [  7, 0,  -1]  }, /* services: aerial       */
+  { pos: [ 38, 12,  70],  look: [ 32, 7,   8]  }, /* contact: wing front    */
+  { pos: [-20, 42,  52],  look: [  8, 4,  -4]  }, /* end: diagonal aerial   */
 ]
 
 /* ── World-space toon vertex shader (shared by toon + dark) ─────── */
