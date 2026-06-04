@@ -25,13 +25,14 @@ export default function StudioPage() {
         padding: '0 clamp(1.5rem,4vw,2.5rem)',
         borderBottom: `1px solid ${LINE}`,
       }}>
-        <Link href="/" style={{
-          fontFamily: 'var(--font-sans), sans-serif',
-          fontWeight: 400, fontSize: '0.6rem', letterSpacing: '0.35em',
-          textTransform: 'uppercase', color: INK, textDecoration: 'none',
-          transition: 'opacity 0.2s',
-        }}>
-          SECANT
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <Image
+            src="/assets/logo.png"
+            alt="SECANT"
+            width={120} height={40}
+            style={{ height: '1.9rem', width: 'auto', objectFit: 'contain' }}
+            unoptimized
+          />
         </Link>
       </header>
 

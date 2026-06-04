@@ -1,29 +1,25 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 
-/* Top-left only: sc · SECANT (home link).
-   The right side is left clear for the Navigator MENU button. */
+/* Top-left logo: links home */
 export function Navigation() {
   return (
     <header
-      className="fixed top-0 left-0 z-[100] flex items-center gap-3"
+      className="fixed top-0 left-0 z-[100] flex items-center"
       style={{ height: '3.8rem', paddingLeft: 'clamp(1.2rem, 3vw, 2rem)' }}
     >
-      <span style={{
-        fontFamily: 'var(--font-sans), sans-serif',
-        fontWeight: 300, fontSize: '0.6rem',
-        letterSpacing: '0.18em', color: 'oklch(50% 0.007 74)',
-        textTransform: 'lowercase',
-      }}>sc</span>
-
-      <Link href="/" style={{
-        fontFamily: 'var(--font-sans), sans-serif',
-        fontWeight: 400, fontSize: '0.72rem',
-        letterSpacing: '0.22em', textTransform: 'uppercase',
-        color: 'oklch(26% 0.007 72)', textDecoration: 'none',
-      }} aria-label="SECANT — Home">
-        SECANT
+      <Link href="/" aria-label="SECANT — Home" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+        <Image
+          src="/assets/logo.png"
+          alt="SECANT Architects & Interior Designers"
+          width={120}
+          height={40}
+          style={{ height: '2rem', width: 'auto', objectFit: 'contain' }}
+          priority
+          unoptimized
+        />
       </Link>
     </header>
   )

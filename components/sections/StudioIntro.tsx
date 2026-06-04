@@ -131,10 +131,8 @@ function Stats() {
   }, [])
 
   const items = [
-    { n: '25+', label: 'Years of Practice', sub: 'Est. 1999, Bangalore' },
-    { n: '500+',  label: 'Completed Projects', sub: 'Across South Asia' },
-    { n: '6',   label: 'Project Typologies', sub: 'Residential to Institutional' },
-    { n: '3',   label: 'Design Partners', sub: 'Integrated studio model' },
+    { n: '25+',  label: 'Years of Practice',   sub: 'Est. 1999, Bangalore' },
+    { n: '500+', label: 'Completed Projects',  sub: 'Across South Asia' },
   ]
 
   return (

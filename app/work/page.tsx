@@ -3,6 +3,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import Image from 'next/image'
 import { gsap } from 'gsap'
 import { Navigator } from '@/components/Navigator'
 import { useNavigate } from '@/components/TransitionBlink'
@@ -187,12 +188,15 @@ export default function WorkPage() {
         position: 'sticky', top: 0, zIndex: 10,
         gap: '1rem',
       }}>
-        <Link href="/" style={{
-          fontFamily: 'var(--font-sans), sans-serif',
-          fontWeight: 400, fontSize: '0.68rem', letterSpacing: '0.28em',
-          textTransform: 'uppercase', color: 'oklch(38% 0.007 72)',
-          textDecoration: 'none', flexShrink: 0,
-        }}>SECANT</Link>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
+          <Image
+            src="/assets/logo.png"
+            alt="SECANT"
+            width={120} height={40}
+            style={{ height: '1.9rem', width: 'auto', objectFit: 'contain' }}
+            unoptimized
+          />
+        </Link>
         {/* Hint — hidden on very small screens to prevent crowding */}
         {!isMobile && (
           <span style={{
