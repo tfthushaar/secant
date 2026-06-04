@@ -321,9 +321,9 @@ function Contact() {
             color: 'oklch(28% 0.007 74)', margin: '0 0 0.6rem', maxWidth: '36ch',
             textShadow: TEXT_SHADOW,
           }}>
-            565, 1st Floor, 10th Cross Rd<br />
-            A Block, Milk Colony, Subramanyanagar<br />
-            Rajajinagar, Bengaluru, Karnataka 560010
+            535/1/3, 1st Floor, 3rd Main<br />
+            Rajajinagar, 2nd Stage, A Block<br />
+            Subramanya Nagar, Bengaluru, Karnataka 560 010
           </p>
           <a href="tel:+919845812688" style={{
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,

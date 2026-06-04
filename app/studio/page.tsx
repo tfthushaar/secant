@@ -131,10 +131,10 @@ export default function StudioPage() {
               <div>
                 <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Visit</div>
                 <address style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.8, color: SOFT, fontStyle: 'normal' }}>
-                  565, 1st Floor, 10th Cross Rd<br />
-                  A Block, Milk Colony, Subramanyanagar<br />
-                  Rajajinagar, Bengaluru<br />
-                  Karnataka 560010
+                  535/1/3, 1st Floor, 3rd Main<br />
+                  Rajajinagar, 2nd Stage, A Block<br />
+                  Subramanya Nagar, Bengaluru<br />
+                  Karnataka 560 010
                 </address>
               </div>
 
