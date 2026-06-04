@@ -74,13 +74,13 @@ FAD     = 0.0            # main facade datum (front face reference)
 BODY_Y0 = FAD + 0.30     # body pulled 0.30 behind datum
 BODY_Y1 = BODY_Y0 + MD   # back wall = 13.30
 
-# Right wing — front protrudes 2m, back flush with main
+# Right wing — front protrudes 10m forward, back flush with main
 WW          = 14.0
 WCX         = MCX + MW / 2 + WW / 2    # = 32.0
-WING_FAD    = FAD - 2.0                 # = -2.0  (2m forward of main)
-WING_BODY_Y0 = WING_FAD + 0.30         # = -1.70
+WING_FAD    = FAD - 10.0               # = -10.0  (10m forward of main)
+WING_BODY_Y0 = WING_FAD + 0.30         # = -9.70
 WING_BODY_Y1 = BODY_Y1                 # = 13.30  ← same back wall
-WD           = WING_BODY_Y1 - WING_BODY_Y0   # = 15.0
+WD           = WING_BODY_Y1 - WING_BODY_Y0   # = 23.0
 
 # Facade geometry
 PIER_W  = 0.46
@@ -226,35 +226,45 @@ for bi in range(n_wbays + 1):
     px = WCX - WW / 2 + bi * wbay_span
     box(f'dark_PW_{bi:02d}', px, WING_FAD - PIER_D / 2, 0, PIER_W, PIER_D, BH, DARK)
 
-# ── Wing LEFT SIDE (faces the gap — visible from camera) ─────────────────────
-WLEFT_X  = WCX - WW / 2   # = 25.0
-WLEFT_DX = FAD - WING_FAD  # = 2.0  (depth of the step between facades)
-WLEFT_CX = WLEFT_X - PIER_D / 2
-WLEFT_CY = (WING_FAD + FAD) / 2   # = -1.0
+# ── Wing LEFT SIDE — exposed forward portion only (Y: WING_BODY_Y0 → FAD) ────
+# The forward 10m of the wing sticks out beyond the main block's right end.
+# This face is prominently visible from the camera (front-left three-quarter).
+WLEFT_X      = WCX - WW / 2      # = 25.0
+WSIDE_Y0     = WING_BODY_Y0      # = -9.70  (start of exposed forward portion)
+WSIDE_Y1     = FAD               # =  0.0   (where main block front aligns)
+WSIDE_DEPTH  = WSIDE_Y1 - WSIDE_Y0  # = 9.70m of exposed side face
+WSIDE_CY     = (WSIDE_Y0 + WSIDE_Y1) / 2  # = -4.85
 
-# Solid band for the face exposed by the step
-box('Conc_WingStep', WLEFT_X - 0.16, WLEFT_CY, 0, 0.32, WLEFT_DX, BH, CONC)
+# Solid face cladding (body behind the glazing)
+box('Conc_WingLeftFace', WLEFT_X - 0.16, WSIDE_CY, 0, 0.32, WSIDE_DEPTH, BH, CONC)
 
-# Windows on wing left side (4 bays running along Y depth of wing)
-W_SIDE_BAYS = 4
-w_side_span = WD / W_SIDE_BAYS
+# Side window bays — 3 bays × ~3.23m along the exposed depth
+WS_BAYS   = 3
+ws_span   = WSIDE_DEPTH / WS_BAYS   # ≈ 3.23m
+
 for fl in range(NFLOORS - 1):
     zb = fl * FL
-    for bi in range(W_SIDE_BAYS):
-        gy = WING_BODY_Y0 + (bi + 0.5) * w_side_span
-        box(f'glass_WSide_F{fl}_B{bi}', WLEFT_X - GLASS_D / 2, gy,
-            zb + SPAN_H, GLASS_D, w_side_span - PIER_W, GWIN_H, GLASS)
-        box(f'dark_WSideSp_F{fl}_B{bi}', WLEFT_X - 0.07, gy, zb,
-            0.14, w_side_span - 0.10, SPAN_H, DARK)
-# Top floor strip on left side
-for bi in range(W_SIDE_BAYS):
-    gy = WING_BODY_Y0 + (bi + 0.5) * w_side_span
-    box(f'glass_WSide_F4_B{bi}', WLEFT_X - GLASS_D / 2, gy,
-        zb4 + STRIP_BOT, GLASS_D, w_side_span - PIER_W, STRIP_H, GLASS)
-# Horizontal piers on left side
-for bi in range(W_SIDE_BAYS + 1):
-    py = WING_BODY_Y0 + bi * w_side_span
-    box(f'dark_WsidePier_{bi}', WLEFT_X - PIER_D / 2, py, 0, PIER_D, PIER_W, BH, DARK)
+    # Spandrel strip at floor level
+    box(f'dark_WSideSp_F{fl}', WLEFT_X - 0.07, WSIDE_CY, zb,
+        0.14, WSIDE_DEPTH, SPAN_H, DARK)
+    # Glass panels per bay
+    for bi in range(WS_BAYS):
+        gy = WSIDE_Y0 + (bi + 0.5) * ws_span
+        box(f'glass_WS_F{fl}_B{bi}', WLEFT_X - GLASS_D / 2, gy,
+            zb + SPAN_H, GLASS_D, ws_span - PIER_W, GWIN_H, GLASS)
+
+# Top floor strip windows on left side
+box('dark_WSideSp_F4', WLEFT_X - 0.07, WSIDE_CY, zb4, 0.14, WSIDE_DEPTH, SPAN_H, DARK)
+for bi in range(WS_BAYS):
+    gy = WSIDE_Y0 + (bi + 0.5) * ws_span
+    box(f'glass_WS_F4_B{bi}', WLEFT_X - GLASS_D / 2, gy,
+        zb4 + STRIP_BOT, GLASS_D, ws_span - PIER_W, STRIP_H, GLASS)
+
+# Vertical piers on left side (running full height, at bay boundaries)
+for bi in range(WS_BAYS + 1):
+    py = WSIDE_Y0 + bi * ws_span
+    box(f'dark_WSidePier_{bi}', WLEFT_X - PIER_D / 2, py,
+        0, PIER_D, PIER_W, BH, DARK)
 
 # ── Wing right side + back ────────────────────────────────────────────────────
 box('Conc_WingSideR', WCX + WW / 2 + 0.18, WING_CY, 0, 0.36, WD, BH, CONC)
@@ -276,8 +286,8 @@ W_OH_CY    = (W_OH_FRONT + W_OH_BACK) / 2
 box('Conc_WingRoofSlab', WCX, W_OH_CY, BH, WW + 0.50, W_OH_D, OH_T, CONC)
 box('dark_WFasciaF', WCX, W_OH_FRONT + 0.13, BH, WW + 0.50, 0.26, OH_T + 0.10, DARK)
 box('dark_WFasciaR', WCX + WW / 2 + 0.20, W_OH_CY, BH, 0.26, W_OH_D, OH_T + 0.10, DARK)
-box('dark_WSoffit', WCX, (W_OH_FRONT + WING_FAD) / 2, BH - 0.03,
-    WW + 0.50, OH_PROJ, 0.05, DARK)
+box('dark_WSoffit', WCX, (W_OH_FRONT + WING_FAD) / 2 - 0.5, BH - 0.03,
+    WW + 0.50, OH_PROJ + 1.0, 0.05, DARK)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 7. STAIR TOWER — wing roof
