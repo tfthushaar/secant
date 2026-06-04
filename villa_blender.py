@@ -77,7 +77,7 @@ BODY_Y1 = BODY_Y0 + MD   # back wall = 13.30
 # Right wing — front protrudes 10m forward, back flush with main
 WW          = 14.0
 WCX         = MCX + MW / 2 + WW / 2    # = 32.0
-WING_FAD    = FAD - 10.0               # = -10.0  (10m forward of main)
+WING_FAD    = FAD - 14.0               # = -14.0  (14m forward of main)
 WING_BODY_Y0 = WING_FAD + 0.30         # = -9.70
 WING_BODY_Y1 = BODY_Y1                 # = 13.30  ← same back wall
 WD           = WING_BODY_Y1 - WING_BODY_Y0   # = 23.0
@@ -237,9 +237,9 @@ WSIDE_Y1     = FAD               # =  0.0   (where main block front aligns)
 WSIDE_DEPTH  = WSIDE_Y1 - WSIDE_Y0  # = 9.70m of exposed side face
 WSIDE_CY     = (WSIDE_Y0 + WSIDE_Y1) / 2  # = -4.85
 
-# Side window bays — 3 bays × ~3.23m along the exposed depth
+# Side window bays — 4 bays along the exposed depth
 # Body is now at X=25.30 so all elements with right face at X≤25.0 are clear
-WS_BAYS   = 3
+WS_BAYS   = 4
 ws_span   = WSIDE_DEPTH / WS_BAYS   # ≈ 3.23m
 
 for fl in range(NFLOORS - 1):
