@@ -59,7 +59,7 @@ function Manifesto() {
   }, [isMobile])
 
   return (
-    <section ref={ref} style={{ height: '100svh', position: 'relative' }}>
+    <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
         opacity: 0, zIndex: 1,
@@ -136,7 +136,7 @@ function Stats() {
   ]
 
   return (
-    <section ref={ref} style={{ height: '100svh', position: 'relative' }}>
+    <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
         opacity: 0, zIndex: 1,
@@ -215,7 +215,7 @@ function Services() {
   ]
 
   return (
-    <section ref={ref} style={{ height: '100svh', position: 'relative' }}>
+    <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
         opacity: 0, zIndex: 1,
@@ -287,7 +287,7 @@ function Contact() {
   }, [isMobile])
 
   return (
-    <section ref={ref} style={{ height: '100svh', position: 'relative' }}>
+    <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: '2rem', left: '1.5rem', right: '1.5rem',
         opacity: 0, zIndex: 1,
