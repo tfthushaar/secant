@@ -51,7 +51,7 @@ const CAM_STOPS = [
    width fits in portrait viewport.  Look Y=4 keeps building in lower 60%,
    well clear of the SECANT headline at the top. */
 const CAM_STOPS_MOBILE = [
-  { pos: [-105, 20, 85],  look: [  7, 4,  0]  }, /* hero: full building visible */
+  { pos: [ -84, 17, 68],  look: [  7, 4,  0]  }, /* hero: full building visible */
   { pos: [-105,  8, 88],  look: [-10, 3, -2]  }, /* manifesto: left facade      */
   { pos: [ 105, 16, 45],  look: [ 28, 5,  3]  }, /* stats: right wing           */
   { pos: [   7, 80,  8],  look: [  7, 0, -1]  }, /* services: aerial            */
