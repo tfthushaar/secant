@@ -5,11 +5,11 @@ import { useEffect, useRef } from 'react'
 /*
   Scene3D — architectural sketch renderer for public/assets/base.glb
   ──────────────────────────────────────────────────────────────────
-  Sketch pipeline:
-  · Custom toon GLSL (smooth gradient, not posterised)
-  · Dark ink EdgeGeometry LineSegments on every mesh
-  · Pure white / warm-off-white background — reads as paper
-  · No PBR, no shadows, no tone-mapping
+  Linework pipeline:
+  · Surfaces are paper-coloured (0xfaf8f5) — hidden-line masks, not visible
+  · Dark ink EdgesGeometry LineSegments define all form (opacity 0.82)
+  · Glass uses the same paper mask as solid surfaces — lines only
+  · No shaders, no PBR, no shadows, no tone-mapping
 
   Z-fighting / flicker fix (two layers):
   1. logarithmicDepthBuffer: true  — massively improves depth precision,
@@ -59,50 +59,6 @@ const CAM_STOPS_MOBILE = [
   { pos: [ -25, 50, 82],  look: [  8, 3, -4]  }, /* end: diagonal aerial        */
 ]
 
-/* ── World-space toon vertex shader (shared by toon + dark) ─────── */
-const VERT = /* glsl */`
-  varying vec3 vWorldNormal;
-  void main() {
-    vWorldNormal = normalize(mat3(modelMatrix) * normal);
-    gl_Position  = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
-  }
-`
-
-/* Off-white toon — smooth gradient, reads as hand-drawn mass model */
-const TOON_FRAG = /* glsl */`
-  uniform vec3 uLight;
-  varying vec3 vWorldNormal;
-  void main() {
-    float d = clamp(dot(normalize(vWorldNormal), uLight), 0.0, 1.0);
-    vec3 shadow = vec3(0.80, 0.79, 0.77);
-    vec3 lit    = vec3(1.00, 1.00, 0.99);
-    gl_FragColor = vec4(mix(shadow, lit, d), 1.0);
-  }
-`
-
-/* Dark / charcoal elements (steel, concrete trim) */
-const DARK_FRAG = /* glsl */`
-  uniform vec3 uLight;
-  varying vec3 vWorldNormal;
-  void main() {
-    float d = clamp(dot(normalize(vWorldNormal), uLight), 0.0, 1.0);
-    float b = mix(0.08, 0.34, d);
-    gl_FragColor = vec4(vec3(b), 1.0);
-  }
-`
-
-/* Glass — solid sketch-blue toon, same pipeline as toonMat.
-   Opaque + depthWrite prevents every source of glass flicker. */
-const GLASS_FRAG = /* glsl */`
-  uniform vec3 uLight;
-  varying vec3 vWorldNormal;
-  void main() {
-    float d = clamp(dot(normalize(vWorldNormal), uLight), 0.0, 1.0);
-    vec3 shadow = vec3(0.68, 0.80, 0.88);
-    vec3 lit    = vec3(0.84, 0.92, 0.97);
-    gl_FragColor = vec4(mix(shadow, lit, d), 1.0);
-  }
-`
 
 interface Props { progressRef: React.MutableRefObject<number> }
 
@@ -156,51 +112,25 @@ export function Scene3D({ progressRef }: Props) {
       camera.position.set(p0.pos[0], p0.pos[1], p0.pos[2])
       camera.lookAt(p0.look[0], p0.look[1], p0.look[2])
 
-      /* ── Shared light direction ───────────────────────────────── */
-      const uLight = new THREE.Vector3(0.55, 1.0, 0.75).normalize()
+      /* ── Linework materials ───────────────────────────────────── */
 
-      /* ── Sketch materials ─────────────────────────────────────── */
-
-      /* polygonOffset pushes face fragments slightly BACK in depth
-         buffer → ink LineSegments at identical Z always win → no flicker */
-      const toonMat = new THREE.ShaderMaterial({
-        uniforms:            { uLight: { value: uLight } },
-        vertexShader:        VERT,
-        fragmentShader:      TOON_FRAG,
+      /* Surfaces match background colour — they act as hidden-line
+         masks that occlude back-facing edges without being visible
+         themselves. polygonOffset pushes faces back so ink lines
+         always render in front at zero cost.                        */
+      const paperMat = new THREE.MeshBasicMaterial({
+        color:               0xfaf8f5,
         side:                THREE.FrontSide,
         polygonOffset:       true,
         polygonOffsetFactor: 2,
         polygonOffsetUnits:  2,
       })
 
-      const darkMat = new THREE.ShaderMaterial({
-        uniforms:            { uLight: { value: uLight } },
-        vertexShader:        VERT,
-        fragmentShader:      DARK_FRAG,
-        side:                THREE.FrontSide,
-        polygonOffset:       true,
-        polygonOffsetFactor: 2,
-        polygonOffsetUnits:  2,
-      })
+      const glassMat = paperMat
 
-      /* Glass: opaque solid-blue shader — no transparency, no depthWrite:false.
-         This is the definitive fix: transparent+depthWrite:false is what
-         causes sort-order flicker every frame on overlapping glass meshes. */
-      const glassMat = new THREE.ShaderMaterial({
-        uniforms:            { uLight: { value: uLight } },
-        vertexShader:        VERT,
-        fragmentShader:      GLASS_FRAG,
-        transparent:         false,
-        side:                THREE.FrontSide,
-        depthWrite:          true,
-        polygonOffset:       true,
-        polygonOffsetFactor: 2,
-        polygonOffsetUnits:  2,
-      })
-
-      /* Ink lines — pencil weight, soft opacity */
+      /* Ink lines — architect-pen weight */
       const inkMat = new THREE.LineBasicMaterial({
-        color: 0x1a1714, transparent: true, opacity: 0.28,
+        color: 0x1a1714, transparent: true, opacity: 0.82,
       })
 
       /* ── Load GLB ─────────────────────────────────────────────── */
@@ -222,20 +152,7 @@ export function Scene3D({ progressRef }: Props) {
                 : child.material?.name
             )?.toLowerCase() ?? ''
 
-            /* Assign sketch shader by material name */
-            if (matName.includes('glass') || matName.includes('water')) {
-              child.material = glassMat
-            } else if (
-              matName.includes('steel') ||
-              matName.includes('concdark') ||
-              matName.includes('concretedark') ||
-              matName.includes('dark') ||
-              matName.includes('poolrim')
-            ) {
-              child.material = darkMat
-            } else {
-              child.material = toonMat
-            }
+            child.material = paperMat
 
             /* Ink edge lines — added as child so they share the mesh
                transform; polygonOffset on the face mat means lines
