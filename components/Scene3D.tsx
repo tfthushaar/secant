@@ -36,7 +36,7 @@ const SNAP = 0.0008
 const CAM_STOPS = [
   { pos: [-15,  6,  19],  look: [0,  0, 0]  }, /* hero — close front-left, fills below SECANT */
   { pos: [-22,  2,  16],  look: [0, -1, 0]  }, /* manifesto — low left close        */
-  { pos: [ 18,  0,  16],  look: [0,  6, 0]  }, /* stats — right-front ground level, looking up */
+  { pos: [  8,  2,  24],  look: [0,  3, 0]  }, /* stats — front-facing, slight right, low      */
   { pos: [  0, 28,   3],  look: [0,  0, 0]  }, /* services — steep aerial           */
   { pos: [ 11,  4,  24],  look: [0,  0, 0]  }, /* contact — front-right             */
   { pos: [ -7, 17,  20],  look: [0,  1, 0]  }, /* end — diagonal aerial             */
@@ -46,7 +46,7 @@ const CAM_STOPS = [
 const CAM_STOPS_MOBILE = [
   { pos: [-22,  9,  28],  look: [0,  0, 0]  },
   { pos: [-32,  3,  23],  look: [0, -1, 0]  },
-  { pos: [ 26,  1,  23],  look: [0,  6, 0]  },
+  { pos: [ 12,  3,  34],  look: [0,  3, 0]  },
   { pos: [  0, 40,   5],  look: [0,  0, 0]  },
   { pos: [ 16,  6,  35],  look: [0,  0, 0]  },
   { pos: [-10, 25,  29],  look: [0,  1, 0]  },
