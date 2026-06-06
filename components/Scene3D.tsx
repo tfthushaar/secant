@@ -32,31 +32,24 @@ import { useEffect, useRef } from 'react'
 const LERP = 0.08
 const SNAP = 0.0008
 
-/* Institutional building — Three.js Y-up
-   Main facade Z=0 (+Z normal)  Wing front Z=+14  Building centre ≈ (7, 8.5, 0) */
+/* Camera stops for a model normalised to max-axis = 20 units, centred at origin. */
 const CAM_STOPS = [
-  { pos: [-65, 10,  52],  look: [  7, 16,  0]  }, /* hero — looks slightly up, building sits below SECANT */
-  { pos: [-62,  6,  44],  look: [-20, 4,  -2]  }, /* manifesto — left facade close-up       */
-  { pos: [ 68, 12,  22],  look: [ 28, 6,   3]  }, /* stats — right wing three-quarter       */
-  { pos: [  7, 52,   4],  look: [  7, 0,  -1]  }, /* services — steep aerial overhead       */
-  { pos: [ 30, 10,  56],  look: [ 32, 7,   8]  }, /* contact — wing front face              */
-  { pos: [-16, 34,  42],  look: [  8, 4,  -4]  }, /* end — diagonal aerial, full L shape    */
+  { pos: [-15,  6,  19],  look: [0,  0, 0]  }, /* hero — close front-left, fills below SECANT */
+  { pos: [-22,  2,  16],  look: [0, -1, 0]  }, /* manifesto — low left close        */
+  { pos: [ 20,  6,  11],  look: [0,  1, 0]  }, /* stats — right three-quarter       */
+  { pos: [  0, 28,   3],  look: [0,  0, 0]  }, /* services — steep aerial           */
+  { pos: [ 11,  4,  24],  look: [0,  0, 0]  }, /* contact — front-right             */
+  { pos: [ -7, 17,  20],  look: [0,  1, 0]  }, /* end — diagonal aerial             */
 ]
 
-/* Mobile camera stops — pulled further back, centred on building.
-   Portrait aspect ≈ 0.89 means horizontal FoV shrinks to ~36° at 40°
-   vertical. Using 62° FOV + these positions keeps the full building
-   visible and centred in the narrower mobile canvas. */
-/* Mobile: 75° vertical FOV, camera pulled far back so full 64m building
-   width fits in portrait viewport.  Look Y=4 keeps building in lower 60%,
-   well clear of the SECANT headline at the top. */
+/* Mobile: same orbit, pulled 40 % further back for portrait viewport */
 const CAM_STOPS_MOBILE = [
-  { pos: [ -84, 17, 68],  look: [  7, 4,  0]  }, /* hero: full building visible */
-  { pos: [-105,  8, 88],  look: [-10, 3, -2]  }, /* manifesto: left facade      */
-  { pos: [ 105, 16, 45],  look: [ 28, 5,  3]  }, /* stats: right wing           */
-  { pos: [   7, 80,  8],  look: [  7, 0, -1]  }, /* services: aerial            */
-  { pos: [  32, 12, 95],  look: [ 32, 6,  8]  }, /* contact: wing front         */
-  { pos: [ -25, 50, 82],  look: [  8, 3, -4]  }, /* end: diagonal aerial        */
+  { pos: [-22,  9,  28],  look: [0,  0, 0]  },
+  { pos: [-32,  3,  23],  look: [0, -1, 0]  },
+  { pos: [ 29,  9,  16],  look: [0,  1, 0]  },
+  { pos: [  0, 40,   5],  look: [0,  0, 0]  },
+  { pos: [ 16,  6,  35],  look: [0,  0, 0]  },
+  { pos: [-10, 25,  29],  look: [0,  1, 0]  },
 ]
 
 
@@ -75,6 +68,8 @@ export function Scene3D({ progressRef }: Props) {
       const THREE = await import('three')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js' as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js' as any)
 
       if (disposed) return
 
@@ -134,9 +129,12 @@ export function Scene3D({ progressRef }: Props) {
       })
 
       /* ── Load GLB ─────────────────────────────────────────────── */
+      const dracoLoader = new DRACOLoader()
+      dracoLoader.setDecoderPath('/draco/gltf/')
       const loader = new GLTFLoader()
+      loader.setDRACOLoader(dracoLoader)
       loader.load(
-        '/assets/base.glb',
+        '/assets/model.glb',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gltf: any) => {
           if (disposed) return
@@ -145,21 +143,20 @@ export function Scene3D({ progressRef }: Props) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           model.traverse((child: any) => {
             if (!child.isMesh) return
-
-            const matName: string = (
-              Array.isArray(child.material)
-                ? child.material[0]?.name
-                : child.material?.name
-            )?.toLowerCase() ?? ''
-
             child.material = paperMat
-
-            /* Ink edge lines — added as child so they share the mesh
-               transform; polygonOffset on the face mat means lines
-               always render on top at zero extra cost               */
             const edges = new THREE.EdgesGeometry(child.geometry, 15)
             child.add(new THREE.LineSegments(edges, inkMat))
           })
+
+          /* Normalise: centre at origin, scale so longest axis = 20 units */
+          const box = new THREE.Box3().setFromObject(model)
+          const centre = new THREE.Vector3()
+          const size   = new THREE.Vector3()
+          box.getCenter(centre)
+          box.getSize(size)
+          const norm = 20 / Math.max(size.x, size.y, size.z)
+          model.position.sub(centre)
+          model.scale.setScalar(norm)
 
           scene.add(model)
         },
@@ -219,6 +216,7 @@ export function Scene3D({ progressRef }: Props) {
         disposed = true
         cancelAnimationFrame(rafId)
         window.removeEventListener('resize', onResize)
+        dracoLoader.dispose()
         renderer.dispose()
         if (mount!.contains(renderer.domElement))
           mount!.removeChild(renderer.domElement)

@@ -31,9 +31,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           GLB is fetching in parallel with the loader animation instead of
           waiting for Three.js to bootstrap first (~500ms saved on average).
         */}
-        <link rel="preload" href="/assets/base.glb" as="fetch" />
-        {/* Warm TCP connections for DRACO decoder CDN and fonts */}
-        <link rel="preconnect" href="https://www.gstatic.com" />
+        <link rel="preload" href="/assets/model.glb" as="fetch" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="grain">

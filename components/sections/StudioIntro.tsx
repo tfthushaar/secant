@@ -92,7 +92,7 @@ function Manifesto() {
         </h2>
 
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 480,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 560,
           fontSize: 'clamp(0.75rem, 0.95vw, 0.88rem)', lineHeight: 1.75,
           color: 'oklch(30% 0.007 74)', margin: '0 0 1.2rem', maxWidth: '38ch',
           textShadow: TEXT_SHADOW,
@@ -316,54 +316,26 @@ function Contact() {
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
           fontSize: 'clamp(1.7rem, 3.8vw, 4.2rem)',
           lineHeight: 1.06, letterSpacing: '-0.015em',
-          color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
+          color: 'oklch(8.5% 0.007 72)', margin: '0 0 2rem',
           textShadow: TEXT_SHADOW,
         }}>
           Begin a<br />collaboration.
         </h2>
 
-        <div style={{ margin: '0 0 2rem' }}>
-          <p style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
-            fontSize: 'clamp(0.72rem, 0.88vw, 0.82rem)', lineHeight: 1.9,
-            color: 'oklch(28% 0.007 74)', margin: '0 0 0.6rem', maxWidth: '36ch',
-            textShadow: TEXT_SHADOW,
-          }}>
-            535/1/3, 1st Floor, 3rd Main<br />
-            Rajajinagar, 2nd Stage, A Block<br />
-            Subramanya Nagar, Bengaluru, Karnataka 560 010
-          </p>
-          <a href="tel:+919845812688" style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
-            fontSize: 'clamp(0.72rem, 0.88vw, 0.82rem)',
-            color: 'oklch(28% 0.007 74)', textDecoration: 'none',
-            textShadow: TEXT_SHADOW,
-          }}>
-            +91 98458 12688
-          </a>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <Link href="/studio#contact" style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
-            fontSize: '0.62rem', letterSpacing: '0.38em', textTransform: 'uppercase',
-            color: 'oklch(22% 0.007 72)', textDecoration: 'none',
-            display: 'inline-flex', alignItems: 'center', gap: '1rem',
-            borderBottom: '1px solid oklch(82% 0.006 76)', paddingBottom: '0.5rem',
-            width: 'fit-content',
-          }}>
-            Send an enquiry
-            <svg width="14" height="7" viewBox="0 0 14 7" fill="none">
-              <line x1="0" y1="3.5" x2="14" y2="3.5" stroke="currentColor" strokeWidth="0.8"/>
-              <polyline points="10,1 13,3.5 10,6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-            </svg>
-          </Link>
-          <Link href="/work" style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 300,
-            fontSize: '0.6rem', letterSpacing: '0.35em', textTransform: 'uppercase',
-            color: 'oklch(56% 0.007 74)', textDecoration: 'none',
-          }}>View selected work</Link>
-        </div>
+        <Link href="/studio#contact" style={{
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
+          fontSize: '0.62rem', letterSpacing: '0.38em', textTransform: 'uppercase',
+          color: 'oklch(22% 0.007 72)', textDecoration: 'none',
+          display: 'inline-flex', alignItems: 'center', gap: '1rem',
+          border: '1px solid oklch(32% 0.007 72)',
+          padding: '0.9rem 1.6rem',
+        }}>
+          Begin an enquiry
+          <svg width="14" height="7" viewBox="0 0 14 7" fill="none">
+            <line x1="0" y1="3.5" x2="14" y2="3.5" stroke="currentColor" strokeWidth="0.8"/>
+            <polyline points="10,1 13,3.5 10,6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+          </svg>
+        </Link>
       </div>
     </section>
   )
