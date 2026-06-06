@@ -63,7 +63,7 @@ function Manifesto() {
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',
-        background: 'linear-gradient(to top, rgba(250,248,245,0.55) 0%, rgba(250,248,245,0.32) 45%, rgba(250,248,245,0.10) 72%, transparent 100%)',
+        background: 'linear-gradient(to top, rgba(250,248,245,0.52) 0%, rgba(250,248,245,0.40) 12%, rgba(250,248,245,0.26) 28%, rgba(250,248,245,0.14) 46%, rgba(250,248,245,0.06) 63%, rgba(250,248,245,0.02) 80%, transparent 100%)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -142,7 +142,7 @@ function Stats() {
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',
-        background: 'linear-gradient(to top, rgba(250,248,245,0.55) 0%, rgba(250,248,245,0.32) 45%, rgba(250,248,245,0.10) 72%, transparent 100%)',
+        background: 'linear-gradient(to top, rgba(250,248,245,0.52) 0%, rgba(250,248,245,0.40) 12%, rgba(250,248,245,0.26) 28%, rgba(250,248,245,0.14) 46%, rgba(250,248,245,0.06) 63%, rgba(250,248,245,0.02) 80%, transparent 100%)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -223,7 +223,7 @@ function Services() {
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',
-        background: 'linear-gradient(to top, rgba(250,248,245,0.55) 0%, rgba(250,248,245,0.32) 45%, rgba(250,248,245,0.10) 72%, transparent 100%)',
+        background: 'linear-gradient(to top, rgba(250,248,245,0.52) 0%, rgba(250,248,245,0.40) 12%, rgba(250,248,245,0.26) 28%, rgba(250,248,245,0.14) 46%, rgba(250,248,245,0.06) 63%, rgba(250,248,245,0.02) 80%, transparent 100%)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -297,7 +297,7 @@ function Contact() {
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',
-        background: 'linear-gradient(to top, rgba(250,248,245,0.55) 0%, rgba(250,248,245,0.32) 45%, rgba(250,248,245,0.10) 72%, transparent 100%)',
+        background: 'linear-gradient(to top, rgba(250,248,245,0.52) 0%, rgba(250,248,245,0.40) 12%, rgba(250,248,245,0.26) 28%, rgba(250,248,245,0.14) 46%, rgba(250,248,245,0.06) 63%, rgba(250,248,245,0.02) 80%, transparent 100%)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
