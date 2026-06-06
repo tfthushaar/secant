@@ -193,7 +193,7 @@ export default function WorkPage() {
             src="/assets/logo.png"
             alt="SECANT"
             width={120} height={40}
-            style={{ height: '3rem', width: 'auto', objectFit: 'contain' }}
+            style={{ height: '4rem', width: 'auto', objectFit: 'contain' }}
             unoptimized
           />
         </Link>

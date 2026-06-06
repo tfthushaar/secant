@@ -16,7 +16,7 @@ export function Navigation() {
           alt="SECANT Architects & Interior Designers"
           width={120}
           height={40}
-          style={{ height: '3rem', width: 'auto', objectFit: 'contain' }}
+          style={{ height: '4rem', width: 'auto', objectFit: 'contain' }}
           priority
           unoptimized
         />
