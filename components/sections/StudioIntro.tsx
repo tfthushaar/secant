@@ -5,43 +5,31 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { useNavigate } from '@/components/TransitionBlink'
+import { CATEGORY_CONFIG } from '@/lib/projects'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/*
-  StudioIntro — four 100vh transparent sections.
-  Each section positions content left OR right so the 3D model
-  stays visible on the opposite side as the camera angle shifts.
+const INK = 'oklch(5% 0 0)'
 
-  Camera angles (set in page.tsx ScrollTrigger) progress as:
-    0.00 → front elevation    (hero)
-    0.20 → zoom-in front      (manifesto — left content)
-    0.40 → three-quarter right (stats — right content, model left)
-    0.65 → aerial             (services — left content)
-    0.85 → three-quarter left  (contact — right content)
-    1.00 → top-down           (end)
-*/
-
-/* Thin horizontal rule */
 function Rule() {
   return (
-    <div style={{
-      width: '3rem', height: '1px',
-      background: 'oklch(74% 0.007 74)', flexShrink: 0,
-    }} />
+    <div style={{ width: '3rem', height: '1px', background: INK, flexShrink: 0 }} />
   )
 }
 
-/* Gradient backdrop so text is legible over the model */
-/*
-  No opaque backdrop sections. Text uses a white text-shadow halo so it reads
-  cleanly against the 3D model background without masking the model at all.
-*/
-/* Minimal shadow — just enough to lift text off the model, not a glow */
-/* Stronger halo for legibility over the PBR-rendered model */
+/* White halo so text reads cleanly over the linework model */
 const TEXT_SHADOW = '0 1px 8px rgba(255,255,255,0.98), 0 0 24px rgba(255,255,255,0.85), 0 0 48px rgba(255,255,255,0.55)'
 
-/* ── Section 1: Manifesto — left content, model right ──────────── */
+/* Frosted-glass backdrop for desktop panels — blurs the model behind text */
+const BLUR_BG: React.CSSProperties = {
+  backdropFilter:       'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  background:           'rgba(250,248,245,0.62)',
+  padding:              'clamp(1.2rem, 2vw, 2rem)',
+}
+
+/* ── Section 1: Manifesto ──────────────────────────────────────── */
 function Manifesto() {
   const ref        = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -63,38 +51,34 @@ function Manifesto() {
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',
-        background: 'linear-gradient(to top, rgba(250,248,245,0.52) 0%, rgba(250,248,245,0.40) 12%, rgba(250,248,245,0.26) 28%, rgba(250,248,245,0.14) 46%, rgba(250,248,245,0.06) 63%, rgba(250,248,245,0.02) 80%, transparent 100%)',
+        background: 'rgba(250,248,245,0.97)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         left: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 580px)',
-        opacity: 0,
+        opacity: 0, ...BLUR_BG,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(38% 0.007 74)', margin: '0 0 1.2rem',
-          textShadow: TEXT_SHADOW,
+          color: INK, margin: '0 0 1.2rem', textShadow: TEXT_SHADOW,
         }}>Design Philosophy</p>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650,
           fontSize: 'clamp(1.5rem, 3.8vw, 4.6rem)',
           lineHeight: 1.08, letterSpacing: '-0.015em',
-          color: 'oklch(8.5% 0.007 72)', margin: '0 0 1.2rem',
-          textShadow: TEXT_SHADOW,
+          color: INK, margin: '0 0 1.2rem', textShadow: TEXT_SHADOW,
         }}>
           Designing spaces<br />
           that inspire,<br />
-          <span style={{ fontWeight: 480, color: 'oklch(36% 0.007 74)' }}>
-            endure, and evolve.
-          </span>
+          <span style={{ fontWeight: 600 }}>endure, and evolve.</span>
         </h2>
 
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 560,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 600,
           fontSize: 'clamp(0.75rem, 0.95vw, 0.88rem)', lineHeight: 1.75,
-          color: 'oklch(30% 0.007 74)', margin: '0 0 1.2rem', maxWidth: '38ch',
+          color: INK, margin: '0 0 1.2rem', maxWidth: '38ch',
           textShadow: TEXT_SHADOW,
         }}>
           Every project begins with prolonged observation — of the site,
@@ -105,9 +89,9 @@ function Manifesto() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
           <Rule />
           <span style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700,
             fontSize: '0.6rem', letterSpacing: '0.35em', textTransform: 'uppercase',
-            color: 'oklch(40% 0.007 74)', textShadow: TEXT_SHADOW,
+            color: INK, textShadow: TEXT_SHADOW,
           }}>Founded 1999 · Bangalore</span>
         </div>
       </div>
@@ -115,7 +99,7 @@ function Manifesto() {
   )
 }
 
-/* ── Section 2: Stats — right content, model left ──────────────── */
+/* ── Section 2: Stats ──────────────────────────────────────────── */
 function Stats() {
   const ref        = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -133,8 +117,8 @@ function Stats() {
   }, [])
 
   const items = [
-    { n: '25+',  label: 'Years of Practice',   sub: 'Est. 1999, Bangalore' },
-    { n: '500+', label: 'Completed Projects',  sub: 'Across South Asia' },
+    { n: '25+',  label: 'Years of Practice',  sub: 'Est. 1999, Bangalore' },
+    { n: '500+', label: 'Completed Projects', sub: 'Across South Asia' },
   ]
 
   return (
@@ -142,48 +126,42 @@ function Stats() {
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',
-        background: 'linear-gradient(to top, rgba(250,248,245,0.52) 0%, rgba(250,248,245,0.40) 12%, rgba(250,248,245,0.26) 28%, rgba(250,248,245,0.14) 46%, rgba(250,248,245,0.06) 63%, rgba(250,248,245,0.02) 80%, transparent 100%)',
+        background: 'rgba(250,248,245,0.97)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         right: 'clamp(1.5rem, 7vw, 7rem)',
-        paddingRight: 'clamp(0rem, 1vw, 0.5rem)',
         width: 'clamp(260px, 40vw, 520px)',
-        opacity: 0,
+        opacity: 0, ...BLUR_BG,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(38% 0.007 74)', margin: '0 0 1.5rem',
-          textShadow: TEXT_SHADOW,
+          color: INK, margin: '0 0 1.5rem', textShadow: TEXT_SHADOW,
         }}>Practice</p>
 
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
-          borderTop: '1px solid oklch(87% 0.006 76)',
-        }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderTop: `1px solid ${INK}` }}>
           {items.map(({ n, label, sub }) => (
             <div key={n} style={{
               padding: 'clamp(1.2rem, 2vh, 1.8rem) 0',
-              borderBottom: '1px solid oklch(87% 0.006 76)',
+              borderBottom: `1px solid ${INK}`,
               paddingRight: 'clamp(0.8rem, 2vw, 1.5rem)',
             }}>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700,
                 fontSize: 'clamp(1.8rem, 3.8vw, 3.2rem)', lineHeight: 1,
-                color: 'oklch(8% 0.007 72)', margin: '0 0 0.45rem',
+                color: INK, margin: '0 0 0.45rem',
                 letterSpacing: '-0.02em', textShadow: TEXT_SHADOW,
               }}>{n}</p>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 560,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700,
                 fontSize: 'clamp(0.6rem, 0.72vw, 0.7rem)', letterSpacing: '0.05em',
-                color: 'oklch(16% 0.007 72)', margin: '0 0 0.18rem',
-                textShadow: TEXT_SHADOW,
+                color: INK, margin: '0 0 0.18rem', textShadow: TEXT_SHADOW,
               }}>{label}</p>
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 600,
                 fontSize: '0.6rem', letterSpacing: '0.03em',
-                color: 'oklch(44% 0.007 74)', margin: 0, textShadow: TEXT_SHADOW,
+                color: INK, margin: 0, textShadow: TEXT_SHADOW,
               }}>{sub}</p>
             </div>
           ))}
@@ -193,11 +171,12 @@ function Stats() {
   )
 }
 
-/* ── Section 3: Services — left content, model right ───────────── */
+/* ── Section 3: Services ───────────────────────────────────────── */
 function Services() {
   const ref        = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const isMobile   = useIsMobile()
+  const { navigate } = useNavigate()
 
   useEffect(() => {
     if (!contentRef.current) return
@@ -210,62 +189,60 @@ function Services() {
     )
   }, [isMobile])
 
-  const services = [
-    'Residential Design',
-    'Commercial Architecture',
-    'Institutional Buildings',
-    'Interior Design',
-    'Sustainable & Smart Systems',
-  ]
+  const serviceLinks = CATEGORY_CONFIG.map(c => ({ label: c.label, slug: c.slug }))
 
   return (
     <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',
-        background: 'linear-gradient(to top, rgba(250,248,245,0.52) 0%, rgba(250,248,245,0.40) 12%, rgba(250,248,245,0.26) 28%, rgba(250,248,245,0.14) 46%, rgba(250,248,245,0.06) 63%, rgba(250,248,245,0.02) 80%, transparent 100%)',
+        background: 'rgba(250,248,245,0.97)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         left: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 560px)',
-        opacity: 0,
+        opacity: 0, ...BLUR_BG,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1.5rem' }}>
           <Rule />
           <p style={{
-            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700,
             fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-            color: 'oklch(38% 0.007 74)', margin: 0, textShadow: TEXT_SHADOW,
+            color: INK, margin: 0, textShadow: TEXT_SHADOW,
           }}>Services</p>
         </div>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650,
           fontSize: 'clamp(1.5rem, 3vw, 3.4rem)',
           lineHeight: 1.1, letterSpacing: '-0.01em',
-          color: 'oklch(8.5% 0.007 72)', margin: '0 0 2.5rem',
-          textShadow: TEXT_SHADOW,
+          color: INK, margin: '0 0 1.5rem', textShadow: TEXT_SHADOW,
         }}>
           Full-spectrum<br />architecture.
         </h2>
 
-        <div style={{ borderTop: '1px solid oklch(87% 0.006 76)' }}>
-          {services.map((s, i) => (
-            <div key={s} style={{
-              padding: 'clamp(0.8rem, 1.4vh, 1.1rem) 0',
-              borderBottom: '1px solid oklch(87% 0.006 76)',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            }}>
+        <div style={{ borderTop: `1px solid ${INK}` }}>
+          {serviceLinks.map(({ label, slug }, i) => (
+            <div
+              key={label}
+              onClick={() => navigate(`/work/${slug}`)}
+              style={{
+                padding: 'clamp(0.8rem, 1.4vh, 1.1rem) 0',
+                borderBottom: `1px solid ${INK}`,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                cursor: 'pointer',
+              }}
+            >
               <p style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650,
                 fontSize: 'clamp(0.72rem, 0.95vw, 0.88rem)',
-                color: 'oklch(16% 0.007 72)', margin: 0, letterSpacing: '0.01em',
+                color: INK, margin: 0, letterSpacing: '0.01em',
                 textShadow: TEXT_SHADOW,
-              }}>{s}</p>
+              }}>{label}</p>
               <span style={{
-                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 460,
+                fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700,
                 fontSize: '0.52rem', letterSpacing: '0.3em',
-                color: 'oklch(52% 0.006 74)', textShadow: TEXT_SHADOW,
+                color: INK, textShadow: TEXT_SHADOW,
               }}>0{i + 1}</span>
             </div>
           ))}
@@ -275,7 +252,7 @@ function Services() {
   )
 }
 
-/* ── Section 4: Contact — right content ─────────────────────────── */
+/* ── Section 4: Contact ────────────────────────────────────────── */
 function Contact() {
   const ref        = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -297,37 +274,34 @@ function Contact() {
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',
-        background: 'linear-gradient(to top, rgba(250,248,245,0.52) 0%, rgba(250,248,245,0.40) 12%, rgba(250,248,245,0.26) 28%, rgba(250,248,245,0.14) 46%, rgba(250,248,245,0.06) 63%, rgba(250,248,245,0.02) 80%, transparent 100%)',
+        background: 'rgba(250,248,245,0.97)',
         opacity: 0, zIndex: 1,
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
         right: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(260px, 40vw, 520px)',
-        paddingRight: 'clamp(0rem, 1vw, 0.5rem)',
-        opacity: 0,
+        opacity: 0, ...BLUR_BG,
       }}>
         <p style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 520,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700,
           fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase',
-          color: 'oklch(38% 0.007 74)', margin: '0 0 1.2rem',
-          textShadow: TEXT_SHADOW,
+          color: INK, margin: '0 0 1.2rem', textShadow: TEXT_SHADOW,
         }}>Studio</p>
 
         <h2 style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650,
           fontSize: 'clamp(1.7rem, 3.8vw, 4.2rem)',
           lineHeight: 1.06, letterSpacing: '-0.015em',
-          color: 'oklch(8.5% 0.007 72)', margin: '0 0 2rem',
-          textShadow: TEXT_SHADOW,
+          color: INK, margin: '0 0 2rem', textShadow: TEXT_SHADOW,
         }}>
           Begin a<br />collaboration.
         </h2>
 
         <Link href="/about#contact" style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
+          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650,
           fontSize: '0.62rem', letterSpacing: '0.38em', textTransform: 'uppercase',
-          color: 'oklch(22% 0.007 72)', textDecoration: 'none',
+          color: INK, textDecoration: 'none',
           display: 'inline-flex', alignItems: 'center', gap: '1rem',
-          border: '1px solid oklch(32% 0.007 72)',
+          border: `1px solid ${INK}`,
           padding: '0.9rem 1.6rem',
           background: 'rgba(250,248,245,0.96)',
         }}>
