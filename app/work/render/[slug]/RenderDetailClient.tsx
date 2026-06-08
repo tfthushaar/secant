@@ -58,13 +58,16 @@ export function RenderDetailClient({ slug }: Props) {
   if (fullscreen) {
     return (
       <PageTransition style={{ width: '100vw', height: '100dvh', background: isSketch ? '#f5f0e8' : BG, position: 'relative', overflow: 'hidden' }}>
-        <Image
-          src={item.detailImage ?? item.image}
-          alt={item.title}
-          fill
-          style={{ objectFit: 'contain' }}
-          priority unoptimized sizes="100vw"
-        />
+        {/* Image starts below the fixed header — never bleeds into it */}
+        <div style={{ position: 'absolute', top: '3.2rem', left: 0, right: 0, bottom: 0 }}>
+          <Image
+            src={item.detailImage ?? item.image}
+            alt={item.title}
+            fill
+            style={{ objectFit: 'contain' }}
+            priority unoptimized sizes="100vw"
+          />
+        </div>
 
         {/* Top-left back arrow */}
         <header style={{
@@ -189,9 +192,9 @@ export function RenderDetailClient({ slug }: Props) {
           </div>
         </div>
 
-        {/* Desktop image */}
+        {/* Desktop image — overflow:hidden prevents bleed into fixed header */}
         {!isMobile && (
-          <div style={{ position: 'relative', background: isSketch ? '#f5f0e8' : BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(1.5rem,3vh,2.5rem)', minHeight: 'calc(100dvh - 3.2rem)' }}>
+          <div style={{ position: 'relative', background: isSketch ? '#f5f0e8' : BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(1.5rem,3vh,2.5rem)', height: 'calc(100dvh - 3.2rem)', overflow: 'hidden' }}>
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
               <Image src={item.detailImage ?? item.image} alt={item.title} fill style={{ objectFit: 'contain', objectPosition: 'center' }} priority unoptimized sizes="62vw" />
             </div>
