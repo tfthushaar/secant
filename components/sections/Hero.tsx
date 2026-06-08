@@ -86,15 +86,19 @@ export function Hero({ loaderDone = false }: HeroProps) {
         {/* Bottom details */}
         <div ref={scatterRef} style={{ opacity: 0, position: 'relative' }}>
           <span style={{
-            position: 'absolute', bottom: '3rem', left: 0,
+            position: 'absolute', bottom: 0, left: 0,
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
             fontSize: '0.58rem', letterSpacing: '0.38em', textTransform: 'uppercase',
             color: 'oklch(36% 0.007 74)',
             textShadow: '0 1px 6px rgba(255,255,255,0.95)',
           }}>12°58&apos;N · 77°35&apos;E</span>
 
+          {/* Fixed — stays visible throughout the landing scroll */}
           <Link href="/about" style={{
-            position: 'absolute', bottom: 0, left: 0,
+            position: 'fixed',
+            bottom: 'clamp(1.2rem, 2.5vh, 2rem)',
+            left: 'clamp(1.5rem, 3vw, 2.5rem)',
+            zIndex: 50,
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
             fontSize: '0.54rem', letterSpacing: '0.32em', textTransform: 'uppercase',
             color: 'oklch(20% 0.007 72)', textDecoration: 'none',

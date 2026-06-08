@@ -39,21 +39,22 @@ export function TransitionBlink({ children }: { children: React.ReactNode }) {
   }, [pathname])
 
   const navigate = useCallback((href: string) => {
-    // Home has its own loader animation — skip the blink, push directly
-    if (href === '/') {
-      router.push(href)
-      return
-    }
+    // Use window.location.pathname — always the live value, never a stale closure.
+    const currentBase = window.location.pathname
+    const hrefBase    = href.split('#')[0] || '/'
 
-    // Same-page click: panels would blink in but never out (pathname unchanged).
-    // Just handle hash scrolling if present, don't re-navigate.
-    const currentBase = pathname.split('#')[0]
-    const hrefBase    = href.split('#')[0]
+    // Same page: no transition. Handle hash scrolling if present.
     if (hrefBase === currentBase) {
       if (href.includes('#')) {
         const id = href.split('#')[1]
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
       }
+      return
+    }
+
+    // Home has its own loader animation — push directly, no blink overlay.
+    if (hrefBase === '/') {
+      router.push(href)
       return
     }
 
@@ -68,7 +69,7 @@ export function TransitionBlink({ children }: { children: React.ReactNode }) {
       ease: 'power3.inOut',
       onComplete: () => router.push(href),
     })
-  }, [router, pathname])
+  }, [router])
 
   return (
     <BlinkContext.Provider value={{ navigate }}>
