@@ -242,12 +242,6 @@ export default function AboutPage() {
                 </address>
               </div>
 
-              <div>
-                <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Commissions</div>
-                <p style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.7, color: SOFT }}>
-                  Accepting enquiries for projects commencing 2025.
-                </p>
-              </div>
             </div>
           </div>
         </div>

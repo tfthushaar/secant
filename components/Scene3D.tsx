@@ -32,26 +32,27 @@ import { useEffect, useRef } from 'react'
 const LERP = 0.08
 const SNAP = 0.0008
 
-/* Camera stops — all positions kept in front of the building (Z > 0) and
-   look targets kept at Z > 0 so neither the main block nor the right wing's
-   back face is ever visible from any camera angle.                          */
+/* Camera stops — constraint: camera Z > 0 and look Z > 0 at all times so
+   the back faces of the main block and right wing are never in frame.
+   Variation is achieved through large swings in height (Y 1→30) and
+   lateral position (X -20→+13) rather than depth.                          */
 const CAM_STOPS = [
-  { pos: [-18,  6,  24],  look: [-4,  1,  3]  }, /* hero — front-left three-quarter   */
-  { pos: [-26,  2,  20],  look: [-6,  0,  2]  }, /* manifesto — tight left facade     */
-  { pos: [  4,  2,  27],  look: [-1,  2,  3]  }, /* stats — straight front, low       */
-  { pos: [ -2, 26,  14],  look: [ 0,  0,  4]  }, /* services — forward aerial         */
-  { pos: [  9,  5,  26],  look: [ 3,  1,  3]  }, /* contact — front-right wing face   */
-  { pos: [ -7, 18,  22],  look: [-1,  0,  3]  }, /* end — diagonal aerial from front  */
+  { pos: [-16,  5,  22],  look: [-3,  4,  2]  }, /* hero: front-left, slight up-look  */
+  { pos: [-20,  1,  14],  look: [-8,  7,  1]  }, /* manifesto: ground-level, looking up*/
+  { pos: [  1, 15,  26],  look: [ 0,  1,  4]  }, /* stats: high-front, wide panoramic  */
+  { pos: [ 10,  2,  19],  look: [-1,  8,  2]  }, /* services: low-right, looking up-left*/
+  { pos: [  0, 30,  14],  look: [ 1,  0,  6]  }, /* contact: steep overhead, tilted fwd*/
+  { pos: [ 13,  6,  20],  look: [ 2,  3,  3]  }, /* end: front-right three-quarter      */
 ]
 
 /* Mobile: same orbit, pulled ~40 % further back for portrait viewport */
 const CAM_STOPS_MOBILE = [
-  { pos: [-26,  9,  34],  look: [-4,  1,  3]  },
-  { pos: [-37,  3,  28],  look: [-6,  0,  2]  },
-  { pos: [  6,  3,  38],  look: [-1,  2,  3]  },
-  { pos: [ -3, 37,  20],  look: [ 0,  0,  4]  },
-  { pos: [ 13,  7,  37],  look: [ 3,  1,  3]  },
-  { pos: [-10, 25,  31],  look: [-1,  0,  3]  },
+  { pos: [-22,  7,  31],  look: [-3,  4,  2]  },
+  { pos: [-28,  1,  20],  look: [-8,  7,  1]  },
+  { pos: [  1, 21,  37],  look: [ 0,  1,  4]  },
+  { pos: [ 14,  3,  27],  look: [-1,  8,  2]  },
+  { pos: [  0, 42,  20],  look: [ 1,  0,  6]  },
+  { pos: [ 18,  8,  28],  look: [ 2,  3,  3]  },
 ]
 
 
