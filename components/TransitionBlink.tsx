@@ -48,8 +48,11 @@ export function TransitionBlink({ children }: { children: React.ReactNode }) {
 
   const navigate = useCallback((href: string) => {
     // Use window.location.pathname — always the live value, never a stale closure.
-    const currentBase = window.location.pathname
-    const hrefBase    = href.split('#')[0] || '/'
+    // Normalize trailing slashes: next.config trailingSlash:true makes the browser
+    // path /about/ while hrefs are /about — without this the same-page check fails.
+    const norm        = (p: string) => p.replace(/\/$/, '') || '/'
+    const currentBase = norm(window.location.pathname)
+    const hrefBase    = norm(href.split('#')[0] || '/')
 
     // Same page: no transition. Handle hash scrolling if present.
     if (hrefBase === currentBase) {
@@ -80,8 +83,9 @@ export function TransitionBlink({ children }: { children: React.ReactNode }) {
   }, [router])
 
   const navigateFade = useCallback((href: string) => {
-    const hrefBase = href.split('#')[0] || '/'
-    if (hrefBase === window.location.pathname) return
+    const norm     = (p: string) => p.replace(/\/$/, '') || '/'
+    const hrefBase = norm(href.split('#')[0] || '/')
+    if (hrefBase === norm(window.location.pathname)) return
     if (busy.current) return
     busy.current = true
     isFade.current = true
