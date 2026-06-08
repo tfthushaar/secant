@@ -1,4 +1,4 @@
-import Image from 'next/image'
+﻿import Image from 'next/image'
 import Link from 'next/link'
 import { Navigator } from '@/components/Navigator'
 import { PageTransition } from '@/components/PageTransition'
@@ -49,32 +49,32 @@ export default function AboutPage() {
           marginBottom: 'clamp(5rem,10vh,9rem)',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: 'clamp(2rem,4vh,4rem)' }}>
-            <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.42em', textTransform: 'uppercase', color: SOFT, marginBottom: '1.2rem' }}>
+            <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.42em', textTransform: 'uppercase', color: INK, marginBottom: '1.2rem' }}>
               Principal Architect
             </div>
             <h1 style={{
               fontFamily: 'var(--font-display), Georgia, serif',
-              fontWeight: 300,
+              fontWeight: 500,
               fontSize: 'clamp(2.2rem, 5.5vw, 6rem)',
               lineHeight: 1.04, letterSpacing: '-0.015em',
               color: INK, margin: '0 0 clamp(1.5rem,3vh,2.5rem)',
             }}>
               R. H. Rehman
             </h1>
-            <p style={{ fontWeight: 300, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: SOFT, maxWidth: '42ch', marginBottom: '1.4rem' }}>
+            <p style={{ fontWeight: 500, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: INK, maxWidth: '42ch', marginBottom: '1.4rem' }}>
               Provides the strategic leadership and creative vision that define our firm&apos;s commitment to quality, ensuring that every project is executed with a sophisticated design philosophy and a deep respect for spatial harmony.
             </p>
-            <p style={{ fontWeight: 300, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: SOFT, maxWidth: '42ch' }}>
+            <p style={{ fontWeight: 500, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: INK, maxWidth: '42ch' }}>
               At Secant Architects LLP, we are dedicated to the pursuit of architectural excellence, blending innovative design with functional precision to create enduring built environments that stand the test of time.
             </p>
           </div>
 
           <div>
             <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden' }}>
-              <Image src="/assets/web/small/rehman-portrait.png" alt="R. H. Rehman — Principal Architect" fill style={{ objectFit: 'contain', objectPosition: 'center top' }} unoptimized priority />
+              <Image src="/assets/web/small/rehman-portrait.png" alt="R. H. Rehman â€” Principal Architect" fill style={{ objectFit: 'contain', objectPosition: 'center top' }} unoptimized priority />
             </div>
-            <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: SOFT, marginTop: '0.75rem' }}>
-              Secant Architects LLP · Bengaluru
+            <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: INK, marginTop: '0.75rem' }}>
+              Secant Architects LLP Â· Bengaluru
             </div>
           </div>
         </div>
@@ -85,7 +85,7 @@ export default function AboutPage() {
           paddingTop: 'clamp(3rem,6vh,5rem)',
           borderTop: `1px solid ${LINE}`,
         }}>
-          <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.42em', textTransform: 'uppercase', color: SOFT, marginBottom: '2.5rem' }}>
+          <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.42em', textTransform: 'uppercase', color: INK, marginBottom: '2.5rem' }}>
             Leadership
           </div>
 
@@ -97,7 +97,7 @@ export default function AboutPage() {
             {[
               {
                 name: 'Chetana Shehsan',
-                role: 'Architect — Interior Design',
+                role: 'Architect â€” Interior Design',
                 bio: 'Spearheads our interior design division, specialising in delivering meticulously curated environments that harmonise aesthetic elegance with functional efficiency, tailoring every detail to reflect the unique requirements and aspirations of our clients.',
               },
               {
@@ -112,13 +112,13 @@ export default function AboutPage() {
               },
             ].map(({ name, role, bio }) => (
               <div key={name} style={{ paddingBottom: 'clamp(1.5rem,3vh,2.5rem)', borderBottom: `1px solid ${LINE}` }}>
-                <div style={{ fontWeight: 300, fontSize: '0.56rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.55rem' }}>
+                <div style={{ fontWeight: 500, fontSize: '0.56rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: INK, marginBottom: '0.55rem' }}>
                   {role}
                 </div>
-                <div style={{ fontWeight: 400, fontSize: 'clamp(1rem,1.4vw,1.25rem)', color: INK, marginBottom: '0.9rem', letterSpacing: '-0.01em' }}>
+                <div style={{ fontWeight: 600, fontSize: 'clamp(1rem,1.4vw,1.25rem)', color: INK, marginBottom: '0.9rem', letterSpacing: '-0.01em' }}>
                   {name}
                 </div>
-                <p style={{ fontWeight: 300, fontSize: 'clamp(0.78rem,0.95vw,0.88rem)', lineHeight: 1.8, color: SOFT, margin: 0 }}>
+                <p style={{ fontWeight: 500, fontSize: 'clamp(0.78rem,0.95vw,0.88rem)', lineHeight: 1.8, color: INK, margin: 0 }}>
                   {bio}
                 </p>
               </div>
@@ -132,12 +132,12 @@ export default function AboutPage() {
           paddingTop: 'clamp(3rem,6vh,5rem)',
           borderTop: `1px solid ${LINE}`,
         }}>
-          <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.42em', textTransform: 'uppercase', color: SOFT, marginBottom: '1rem' }}>
+          <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.42em', textTransform: 'uppercase', color: INK, marginBottom: '1rem' }}>
             Philosophy
           </div>
           <h2 style={{
             fontFamily: 'var(--font-display), Georgia, serif',
-            fontWeight: 300,
+            fontWeight: 500,
             fontSize: 'clamp(1.8rem,4vw,3.8rem)',
             lineHeight: 1.06, letterSpacing: '-0.015em',
             color: INK, margin: '0 0 clamp(3rem,6vh,5rem)',
@@ -170,13 +170,13 @@ export default function AboutPage() {
             ].map(({ title, body }, i) => (
               <div key={title} style={{ paddingBottom: 'clamp(1.5rem,3vh,2.5rem)', borderBottom: `1px solid ${LINE}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                  <span style={{ fontWeight: 300, fontSize: '0.52rem', letterSpacing: '0.3em', color: SOFT }}>0{i + 1}</span>
+                  <span style={{ fontWeight: 500, fontSize: '0.52rem', letterSpacing: '0.3em', color: SOFT }}>0{i + 1}</span>
                   <div style={{ flex: 1, height: '1px', background: LINE }} />
                 </div>
-                <div style={{ fontWeight: 400, fontSize: 'clamp(0.9rem,1.1vw,1rem)', color: INK, marginBottom: '0.8rem', letterSpacing: '-0.005em' }}>
+                <div style={{ fontWeight: 600, fontSize: 'clamp(0.9rem,1.1vw,1rem)', color: INK, marginBottom: '0.8rem', letterSpacing: '-0.005em' }}>
                   {title}
                 </div>
-                <p style={{ fontWeight: 300, fontSize: 'clamp(0.78rem,0.95vw,0.88rem)', lineHeight: 1.8, color: SOFT, margin: 0 }}>
+                <p style={{ fontWeight: 500, fontSize: 'clamp(0.78rem,0.95vw,0.88rem)', lineHeight: 1.8, color: INK, margin: 0 }}>
                   {body}
                 </p>
               </div>
@@ -191,7 +191,7 @@ export default function AboutPage() {
           borderTop: `1px solid ${LINE}`,
         }}>
           <div style={{ marginBottom: 'clamp(2.5rem,5vh,4rem)' }}>
-            <div style={{ fontFamily: 'var(--font-display), Georgia, serif', fontWeight: 300, fontSize: 'clamp(2.2rem,5vw,5rem)', lineHeight: 1.05, letterSpacing: '-0.015em', color: INK }}>
+            <div style={{ fontFamily: 'var(--font-display), Georgia, serif', fontWeight: 500, fontSize: 'clamp(2.2rem,5vw,5rem)', lineHeight: 1.05, letterSpacing: '-0.015em', color: INK }}>
               Begin a project.
             </div>
           </div>
@@ -206,18 +206,18 @@ export default function AboutPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingTop: '0.5rem' }}>
               <div>
-                <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Contact</div>
-                <a href="tel:+918079655298" style={{ fontWeight: 300, fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', color: INK, textDecoration: 'none', letterSpacing: '0.02em', display: 'block', marginBottom: '0.25rem' }}>
+                <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: INK, marginBottom: '0.6rem' }}>Contact</div>
+                <a href="tel:+918079655298" style={{ fontWeight: 500, fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', color: INK, textDecoration: 'none', letterSpacing: '0.02em', display: 'block', marginBottom: '0.25rem' }}>
                   080 79655298
                 </a>
-                <a href="mailto:rehman@secant.in" style={{ fontWeight: 300, fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', color: INK, textDecoration: 'none', letterSpacing: '0.02em', display: 'block' }}>
+                <a href="mailto:rehman@secant.in" style={{ fontWeight: 500, fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', color: INK, textDecoration: 'none', letterSpacing: '0.02em', display: 'block' }}>
                   rehman@secant.in
                 </a>
               </div>
 
               <div>
-                <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Visit</div>
-                <address style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.8, color: SOFT, fontStyle: 'normal' }}>
+                <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: INK, marginBottom: '0.6rem' }}>Visit</div>
+                <address style={{ fontWeight: 500, fontSize: '0.9rem', lineHeight: 1.8, color: INK, fontStyle: 'normal' }}>
                   535/1/3, 1st Floor, 3rd Main<br />
                   A Block, Rajajinagar 2nd Stage<br />
                   Bangalore 560 010
@@ -228,9 +228,9 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 'clamp(5rem,10vh,8rem)', paddingTop: '2rem', borderTop: `1px solid ${LINE}`, display: 'flex', justifyContent: 'space-between', fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: SOFT }}>
+        <div style={{ marginTop: 'clamp(5rem,10vh,8rem)', paddingTop: '2rem', borderTop: `1px solid ${LINE}`, display: 'flex', justifyContent: 'space-between', fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: SOFT }}>
           <span>SECANT Architects LLP</span>
-          <span>© 2024</span>
+          <span>Â© 2024</span>
         </div>
       </div>
 
@@ -238,3 +238,4 @@ export default function AboutPage() {
     </PageTransition>
   )
 }
+
