@@ -42,7 +42,7 @@ const CAM_STOPS = [
   { pos: [-20,  1,  14],  look: [-8,  4,  2]  }, /* manifesto: ground-level left       */
   { pos: [ -2, 22,   8],  look: [-1,  2,  5]  }, /* stats: aerial front-left, no back  */
   { pos: [  9,  2,   8],  look: [-1,  4,  3]  }, /* services: low right front          */
-  { pos: [ -5, 20,   8],  look: [-3,  2,  5]  }, /* contact: aerial front-left, right wing off-frame */
+  { pos: [-14, 20,   8],  look: [-7,  2,  5]  }, /* contact: aerial far-left, back face beyond FOV  */
   { pos: [ 10,  5,  18],  look: [ 2,  3,  4]  }, /* end: front-right, within wing edge */
 ]
 
@@ -52,7 +52,7 @@ const CAM_STOPS_MOBILE = [
   { pos: [-28,  1,  20],  look: [-8,  4,  2]  },
   { pos: [ -3, 31,  11],  look: [-1,  2,  5]  },
   { pos: [ 12,  3,  11],  look: [-1,  4,  3]  },
-  { pos: [ -7, 28,  11],  look: [-3,  2,  5]  },
+  { pos: [-20, 28,  11],  look: [-7,  2,  5]  },
   { pos: [ 14,  7,  25],  look: [ 2,  3,  4]  },
 ]
 
