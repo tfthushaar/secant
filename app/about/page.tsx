@@ -217,19 +217,12 @@ export default function AboutPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingTop: '0.5rem' }}>
               <div>
-                <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Phone</div>
-                <a
-                  href="tel:+919845812688"
-                  style={{
-                    fontWeight: 300,
-                    fontSize: 'clamp(0.9rem,1.4vw,1.1rem)',
-                    color: INK,
-                    textDecoration: 'none',
-                    letterSpacing: '0.02em',
-                    display: 'inline-block',
-                  }}
-                >
-                  +91 98458 12688
+                <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: SOFT, marginBottom: '0.6rem' }}>Contact</div>
+                <a href="tel:+918079655298" style={{ fontWeight: 300, fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', color: INK, textDecoration: 'none', letterSpacing: '0.02em', display: 'block', marginBottom: '0.25rem' }}>
+                  080 79655298
+                </a>
+                <a href="mailto:rehman@secant.in" style={{ fontWeight: 300, fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', color: INK, textDecoration: 'none', letterSpacing: '0.02em', display: 'block' }}>
+                  rehman@secant.in
                 </a>
               </div>
 
