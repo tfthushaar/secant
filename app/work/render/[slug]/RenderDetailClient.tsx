@@ -22,7 +22,7 @@ function ArrowSvg({ dir }: { dir: 'left' | 'right' }) {
 }
 
 export function RenderDetailClient({ slug }: Props) {
-  const { navigate } = useNavigate()
+  const { navigate, navigateFade } = useNavigate()
   const isMobile = useIsMobile()
   const idx      = workItems.findIndex((w) => w.id === slug)
   if (idx === -1) notFound()
@@ -41,8 +41,8 @@ export function RenderDetailClient({ slug }: Props) {
   /* Keyboard arrow navigation */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft')  navigate(`/work/render/${prev.id}`)
-      if (e.key === 'ArrowRight') navigate(`/work/render/${next.id}`)
+      if (e.key === 'ArrowLeft')  navigateFade(`/work/render/${prev.id}`)
+      if (e.key === 'ArrowRight') navigateFade(`/work/render/${next.id}`)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -65,7 +65,7 @@ export function RenderDetailClient({ slug }: Props) {
             alt={item.title}
             fill
             style={{ objectFit: 'contain' }}
-            priority unoptimized sizes="100vw"
+            priority unoptimized sizes="100vw" quality={100}
           />
         </div>
 
@@ -90,7 +90,7 @@ export function RenderDetailClient({ slug }: Props) {
           <button
             key={dir}
             aria-label={dir === 'left' ? `Previous: ${prev.title}` : `Next: ${next.title}`}
-            onClick={() => navigate(`/work/render/${dir === 'left' ? prev.id : next.id}`)}
+            onClick={() => navigateFade(`/work/render/${dir === 'left' ? prev.id : next.id}`)}
             style={{
               position: 'fixed',
               [dir]: 'clamp(0.8rem, 2vw, 1.8rem)',
@@ -181,11 +181,11 @@ export function RenderDetailClient({ slug }: Props) {
 
           {/* Prev / Next */}
           <div style={{ paddingTop: isMobile ? '1.2rem' : '2rem', borderTop: `1px solid ${LINE}`, display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: isMobile ? '1.5rem' : 0 }}>
-            <a href={`/work/render/${prev.id}`} onClick={e => { e.preventDefault(); navigate(`/work/render/${prev.id}`) }}
+            <a href={`/work/render/${prev.id}`} onClick={e => { e.preventDefault(); navigateFade(`/work/render/${prev.id}`) }}
               style={{ fontWeight: 450, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem', cursor: 'pointer' }}>
               <ArrowSvg dir="left" /> {prev.title}
             </a>
-            <a href={`/work/render/${next.id}`} onClick={e => { e.preventDefault(); navigate(`/work/render/${next.id}`) }}
+            <a href={`/work/render/${next.id}`} onClick={e => { e.preventDefault(); navigateFade(`/work/render/${next.id}`) }}
               style={{ fontWeight: 450, fontSize: '0.58rem', letterSpacing: '0.28em', textTransform: 'uppercase', color: SOFT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem', cursor: 'pointer' }}>
               {next.title} <ArrowSvg dir="right" />
             </a>
@@ -196,14 +196,14 @@ export function RenderDetailClient({ slug }: Props) {
         {!isMobile && (
           <div style={{ position: 'relative', background: isSketch ? '#f5f0e8' : BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(1.5rem,3vh,2.5rem)', height: 'calc(100dvh - 3.2rem)', overflow: 'hidden' }}>
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-              <Image src={item.detailImage ?? item.image} alt={item.title} fill style={{ objectFit: 'contain', objectPosition: 'center' }} priority unoptimized sizes="62vw" />
+              <Image src={item.detailImage ?? item.image} alt={item.title} fill style={{ objectFit: 'contain', objectPosition: 'center' }} priority unoptimized sizes="100vw" quality={100} />
             </div>
             {/* Flanking arrow buttons over the image */}
             {(['left', 'right'] as const).map(dir => (
               <button
                 key={dir}
                 aria-label={dir === 'left' ? `Previous: ${prev.title}` : `Next: ${next.title}`}
-                onClick={() => navigate(`/work/render/${dir === 'left' ? prev.id : next.id}`)}
+                onClick={() => navigateFade(`/work/render/${dir === 'left' ? prev.id : next.id}`)}
                 style={{
                   position: 'absolute',
                   [dir]: '1rem',

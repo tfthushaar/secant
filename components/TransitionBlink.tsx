@@ -4,8 +4,8 @@ import { createContext, useContext, useRef, useCallback, useEffect } from 'react
 import { useRouter, usePathname } from 'next/navigation'
 import { gsap } from 'gsap'
 
-interface BlinkCtx { navigate: (href: string) => void }
-const BlinkContext = createContext<BlinkCtx>({ navigate: () => {} })
+interface BlinkCtx { navigate: (href: string) => void; navigateFade: (href: string) => void }
+const BlinkContext = createContext<BlinkCtx>({ navigate: () => {}, navigateFade: () => {} })
 export function useNavigate() { return useContext(BlinkContext) }
 
 export function TransitionBlink({ children }: { children: React.ReactNode }) {
@@ -13,8 +13,10 @@ export function TransitionBlink({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const topRef   = useRef<HTMLDivElement>(null)
   const botRef   = useRef<HTMLDivElement>(null)
+  const fadeRef  = useRef<HTMLDivElement>(null)
   const busy     = useRef(false)
   const isFirst  = useRef(true)
+  const isFade   = useRef(false)
 
   // Position panels off-screen on mount
   useEffect(() => {
@@ -22,16 +24,22 @@ export function TransitionBlink({ children }: { children: React.ReactNode }) {
     if (botRef.current) gsap.set(botRef.current, { yPercent: 100 })
   }, [])
 
-  // New page mounted → open panels to reveal it
+  // New page mounted → reveal (blink panels or fade overlay depending on mode)
   useEffect(() => {
     if (isFirst.current) { isFirst.current = false; return }
+    if (isFade.current) {
+      const fade = fadeRef.current
+      if (fade) gsap.to(fade, { opacity: 0, duration: 0.38, ease: 'sine.inOut',
+        onComplete: () => { gsap.set(fade, { display: 'none' }); isFade.current = false; busy.current = false } })
+      return
+    }
     const top = topRef.current
     const bot = botRef.current
     if (!top || !bot) return
     gsap.delayedCall(0.05, () => {
       gsap.to([top, bot], {
         yPercent: (i: number) => (i === 0 ? -100 : 100),
-        duration: 0.42,
+        duration: 0.34,
         ease: 'power3.inOut',
         onComplete: () => { busy.current = false },
       })
@@ -65,14 +73,34 @@ export function TransitionBlink({ children }: { children: React.ReactNode }) {
     if (!top || !bot) { router.push(href); return }
     gsap.to([top, bot], {
       yPercent: 0,
-      duration: 0.38,
+      duration: 0.30,
       ease: 'power3.inOut',
       onComplete: () => router.push(href),
     })
   }, [router])
 
+  const navigateFade = useCallback((href: string) => {
+    const hrefBase = href.split('#')[0] || '/'
+    if (hrefBase === window.location.pathname) return
+    if (busy.current) return
+    busy.current = true
+    isFade.current = true
+    const fade = fadeRef.current
+    if (!fade) { router.push(href); return }
+    gsap.set(fade, { display: 'block', opacity: 0 })
+    gsap.to(fade, { opacity: 1, duration: 0.32, ease: 'sine.inOut', onComplete: () => router.push(href) })
+  }, [router])
+
   return (
-    <BlinkContext.Provider value={{ navigate }}>
+    <BlinkContext.Provider value={{ navigate, navigateFade }}>
+      {/* Fade overlay (render-to-render transitions) */}
+      <div
+        ref={fadeRef}
+        style={{
+          display: 'none', position: 'fixed', inset: 0,
+          background: '#0d0d0d', zIndex: 9998, pointerEvents: 'none',
+        }}
+      />
       {/* Top panel */}
       <div
         ref={topRef}

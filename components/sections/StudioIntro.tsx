@@ -16,12 +16,10 @@ function Rule() {
   return <div style={{ width: '3rem', height: '1px', background: INK, flexShrink: 0 }} />
 }
 
-/* No background, no box — only backdrop-filter behind each span.
-   Blurs model lines behind the text without any visible rectangle.  */
+/* Soft halo under text for legibility — follows letter shapes, no box. */
 const IB: React.CSSProperties = {
-  backdropFilter:       'blur(14px)',
-  WebkitBackdropFilter: 'blur(14px)',
-} as React.CSSProperties
+  textShadow: '0 0 8px rgba(250,248,245,1), 0 0 20px rgba(250,248,245,1), 0 0 40px rgba(250,248,245,0.85)',
+}
 
 /* ── Section 1: Manifesto ──────────────────────────────────────── */
 function Manifesto() {
