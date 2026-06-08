@@ -16,16 +16,11 @@ function Rule() {
   return <div style={{ width: '3rem', height: '1px', background: INK, flexShrink: 0 }} />
 }
 
-/* Tight per-line blur — background wraps each text line individually.
-   boxDecorationBreak:clone repaints the bg+padding on every wrapped line
-   so you never get a big rectangle beyond the text characters.            */
+/* No background, no box — only backdrop-filter behind each span.
+   Blurs model lines behind the text without any visible rectangle.  */
 const IB: React.CSSProperties = {
-  backdropFilter:           'blur(8px)',
-  WebkitBackdropFilter:     'blur(8px)',
-  background:               'rgba(250,248,245,0.88)',
-  padding:                  '0.05em 0.3em',
-  boxDecorationBreak:       'clone',
-  WebkitBoxDecorationBreak: 'clone',
+  backdropFilter:       'blur(14px)',
+  WebkitBackdropFilter: 'blur(14px)',
 } as React.CSSProperties
 
 /* ── Section 1: Manifesto ──────────────────────────────────────── */

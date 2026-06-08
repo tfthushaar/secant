@@ -64,9 +64,6 @@ export default function AboutPage() {
             <p style={{ fontWeight: 500, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: INK, maxWidth: '42ch', marginBottom: '1.4rem' }}>
               Provides the strategic leadership and creative vision that define our firm&apos;s commitment to quality, ensuring that every project is executed with a sophisticated design philosophy and a deep respect for spatial harmony.
             </p>
-            <p style={{ fontWeight: 500, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: INK, maxWidth: '42ch' }}>
-              At Secant Architects LLP, we are dedicated to the pursuit of architectural excellence, blending innovative design with functional precision to create enduring built environments that stand the test of time.
-            </p>
           </div>
 
           <div>
