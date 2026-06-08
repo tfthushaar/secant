@@ -322,13 +322,14 @@ function Contact() {
           Begin a<br />collaboration.
         </h2>
 
-        <Link href="/studio#contact" style={{
+        <Link href="/about#contact" style={{
           fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
           fontSize: '0.62rem', letterSpacing: '0.38em', textTransform: 'uppercase',
           color: 'oklch(22% 0.007 72)', textDecoration: 'none',
           display: 'inline-flex', alignItems: 'center', gap: '1rem',
           border: '1px solid oklch(32% 0.007 72)',
           padding: '0.9rem 1.6rem',
+          background: 'rgba(250,248,245,0.96)',
         }}>
           Begin an enquiry
           <svg width="14" height="7" viewBox="0 0 14 7" fill="none">

@@ -7,8 +7,8 @@ import { useNavigate } from '@/components/TransitionBlink'
 const NAV_LINKS = [
   { label: 'Home',    href: '/',               num: '00' },
   { label: 'Work',    href: '/work',            num: '01' },
-  { label: 'Studio',  href: '/studio',          num: '02' },
-  { label: 'Contact', href: '/studio#contact',  num: '03' },
+  { label: 'About',   href: '/about',           num: '02' },
+  { label: 'Contact', href: '/about#contact',   num: '03' },
 ]
 
 export function Navigator() {

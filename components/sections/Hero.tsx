@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { gsap } from 'gsap'
 import { HERO_PADDING } from '@/lib/heroConstants'
 
@@ -70,7 +71,7 @@ export function Hero({ loaderDone = false }: HeroProps) {
               letterSpacing: '0.28em', textTransform: 'uppercase',
               color: 'oklch(32% 0.007 74)',
               textShadow: '0 1px 8px rgba(255,255,255,0.95)',
-            }}>Architecture Studio</span>
+            }}>SECANT Architects LLP</span>
             <span style={{ width: '2rem', height: '1px', background: 'oklch(68% 0.007 74)', display: 'block', flexShrink: 0 }} />
             <span style={{
               fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
@@ -85,12 +86,30 @@ export function Hero({ loaderDone = false }: HeroProps) {
         {/* Bottom details */}
         <div ref={scatterRef} style={{ opacity: 0, position: 'relative' }}>
           <span style={{
-            position: 'absolute', bottom: 0, left: 0,
+            position: 'absolute', bottom: '3rem', left: 0,
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
             fontSize: '0.58rem', letterSpacing: '0.38em', textTransform: 'uppercase',
             color: 'oklch(36% 0.007 74)',
             textShadow: '0 1px 6px rgba(255,255,255,0.95)',
           }}>12°58&apos;N · 77°35&apos;E</span>
+
+          <Link href="/about" style={{
+            position: 'absolute', bottom: 0, left: 0,
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 420,
+            fontSize: '0.54rem', letterSpacing: '0.32em', textTransform: 'uppercase',
+            color: 'oklch(20% 0.007 72)', textDecoration: 'none',
+            border: '1px solid oklch(40% 0.007 72)',
+            padding: '0.45rem 1rem',
+            background: 'rgba(250,248,245,0.92)',
+            display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
+            pointerEvents: 'auto',
+          }}>
+            About Us
+            <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
+              <line x1="0" y1="2.5" x2="10" y2="2.5" stroke="currentColor" strokeWidth="0.8"/>
+              <polyline points="7,0.5 9.5,2.5 7,4.5" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+            </svg>
+          </Link>
 
           <span style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', color: 'oklch(50% 0.007 74)' }} aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
