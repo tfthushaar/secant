@@ -41,46 +41,40 @@ export default function AboutPage() {
         padding: 'clamp(5rem,10vh,9rem) clamp(1.5rem,6vw,5rem)',
       }}>
 
-        {/* Opening */}
-        <div style={{ marginBottom: 'clamp(5rem,10vh,9rem)' }}>
-          <h1 style={{
-            fontFamily: 'var(--font-display), Georgia, serif',
-            fontWeight: 300,
-            fontSize: 'clamp(2.6rem, 7vw, 7.5rem)',
-            lineHeight: 1.04, letterSpacing: '-0.015em',
-            color: INK, maxWidth: '16em',
-          }}>
-            Architecture<br />
-            <span style={{ color: SOFT }}>as discovery.</span>
-          </h1>
-        </div>
-
-        {/* Two-column: about text + image */}
+        {/* Opening: Principal Architect + portrait */}
         <div className="studio-2col" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: 'clamp(3rem,6vw,8rem)', alignItems: 'start',
-          paddingTop: 'clamp(3rem,6vh,5rem)',
-          borderTop: `1px solid ${LINE}`,
+          marginBottom: 'clamp(5rem,10vh,9rem)',
         }}>
-          <div>
-            <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.42em', textTransform: 'uppercase', color: SOFT, marginBottom: '2rem' }}>
-              About
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: 'clamp(2rem,4vh,4rem)' }}>
+            <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.42em', textTransform: 'uppercase', color: SOFT, marginBottom: '1.2rem' }}>
+              Principal Architect
             </div>
+            <h1 style={{
+              fontFamily: 'var(--font-display), Georgia, serif',
+              fontWeight: 300,
+              fontSize: 'clamp(2.2rem, 5.5vw, 6rem)',
+              lineHeight: 1.04, letterSpacing: '-0.015em',
+              color: INK, margin: '0 0 clamp(1.5rem,3vh,2.5rem)',
+            }}>
+              R. H. Rehman
+            </h1>
             <p style={{ fontWeight: 300, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: SOFT, maxWidth: '42ch', marginBottom: '1.4rem' }}>
-              At Secant Architects LLP, we are dedicated to the pursuit of architectural excellence, blending innovative design with functional precision to create enduring built environments that stand the test of time.
+              Provides the strategic leadership and creative vision that define our firm&apos;s commitment to quality, ensuring that every project is executed with a sophisticated design philosophy and a deep respect for spatial harmony.
             </p>
-            <p style={{ fontWeight: 300, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: SOFT, maxWidth: '42ch', marginBottom: '1.4rem' }}>
-              Through a cohesive and multidisciplinary approach, we consistently transform complex briefs into iconic, high-performance structures that are meticulously crafted for the future.
+            <p style={{ fontWeight: 300, fontSize: 'clamp(0.84rem,1.1vw,1rem)', lineHeight: 1.88, color: SOFT, maxWidth: '42ch' }}>
+              At Secant Architects LLP, we are dedicated to the pursuit of architectural excellence, blending innovative design with functional precision to create enduring built environments that stand the test of time.
             </p>
           </div>
 
           <div>
-            <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden' }}>
-              <Image src="/assets/web/small/interior-01.jpg" alt="Studio interior" fill className="object-cover" unoptimized />
+            <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', background: SOFT }}>
+              <Image src="/assets/web/small/rehman-portrait.png" alt="R. H. Rehman — Principal Architect" fill className="object-cover" unoptimized priority />
             </div>
             <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: SOFT, marginTop: '0.75rem' }}>
-              Bengaluru · 2024
+              Secant Architects LLP · Bengaluru
             </div>
           </div>
         </div>
@@ -101,11 +95,6 @@ export default function AboutPage() {
             gap: 'clamp(2rem,4vw,4rem)',
           }}>
             {[
-              {
-                name: 'R. H. Rehman',
-                role: 'Principal Architect',
-                bio: 'Provides the strategic leadership and creative vision that define our firm\'s commitment to quality, ensuring that every project is executed with a sophisticated design philosophy and a deep respect for spatial harmony.',
-              },
               {
                 name: 'Chetana Shehsan',
                 role: 'Architect — Interior Design',
