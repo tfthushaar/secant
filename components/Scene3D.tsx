@@ -38,21 +38,21 @@ const SNAP = 0.0008
      so the sight line can't wrap around to the back face
    – look Z always ≥ 2 so we never look behind the building             */
 const CAM_STOPS = [
-  { pos: [-16,  5,  22],  look: [-2,  8,  2]  }, /* hero: building close to SECANT     */
+  { pos: [-16,  5,  22],  look: [-2,  3,  2]  }, /* hero: camera looks down so roof sits just below SECANT */
   { pos: [-20,  1,  14],  look: [-8,  4,  2]  }, /* manifesto: ground-level left       */
-  { pos: [  1, 15,  26],  look: [ 0,  2,  4]  }, /* stats: high wide front             */
+  { pos: [ -2, 22,   8],  look: [-1,  2,  5]  }, /* stats: aerial front-left, no back  */
   { pos: [  9,  2,   8],  look: [-1,  4,  3]  }, /* services: low right front          */
-  { pos: [ -4, 26,   6],  look: [-1,  2,  3]  }, /* contact: steep aerial, front-left  */
+  { pos: [  4, 20,   8],  look: [ 0,  2,  5]  }, /* contact: aerial front-right, no back */
   { pos: [ 10,  5,  18],  look: [ 2,  3,  4]  }, /* end: front-right, within wing edge */
 ]
 
 /* Mobile: same orbit, ~40 % further back for portrait viewport */
 const CAM_STOPS_MOBILE = [
-  { pos: [-22,  7,  31],  look: [-2,  8,  2]  },
+  { pos: [-22,  7,  31],  look: [-2,  3,  2]  },
   { pos: [-28,  1,  20],  look: [-8,  4,  2]  },
-  { pos: [  1, 21,  37],  look: [ 0,  2,  4]  },
+  { pos: [ -3, 31,  11],  look: [-1,  2,  5]  },
   { pos: [ 12,  3,  11],  look: [-1,  4,  3]  },
-  { pos: [ -6, 37,   8],  look: [-1,  2,  3]  },
+  { pos: [  6, 28,  11],  look: [ 0,  2,  5]  },
   { pos: [ 14,  7,  25],  look: [ 2,  3,  4]  },
 ]
 
@@ -161,6 +161,8 @@ export function Scene3D({ progressRef }: Props) {
           const norm = 20 / Math.max(size.x, size.y, size.z)
           model.position.sub(centre)
           model.scale.setScalar(norm)
+          /* Lift model so building roof sits close to hero headline */
+          model.position.y += 2
 
           scene.add(model)
         },
