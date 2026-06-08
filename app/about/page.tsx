@@ -70,8 +70,8 @@ export default function AboutPage() {
           </div>
 
           <div>
-            <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', background: SOFT }}>
-              <Image src="/assets/web/small/rehman-portrait.png" alt="R. H. Rehman — Principal Architect" fill className="object-cover" unoptimized priority />
+            <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden' }}>
+              <Image src="/assets/web/small/rehman-portrait.png" alt="R. H. Rehman — Principal Architect" fill style={{ objectFit: 'contain', objectPosition: 'center top' }} unoptimized priority />
             </div>
             <div style={{ fontWeight: 300, fontSize: '0.58rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: SOFT, marginTop: '0.75rem' }}>
               Secant Architects LLP · Bengaluru
