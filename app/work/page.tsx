@@ -48,6 +48,21 @@ export default function WorkPage() {
   const rafId    = useRef(0)
   const [snapIdx, setSnapIdx] = useState(Math.floor(N / 2))
 
+  /* Keyboard arrow navigation */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        centreF.current = Math.max(0, Math.round(centreF.current) - 1)
+        vel.current = 0
+      } else if (e.key === 'ArrowRight') {
+        centreF.current = Math.min(N - 1, Math.round(centreF.current) + 1)
+        vel.current = 0
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   /* applyArch reads spacing live from dimsRef — no stale closure */
   const applyArch = useCallback((centre: number) => {
     const { s: S } = dimsRef.current
@@ -315,6 +330,37 @@ export default function WorkPage() {
           })}
         </div>
       </div>
+
+      {/* Flanking arrow buttons */}
+      {(['left', 'right'] as const).map(dir => (
+        <button
+          key={dir}
+          aria-label={dir === 'left' ? 'Previous category' : 'Next category'}
+          onClick={() => {
+            centreF.current = dir === 'left'
+              ? Math.max(0, Math.round(centreF.current) - 1)
+              : Math.min(N - 1, Math.round(centreF.current) + 1)
+            vel.current = 0
+          }}
+          style={{
+            position: 'fixed',
+            [dir]: 'clamp(0.8rem, 2vw, 1.8rem)',
+            top: '50%', transform: 'translateY(-50%)',
+            background: 'none', border: '1px solid oklch(75% 0 0)',
+            width: '2.4rem', height: '2.4rem', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 20, color: 'oklch(18% 0 0)',
+            transition: 'border-color 0.15s, color 0.15s',
+          }}
+        >
+          <svg width="12" height="6" viewBox="0 0 12 6" fill="none">
+            {dir === 'left'
+              ? <><line x1="12" y1="3" x2="0" y2="3" stroke="currentColor" strokeWidth="0.9"/><polyline points="3.5,0.5 0.5,3 3.5,5.5" stroke="currentColor" strokeWidth="0.9" fill="none"/></>
+              : <><line x1="0" y1="3" x2="12" y2="3" stroke="currentColor" strokeWidth="0.9"/><polyline points="8.5,0.5 11.5,3 8.5,5.5" stroke="currentColor" strokeWidth="0.9" fill="none"/></>
+            }
+          </svg>
+        </button>
+      ))}
 
       <Navigator />
     </div>
