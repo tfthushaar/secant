@@ -331,10 +331,11 @@ export default function WorkPage() {
         </div>
       </div>
 
-      {/* Flanking arrow buttons */}
+      {/* Flanking arrow buttons — hidden on mobile (swipe is sufficient) */}
       {(['left', 'right'] as const).map(dir => (
         <button
           key={dir}
+          className="work-nav-arrow"
           aria-label={dir === 'left' ? 'Previous category' : 'Next category'}
           onClick={() => {
             centreF.current = dir === 'left'

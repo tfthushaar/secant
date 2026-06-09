@@ -130,7 +130,7 @@ export function ContactForm() {
     <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
 
       {/* Name + Email row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div className="form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         <div>
           <label htmlFor="cf-name" style={labelStyle}>Full Name</label>
           <input
@@ -158,7 +158,7 @@ export function ContactForm() {
       </div>
 
       {/* Phone + Project type row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div className="form-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         <div>
           <label htmlFor="cf-phone" style={labelStyle}>Phone</label>
           <input

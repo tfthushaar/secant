@@ -163,11 +163,25 @@ a:hover, button:hover { opacity: 0.6; }
   /* Work page: arch coverflow cards */
   .arch-card-img { width: 260px !important; height: 165px !important; }
 
-  /* Studio page: collapse two-column grids to single column */
+  /* Work page: hide flanking arrow buttons */
+  .work-nav-arrow { display: none !important; }
+
+  /* Studio/about page: collapse two-column grids to single column */
   .studio-2col {
     grid-template-columns: 1fr !important;
     gap: clamp(2rem, 5vw, 3rem) !important;
   }
+
+  /* About page: portrait appears above text on mobile */
+  .portrait-col { order: -1; }
+
+  /* Contact form: stack 2-column field rows on mobile */
+  .form-2col { grid-template-columns: 1fr !important; }
+
+  /* Hero: hide decorative elements that clutter small screens */
+  .hero-coords { display: none !important; }
+  .hero-crosshair { display: none !important; }
+  .hero-tagline { display: none !important; }
 }
 
 /* ─── Utilities ─────────────────────────────────────────────────────────────  */

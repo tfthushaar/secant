@@ -85,7 +85,7 @@ export function Hero({ loaderDone = false }: HeroProps) {
 
         {/* Bottom details */}
         <div ref={scatterRef} style={{ opacity: 0, position: 'relative' }}>
-          <span style={{
+          <span className="hero-coords" style={{
             position: 'absolute', bottom: 0, left: 0,
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
             fontSize: '0.58rem', letterSpacing: '0.38em', textTransform: 'uppercase',
@@ -115,7 +115,7 @@ export function Hero({ loaderDone = false }: HeroProps) {
             </svg>
           </Link>
 
-          <span style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', color: 'oklch(50% 0.007 74)' }} aria-hidden="true">
+          <span className="hero-crosshair" style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', color: 'oklch(50% 0.007 74)' }} aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <line x1="10" y1="0"  x2="10" y2="6"  stroke="currentColor" strokeWidth="0.7"/>
               <line x1="10" y1="14" x2="10" y2="20" stroke="currentColor" strokeWidth="0.7"/>
@@ -125,7 +125,7 @@ export function Hero({ loaderDone = false }: HeroProps) {
             </svg>
           </span>
 
-          <span style={{
+          <span className="hero-tagline" style={{
             position: 'absolute', bottom: 0, right: 0,
             fontFamily: 'var(--font-sans), sans-serif', fontWeight: 400,
             fontSize: 'clamp(0.6rem,0.9vw,0.85rem)',
