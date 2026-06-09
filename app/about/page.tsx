@@ -1,4 +1,4 @@
-﻿import Image from 'next/image'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Navigator } from '@/components/Navigator'
 import { PageTransition } from '@/components/PageTransition'
@@ -66,12 +66,12 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div>
+          <div className="portrait-col">
             <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden' }}>
-              <Image src="/assets/web/small/rehman-portrait.png" alt="R. H. Rehman â€” Principal Architect" fill style={{ objectFit: 'contain', objectPosition: 'center top' }} unoptimized priority />
+              <Image src="/assets/web/small/rehman-portrait.jpg" alt="R. H. Rehman — Principal Architect" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} unoptimized priority />
             </div>
             <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: INK, marginTop: '0.75rem' }}>
-              Secant Architects LLP Â· Bengaluru
+              Secant Architects LLP · Bengaluru
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function AboutPage() {
             {[
               {
                 name: 'Chetana Shehsan',
-                role: 'Architect â€” Interior Design',
+                role: 'Architect — Interior Design',
                 bio: 'Spearheads our interior design division, specialising in delivering meticulously curated environments that harmonise aesthetic elegance with functional efficiency, tailoring every detail to reflect the unique requirements and aspirations of our clients.',
               },
               {
@@ -227,7 +227,7 @@ export default function AboutPage() {
 
         <div style={{ marginTop: 'clamp(5rem,10vh,8rem)', paddingTop: '2rem', borderTop: `1px solid ${LINE}`, display: 'flex', justifyContent: 'space-between', fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: SOFT }}>
           <span>SECANT Architects LLP</span>
-          <span>Â© 2024</span>
+          <span>© 2024</span>
         </div>
       </div>
 
