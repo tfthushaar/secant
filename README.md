@@ -114,7 +114,7 @@ lib/
   projects.ts                     All 42 project items + 6 categories
 
 public/assets/
-  base.glb                        3D model — flat-shaded bungalow, 120KB Draco
+  model.glb                       3D model — flat-shaded bungalow, Draco-compressed
   web/small/                      Thumbnails (100-300KB)
   web/originals/[category]/       Full-quality originals for masonry + detail pages
 ```
@@ -142,16 +142,101 @@ public/assets/
 
 ---
 
-## Deployment (Cloudflare Pages)
+## Deployment — Cloudflare Pages + Squarespace domain
+
+This is a static export (`out/` folder). Cloudflare Pages hosts it for free and rebuilds automatically every time you push to GitHub.
+
+---
+
+### Step 1 — Create a Cloudflare account
+
+1. Go to **[cloudflare.com](https://cloudflare.com)** → click **Sign Up**
+2. Enter your email and a password. No credit card needed.
+
+---
+
+### Step 2 — Connect your GitHub repository
+
+1. Log in to Cloudflare. In the left sidebar click **Workers & Pages**
+2. Click the **Pages** tab → **Create a project**
+3. Click **Connect to Git** → **Connect GitHub**
+4. Authorise Cloudflare when GitHub asks for permission
+5. Find your `secant` repository in the list → click **Begin setup**
+
+---
+
+### Step 3 — Configure the build settings
+
+Fill in these values exactly on the setup screen:
+
+| Field | Value |
+|---|---|
+| Production branch | `master` |
+| Framework preset | `Next.js (Static HTML Export)` |
+| Build command | `npm run build` |
+| Build output directory | `out` |
+
+Click **Save and Deploy**. Cloudflare will build the site — this takes 2–4 minutes.
+
+When it finishes you get a free URL like `secant-xyz.pages.dev`. Open it to confirm the site loads. 
+
+> From now on, every `git push` to `master` automatically triggers a new deployment. You never need to repeat these steps.
+
+---
+
+### Step 4 — Add your custom domain in Cloudflare
+
+1. Open your Pages project → click the **Custom domains** tab
+2. Click **Set up a custom domain**
+3. Type your domain (e.g. `secant.in`) → click **Continue**
+4. Cloudflare shows you the DNS records you need to add. Keep this page open.
+
+---
+
+### Step 5 — Update DNS in Squarespace
+
+1. Log in to [squarespace.com](https://squarespace.com) → go to **Domains** in the left panel
+2. Click your domain name → click **DNS Settings** (sometimes called **Advanced DNS**)
+3. **Delete** any existing `A` or `CNAME` records that point to Squarespace
+4. Add these two records (use the exact values Cloudflare showed you in Step 4):
+
+| Type | Host / Name | Value / Points to |
+|---|---|---|
+| `CNAME` | `@` | `secant-xyz.pages.dev` |
+| `CNAME` | `www` | `secant-xyz.pages.dev` |
+
+5. Save changes.
+
+> DNS changes take up to 24 hours to propagate worldwide but usually complete within 30 minutes.
+
+---
+
+### Step 6 — Confirm HTTPS is active
+
+1. Go back to Cloudflare → your Pages project → **Custom domains**
+2. Wait for the status badge to turn **Active** (Cloudflare issues the SSL certificate automatically — nothing to configure)
+3. Open `https://yourdomain.com` in a browser. You should see the padlock and the site.
+
+---
+
+### Troubleshooting
+
+**Site loads on `.pages.dev` but not on my domain**
+DNS is still propagating. Wait 30 minutes and try again in a private/incognito browser tab.
+
+**Build fails in Cloudflare**
+Open the build log: Cloudflare → Pages project → **Deployments** → click the failed deploy → **View build log**. If it says "Node version" error, go to the Pages project → **Settings** → **Environment variables** → set `NODE_VERSION` = `20`.
+
+**www doesn't work**
+In Cloudflare → Custom domains, add `www.yourdomain.com` as a second custom domain alongside the root.
+
+---
+
+### Build command reference
 
 ```bash
-npm run build   # static export → /out
+npm run build   # generates the static export in /out
 ```
-
-- Build command: `npm run build`
-- Output: `out`
-- Framework preset: None
-- Cache: `/assets/*` immutable 1yr, `/*.html` no-store
 
 ---
 
