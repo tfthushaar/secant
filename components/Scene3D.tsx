@@ -112,10 +112,8 @@ export function Scene3D({ progressRef }: Props) {
 
       const glassMat = paperMat
 
-      /* Ink lines — architect-pen weight */
-      const inkMat = new THREE.LineBasicMaterial({
-        color: 0x1a1714, transparent: true, opacity: 0.82,
-      })
+      /* Ink lines — fully opaque for crisp architectural pen weight */
+      const inkMat = new THREE.LineBasicMaterial({ color: 0x1a1714 })
 
       /* ── Load GLB ─────────────────────────────────────────────── */
       const dracoLoader = new DRACOLoader()
@@ -133,8 +131,27 @@ export function Scene3D({ progressRef }: Props) {
           model.traverse((child: any) => {
             if (!child.isMesh) return
             child.material = paperMat
-            const edges = new THREE.EdgesGeometry(child.geometry, 15)
-            child.add(new THREE.LineSegments(edges, inkMat))
+
+            /* 30° threshold: only architectural crease edges, no mesh triangulation.
+               Then filter degenerate zero-length segments that render as dots.      */
+            const edges = new THREE.EdgesGeometry(child.geometry, 30)
+            const src = edges.attributes.position?.array as Float32Array | undefined
+            if (!src) { edges.dispose(); return }
+
+            const kept: number[] = []
+            for (let i = 0; i < src.length; i += 6) {
+              const dx = src[i+3]-src[i], dy = src[i+4]-src[i+1], dz = src[i+5]-src[i+2]
+              if (dx*dx + dy*dy + dz*dz > 1e-10) {
+                kept.push(src[i],src[i+1],src[i+2],src[i+3],src[i+4],src[i+5])
+              }
+            }
+            edges.dispose()
+
+            if (kept.length > 0) {
+              const clean = new THREE.BufferGeometry()
+              clean.setAttribute('position', new THREE.Float32BufferAttribute(kept, 3))
+              child.add(new THREE.LineSegments(clean, inkMat))
+            }
           })
 
           /* Normalise: centre at origin, scale so longest axis = 20 units */
