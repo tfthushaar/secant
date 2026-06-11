@@ -3,42 +3,57 @@
 import { useEffect, useRef } from 'react'
 
 /*
-  Scene3D — architectural sketch renderer for public/assets/model.glb
+  Scene3D — architectural sketch renderer for public/assets/base.glb
   ──────────────────────────────────────────────────────────────────
-  Model: Meshy AI "Modern Oasis Plaza"
-
   Linework pipeline:
-  · Surfaces paper-coloured (0xfaf8f5) — hidden-line masks only
+  · Surfaces are paper-coloured (0xfaf8f5) — hidden-line masks, not visible
   · Dark ink EdgesGeometry LineSegments define all form (opacity 0.82)
-  · No PBR, no shadows, no tone-mapping — pure architectural drawing look
+  · Glass uses the same paper mask as solid surfaces — lines only
+  · No shaders, no PBR, no shadows, no tone-mapping
 
-  polygonOffset on paperMat pushes faces back in depth buffer so ink
-  lines always render in front at the same position → no z-fighting.
+  Z-fighting / flicker fix (two layers):
+  1. logarithmicDepthBuffer: true  — massively improves depth precision,
+     eliminates fighting between close coplanar surfaces in the GLB
+  2. polygonOffset on toonMat + darkMat — pushes face fragments slightly
+     away from camera in the depth buffer, so ink LineSegments at the
+     exact same position always render in front → zero flicker on edges
+
+  Material name rules (read from Blender export):
+    contains "glass" / "water" → glassMat  (faint translucent wash)
+    contains "steel" / "concdark" / "dark" → darkMat (charcoal)
+    everything else → toonMat (off-white toon)
+
+  Camera coordinates (Three.js Y-up after GLTF conversion from Blender Z-up):
+    X same  |  Y = Blender Z (height)  |  Z = −Blender Y
+    Building front face  : Z =  0   Pool / forecourt : Z = +5
+    Gate                 : Z = +9   Building centre X:  ≈ 10
 */
 
 const LERP = 0.08
 const SNAP = 0.0008
 
-/* Camera stops — Meshy AI Modern Oasis Plaza model.
-   Model normalised to 20-unit max axis, centred at origin, lifted +2 Y.
-   Six stops orbit the complex from varied heights and angles.            */
+/* Camera stops:
+   – All look-Y values kept ≤ 5 so the building body stays centred in frame
+   – Camera X never exceeds +10 (stays left of the wing's right corner)
+     so the sight line can't wrap around to the back face
+   – look Z always ≥ 2 so we never look behind the building             */
 const CAM_STOPS = [
-  { pos: [-10,  6,  26],  look: [ 0,  3,  2]  }, /* hero: front-left three-quarter     */
-  { pos: [-18,  2,  16],  look: [-4,  4,  2]  }, /* manifesto: ground-level left facade */
-  { pos: [  0, 22,  18],  look: [ 0,  1,  4]  }, /* stats: aerial panoramic            */
-  { pos: [ 14,  4,  20],  look: [ 2,  3,  4]  }, /* services: front-right three-quarter */
-  { pos: [ -6, 18,  10],  look: [-2,  1,  4]  }, /* contact: close aerial, front-left  */
-  { pos: [  6,  5,  24],  look: [ 2,  2,  4]  }, /* end: gentle front three-quarter    */
+  { pos: [-16,  5,  22],  look: [-2,  3,  2]  }, /* hero: camera looks down so roof sits just below SECANT */
+  { pos: [-20,  1,  14],  look: [-8,  4,  2]  }, /* manifesto: ground-level left       */
+  { pos: [ -2, 22,   8],  look: [-1,  2,  5]  }, /* stats: aerial front-left, no back  */
+  { pos: [  9,  2,   8],  look: [-1,  4,  3]  }, /* services: low right front          */
+  { pos: [-14, 20,   8],  look: [-7,  2,  5]  }, /* contact: aerial far-left, back face beyond FOV  */
+  { pos: [ 10,  5,  18],  look: [ 2,  3,  4]  }, /* end: front-right, within wing edge */
 ]
 
-/* Mobile: ~40 % further back for portrait viewport */
+/* Mobile: same orbit, ~40 % further back for portrait viewport */
 const CAM_STOPS_MOBILE = [
-  { pos: [-14,  8,  36],  look: [ 0,  3,  2]  },
-  { pos: [-25,  3,  22],  look: [-4,  4,  2]  },
-  { pos: [  0, 31,  25],  look: [ 0,  1,  4]  },
-  { pos: [ 20,  6,  28],  look: [ 2,  3,  4]  },
-  { pos: [ -8, 25,  14],  look: [-2,  1,  4]  },
-  { pos: [  8,  7,  34],  look: [ 2,  2,  4]  },
+  { pos: [-22,  7,  31],  look: [-2,  3,  2]  },
+  { pos: [-28,  1,  20],  look: [-8,  4,  2]  },
+  { pos: [ -3, 31,  11],  look: [-1,  2,  5]  },
+  { pos: [ 12,  3,  11],  look: [-1,  4,  3]  },
+  { pos: [-20, 28,  11],  look: [-7,  2,  5]  },
+  { pos: [ 14,  7,  25],  look: [ 2,  3,  4]  },
 ]
 
 
@@ -112,8 +127,10 @@ export function Scene3D({ progressRef }: Props) {
 
       const glassMat = paperMat
 
-      /* Ink lines — fully opaque for crisp architectural pen weight */
-      const inkMat = new THREE.LineBasicMaterial({ color: 0x1a1714 })
+      /* Ink lines — architect-pen weight */
+      const inkMat = new THREE.LineBasicMaterial({
+        color: 0x1a1714, transparent: true, opacity: 0.82,
+      })
 
       /* ── Load GLB ─────────────────────────────────────────────── */
       const dracoLoader = new DRACOLoader()
@@ -131,27 +148,8 @@ export function Scene3D({ progressRef }: Props) {
           model.traverse((child: any) => {
             if (!child.isMesh) return
             child.material = paperMat
-
-            /* 30° threshold: only architectural crease edges, no mesh triangulation.
-               Then filter degenerate zero-length segments that render as dots.      */
-            const edges = new THREE.EdgesGeometry(child.geometry, 30)
-            const src = edges.attributes.position?.array as Float32Array | undefined
-            if (!src) { edges.dispose(); return }
-
-            const kept: number[] = []
-            for (let i = 0; i < src.length; i += 6) {
-              const dx = src[i+3]-src[i], dy = src[i+4]-src[i+1], dz = src[i+5]-src[i+2]
-              if (dx*dx + dy*dy + dz*dz > 1e-10) {
-                kept.push(src[i],src[i+1],src[i+2],src[i+3],src[i+4],src[i+5])
-              }
-            }
-            edges.dispose()
-
-            if (kept.length > 0) {
-              const clean = new THREE.BufferGeometry()
-              clean.setAttribute('position', new THREE.Float32BufferAttribute(kept, 3))
-              child.add(new THREE.LineSegments(clean, inkMat))
-            }
+            const edges = new THREE.EdgesGeometry(child.geometry, 15)
+            child.add(new THREE.LineSegments(edges, inkMat))
           })
 
           /* Normalise: centre at origin, scale so longest axis = 20 units */
