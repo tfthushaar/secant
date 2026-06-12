@@ -216,23 +216,12 @@ export default function AboutPage() {
                   rel="noopener noreferrer"
                   style={{ textDecoration: 'none' }}
                 >
-                  <address style={{ fontWeight: 500, fontSize: '0.9rem', lineHeight: 1.8, color: INK, fontStyle: 'normal', cursor: 'pointer', borderBottom: `1px solid ${LINE}`, paddingBottom: '0.5rem' }}>
+                  <address style={{ fontWeight: 500, fontSize: '0.9rem', lineHeight: 1.8, color: INK, fontStyle: 'normal', cursor: 'pointer' }}>
                     535/1/3, 1st Floor, 3rd Main<br />
                     A Block, Rajajinagar 2nd Stage<br />
                     Bangalore 560 010
                   </address>
                 </a>
-                <div style={{ marginTop: '0.75rem', overflow: 'hidden', borderRadius: '2px', border: `1px solid ${LINE}` }}>
-                  <iframe
-                    src="https://maps.google.com/maps?q=13.006254625463663,77.55454953761017&z=17&output=embed"
-                    width="100%"
-                    height="180"
-                    style={{ border: 'none', display: 'block' }}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Secant Architects location"
-                  />
-                </div>
               </div>
 
               <div>
@@ -243,6 +232,17 @@ export default function AboutPage() {
                 <a href="mailto:rehman@secant.in" style={{ fontWeight: 500, fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', color: INK, textDecoration: 'none', letterSpacing: '0.02em', display: 'block' }}>
                   rehman@secant.in
                 </a>
+                <div style={{ marginTop: '1rem', overflow: 'hidden', borderRadius: '2px', border: `1px solid ${LINE}` }}>
+                  <iframe
+                    src="https://maps.google.com/maps?q=13.006254625463663,77.55454953761017&z=17&output=embed"
+                    width="100%"
+                    height="180"
+                    style={{ border: 'none', display: 'block' }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Secant Architects location"
+                  />
+                </div>
               </div>
             </div>
           </div>
