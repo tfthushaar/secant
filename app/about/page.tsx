@@ -58,6 +58,7 @@ export default function AboutPage() {
               fontSize: 'clamp(2.2rem, 5.5vw, 6rem)',
               lineHeight: 1.04, letterSpacing: '-0.015em',
               color: INK, margin: '0 0 clamp(1.5rem,3vh,2.5rem)',
+              whiteSpace: 'nowrap',
             }}>
               R. H. Rehman
             </h1>
@@ -99,8 +100,13 @@ export default function AboutPage() {
               },
               {
                 name: 'Arun Kumar S',
-                role: 'Civil Engineering & Construction',
-                bio: 'Oversees our civil engineering and construction operations, bringing a rigorous focus to structural integrity and technical accuracy, while maintaining the disciplined site management necessary for seamless, high-quality project delivery.',
+                role: 'Civil Engineering & Project Incharge',
+                bio: 'Oversees our civil engineering and project operations, bringing a rigorous focus to structural integrity and technical accuracy, while maintaining the disciplined site management necessary for seamless, high-quality project delivery.',
+              },
+              {
+                name: 'Senior Architects',
+                role: 'Design Team',
+                bio: 'Our senior architects bring extensive experience and refined technical expertise to every project, leading design development with a considered approach that balances creative ambition with constructibility and long-term performance.',
               },
               {
                 name: 'Junior Architects',
@@ -203,6 +209,33 @@ export default function AboutPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingTop: '0.5rem' }}>
               <div>
+                <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: INK, marginBottom: '0.6rem' }}>Visit</div>
+                <a
+                  href="https://www.google.com/maps/place/Secant+Architects+Llp/@13.0060403,77.5545388,17z/data=!4m6!3m5!1s0x3bae16773e7dc413:0x8d73273372bab984!8m2!3d13.0060262!4d77.5545488!16s%2Fg%2F1td5_4zc?entry=ttu&g_ep=EgoyMDI2MDYwOS4wIKXMDSoASAFQAw%3D%3D"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <address style={{ fontWeight: 500, fontSize: '0.9rem', lineHeight: 1.8, color: INK, fontStyle: 'normal', cursor: 'pointer', borderBottom: `1px solid ${LINE}`, paddingBottom: '0.5rem' }}>
+                    535/1/3, 1st Floor, 3rd Main<br />
+                    A Block, Rajajinagar 2nd Stage<br />
+                    Bangalore 560 010
+                  </address>
+                </a>
+                <div style={{ marginTop: '0.75rem', overflow: 'hidden', borderRadius: '2px', border: `1px solid ${LINE}` }}>
+                  <iframe
+                    src="https://maps.google.com/maps?q=13.006254625463663,77.55454953761017&z=17&output=embed"
+                    width="100%"
+                    height="180"
+                    style={{ border: 'none', display: 'block' }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Secant Architects location"
+                  />
+                </div>
+              </div>
+
+              <div>
                 <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: INK, marginBottom: '0.6rem' }}>Contact</div>
                 <a href="tel:+918079655298" style={{ fontWeight: 500, fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', color: INK, textDecoration: 'none', letterSpacing: '0.02em', display: 'block', marginBottom: '0.25rem' }}>
                   080 79655298
@@ -211,16 +244,6 @@ export default function AboutPage() {
                   rehman@secant.in
                 </a>
               </div>
-
-              <div>
-                <div style={{ fontWeight: 500, fontSize: '0.58rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: INK, marginBottom: '0.6rem' }}>Visit</div>
-                <address style={{ fontWeight: 500, fontSize: '0.9rem', lineHeight: 1.8, color: INK, fontStyle: 'normal' }}>
-                  535/1/3, 1st Floor, 3rd Main<br />
-                  A Block, Rajajinagar 2nd Stage<br />
-                  Bangalore 560 010
-                </address>
-              </div>
-
             </div>
           </div>
         </div>
