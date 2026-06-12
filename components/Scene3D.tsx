@@ -129,6 +129,10 @@ export function Scene3D({ progressRef }: Props) {
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           model.traverse((child: any) => {
+            /* Skip LineSegments we add during this same traversal — Three.js
+               visits newly-added children, and overwriting inkMat → paperMat
+               would make all lines invisible.                                 */
+            if (child.isLine) return
             /* Apply paper mask to all material-bearing objects (meshes, points,
                vegetation sprites, etc.) so coloured foliage doesn't break the
                sketch look. Edge lines are only added for true Mesh geometry.    */
