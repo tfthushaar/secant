@@ -198,7 +198,7 @@ function Services() {
         </div>
 
         {/* Right — begin a collaboration */}
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingLeft: isMobile ? 0 : 'clamp(2rem, 4vw, 5rem)' }}>
           <p style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase', color: INK, margin: '0 0 1.2rem' }}>
             <span style={IB}>Studio</span>
           </p>
@@ -231,70 +231,12 @@ function Services() {
   )
 }
 
-/* ── Section 4: Contact ────────────────────────────────────────── */
-function Contact() {
-  const ref        = useRef<HTMLElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
-  const isMobile   = useIsMobile()
-
-  useEffect(() => {
-    if (!contentRef.current) return
-    gsap.fromTo(contentRef.current,
-      { autoAlpha: 0, x: isMobile ? 0 : 24, y: isMobile ? 20 : 0 },
-      { autoAlpha: 1, x: 0, y: 0, duration: 1.1, ease: 'power3.out',
-        scrollTrigger: { trigger: ref.current!, start: 'top 62%', toggleActions: 'play none none none' } }
-    )
-  }, [isMobile])
-
-  return (
-    <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
-      <div ref={contentRef} style={isMobile ? {
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        padding: '2rem 1.5rem 2.5rem',
-        background: 'rgba(250,248,245,0.97)',
-        opacity: 0, zIndex: 1,
-      } : {
-        position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-        right: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(260px, 40vw, 520px)',
-        opacity: 0,
-      }}>
-        <p style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase', color: INK, margin: '0 0 1.2rem' }}>
-          <span style={IB}>Studio</span>
-        </p>
-
-        <h2 style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650, fontSize: 'clamp(1.7rem, 3.8vw, 4.2rem)', lineHeight: 1.06, letterSpacing: '-0.015em', color: INK, margin: '0 0 2rem' }}>
-          <span style={IB}>Begin a<br />collaboration.</span>
-        </h2>
-
-        <Link href="/about#contact" style={{
-          fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650,
-          fontSize: '0.62rem', letterSpacing: '0.38em', textTransform: 'uppercase',
-          color: INK, textDecoration: 'none',
-          display: 'inline-flex', alignItems: 'center', gap: '1rem',
-          border: `1px solid ${INK}`,
-          padding: '0.9rem 1.6rem',
-          background: 'rgba(250,248,245,0.96)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-        }}>
-          Begin an enquiry
-          <svg width="14" height="7" viewBox="0 0 14 7" fill="none">
-            <line x1="0" y1="3.5" x2="14" y2="3.5" stroke="currentColor" strokeWidth="0.8"/>
-            <polyline points="10,1 13,3.5 10,6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
-          </svg>
-        </Link>
-      </div>
-    </section>
-  )
-}
-
 export function StudioIntro() {
   return (
     <>
       <Manifesto />
       <Stats />
       <Services />
-      <Contact />
     </>
   )
 }
