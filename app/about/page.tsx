@@ -234,7 +234,7 @@ export default function AboutPage() {
                 </a>
                 <div style={{ marginTop: '1rem', overflow: 'hidden', borderRadius: '2px', border: `1px solid ${LINE}` }}>
                   <iframe
-                    src="https://maps.google.com/maps?q=13.006254625463663,77.55454953761017&z=17&output=embed"
+                    src="https://maps.google.com/maps?q=Secant+Architects+LLP,Rajajinagar,Bangalore&z=17&output=embed"
                     width="100%"
                     height="180"
                     style={{ border: 'none', display: 'block' }}
