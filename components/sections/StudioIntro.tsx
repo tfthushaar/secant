@@ -160,35 +160,72 @@ function Services() {
         padding: '2rem 1.5rem 2.5rem',
         background: 'rgba(250,248,245,0.97)',
         opacity: 0, zIndex: 1,
+        display: 'flex', flexDirection: 'column', gap: '2rem',
       } : {
         position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-        left: 'clamp(1.5rem, 7vw, 7rem)', width: 'clamp(280px, 42vw, 560px)',
+        left: 'clamp(1.5rem, 7vw, 7rem)', right: 'clamp(1.5rem, 7vw, 7rem)',
+        display: 'grid', gridTemplateColumns: '1fr 1fr',
+        gap: 'clamp(3rem, 6vw, 8rem)', alignItems: 'center',
         opacity: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1.5rem' }}>
-          <Rule />
-          <p style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase', color: INK, margin: 0 }}>
-            <span style={IB}>Services</span>
+
+        {/* Left — services list */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1.5rem' }}>
+            <Rule />
+            <p style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase', color: INK, margin: 0 }}>
+              <span style={IB}>Services</span>
+            </p>
+          </div>
+
+          <h2 style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650, fontSize: 'clamp(1.5rem, 3vw, 3.4rem)', lineHeight: 1.1, letterSpacing: '-0.01em', color: INK, margin: '0 0 1.5rem' }}>
+            <span style={IB}>Full-spectrum<br />architecture.</span>
+          </h2>
+
+          <div style={{ borderTop: `1px solid ${INK}` }}>
+            {serviceLinks.map(({ label, slug }, i) => (
+              <div key={label} onClick={() => navigate(`/work/${slug}`)}
+                style={{ padding: 'clamp(0.8rem, 1.4vh, 1.1rem) 0', borderBottom: `1px solid ${INK}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                <p style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650, fontSize: 'clamp(0.72rem, 0.95vw, 0.88rem)', color: INK, margin: 0, letterSpacing: '0.01em' }}>
+                  <span style={IB}>{label}</span>
+                </p>
+                <span style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700, fontSize: '0.52rem', letterSpacing: '0.3em', color: INK }}>
+                  <span style={IB}>0{i + 1}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right — begin a collaboration */}
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <p style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.45em', textTransform: 'uppercase', color: INK, margin: '0 0 1.2rem' }}>
+            <span style={IB}>Studio</span>
           </p>
+          <h2 style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650, fontSize: 'clamp(1.5rem, 3vw, 3.4rem)', lineHeight: 1.1, letterSpacing: '-0.01em', color: INK, margin: '0 0 1.4rem' }}>
+            <span style={IB}>Begin a<br />collaboration.</span>
+          </h2>
+          <p style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 500, fontSize: 'clamp(0.72rem, 0.85vw, 0.82rem)', lineHeight: 1.75, color: INK, margin: '0 0 2rem', maxWidth: '34ch' }}>
+            <span style={IB}>We work with clients across residential, commercial, and institutional sectors. Reach out to begin a conversation.</span>
+          </p>
+          <Link href="/about#contact" style={{
+            fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650,
+            fontSize: '0.6rem', letterSpacing: '0.38em', textTransform: 'uppercase',
+            color: INK, textDecoration: 'none',
+            display: 'inline-flex', alignItems: 'center', gap: '1rem',
+            border: `1px solid ${INK}`,
+            padding: '0.9rem 1.6rem',
+            alignSelf: 'flex-start',
+            background: 'rgba(250,248,245,0.96)',
+          }}>
+            <span style={IB}>Begin an enquiry</span>
+            <svg width="14" height="7" viewBox="0 0 14 7" fill="none">
+              <line x1="0" y1="3.5" x2="14" y2="3.5" stroke="currentColor" strokeWidth="0.8"/>
+              <polyline points="10,1 13,3.5 10,6" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+            </svg>
+          </Link>
         </div>
 
-        <h2 style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650, fontSize: 'clamp(1.5rem, 3vw, 3.4rem)', lineHeight: 1.1, letterSpacing: '-0.01em', color: INK, margin: '0 0 1.5rem' }}>
-          <span style={IB}>Full-spectrum<br />architecture.</span>
-        </h2>
-
-        <div style={{ borderTop: `1px solid ${INK}` }}>
-          {serviceLinks.map(({ label, slug }, i) => (
-            <div key={label} onClick={() => navigate(`/work/${slug}`)}
-              style={{ padding: 'clamp(0.8rem, 1.4vh, 1.1rem) 0', borderBottom: `1px solid ${INK}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-              <p style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 650, fontSize: 'clamp(0.72rem, 0.95vw, 0.88rem)', color: INK, margin: 0, letterSpacing: '0.01em' }}>
-                <span style={IB}>{label}</span>
-              </p>
-              <span style={{ fontFamily: 'var(--font-sans), sans-serif', fontWeight: 700, fontSize: '0.52rem', letterSpacing: '0.3em', color: INK }}>
-                <span style={IB}>0{i + 1}</span>
-              </span>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   )
