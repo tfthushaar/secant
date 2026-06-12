@@ -154,7 +154,7 @@ function Services() {
   const serviceLinks = CATEGORY_CONFIG.map(c => ({ label: c.label, slug: c.slug }))
 
   return (
-    <section ref={ref} style={{ height: '82svh', position: 'relative' }}>
+    <section id="categories" ref={ref} style={{ height: '82svh', position: 'relative' }}>
       <div ref={contentRef} style={isMobile ? {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: '2rem 1.5rem 2.5rem',

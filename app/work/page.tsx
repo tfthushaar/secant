@@ -293,6 +293,7 @@ export default function WorkPage() {
                 <TiltedCard
                   imageSrc={cat.heroImage}
                   altText={cat.label}
+<<<<<<< Updated upstream
                   captionText=""
                   containerWidth={`${CARD_W}px`}
                   containerHeight={`${CARD_H}px`}

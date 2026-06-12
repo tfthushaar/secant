@@ -4,41 +4,32 @@ import { useEffect, useRef } from 'react'
 
 /*
   Scene3D — architectural sketch renderer for public/assets/model.glb
-  ──────────────────────────────────────────────────────────────────
-  Model: Meshy AI "Modern Oasis Plaza"
 
   Linework pipeline:
   · Surfaces paper-coloured (0xfaf8f5) — hidden-line masks only
-  · Dark ink EdgesGeometry LineSegments define all form (opacity 0.82)
+  · Dark ink EdgesGeometry LineSegments define all form
   · No PBR, no shadows, no tone-mapping — pure architectural drawing look
 
-  polygonOffset on paperMat pushes faces back in depth buffer so ink
-  lines always render in front at the same position → no z-fighting.
+  Three camera stops: front → left three-quarter → top aerial.
+  polygonOffset pushes faces back so ink lines always render in front.
 */
 
 const LERP = 0.08
 const SNAP = 0.0008
 
-/* Camera stops — Meshy AI Modern Oasis Plaza model.
-   Model normalised to 20-unit max axis, centred at origin, lifted +2 Y.
-   Six stops orbit the complex from varied heights and angles.            */
+/* Three camera stops — model normalised to 20-unit max axis, centred at origin.
+   Stop 0: straight front · Stop 1: left three-quarter · Stop 2: top aerial    */
 const CAM_STOPS = [
-  { pos: [-10,  6,  26],  look: [ 0,  3,  2]  }, /* hero: front-left three-quarter     */
-  { pos: [-18,  2,  16],  look: [-4,  4,  2]  }, /* manifesto: ground-level left facade */
-  { pos: [  0, 22,  18],  look: [ 0,  1,  4]  }, /* stats: aerial panoramic            */
-  { pos: [ 14,  4,  20],  look: [ 2,  3,  4]  }, /* services: front-right three-quarter */
-  { pos: [ -6, 18,  10],  look: [-2,  1,  4]  }, /* contact: close aerial, front-left  */
-  { pos: [  6,  5,  24],  look: [ 2,  2,  4]  }, /* end: gentle front three-quarter    */
+  { pos: [  0,  6, 28], look: [ 0, 3,  0] }, /* front                   */
+  { pos: [-16,  9, 18], look: [ 0, 3,  2] }, /* left three-quarter      */
+  { pos: [  2, 28,  8], look: [ 0, 0,  2] }, /* top aerial              */
 ]
 
 /* Mobile: ~40 % further back for portrait viewport */
 const CAM_STOPS_MOBILE = [
-  { pos: [-14,  8,  36],  look: [ 0,  3,  2]  },
-  { pos: [-25,  3,  22],  look: [-4,  4,  2]  },
-  { pos: [  0, 31,  25],  look: [ 0,  1,  4]  },
-  { pos: [ 20,  6,  28],  look: [ 2,  3,  4]  },
-  { pos: [ -8, 25,  14],  look: [-2,  1,  4]  },
-  { pos: [  8,  7,  34],  look: [ 2,  2,  4]  },
+  { pos: [  0,  8, 40], look: [ 0, 3,  0] },
+  { pos: [-22, 12, 26], look: [ 0, 3,  2] },
+  { pos: [  2, 40, 10], look: [ 0, 0,  2] },
 ]
 
 

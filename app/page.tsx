@@ -26,7 +26,8 @@ const Scene3D = dynamic(
 
 export default function Home() {
   const [loaderDone, setLoaderDone] = useState(false)
-  const progressRef = useRef(0)
+  const progressRef  = useRef(0)
+  const modelDivRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     document.body.classList.add('is-loading')
@@ -41,7 +42,27 @@ export default function Home() {
         end:      'bottom bottom',
         onUpdate: (self) => { progressRef.current = self.progress },
       })
-      return () => st.kill()
+
+      /* Fade the 3D model out as the categories section enters the viewport */
+      const categoriesEl = document.getElementById('categories')
+      let stFade: ReturnType<typeof gsap.to> | undefined
+      if (categoriesEl && modelDivRef.current) {
+        stFade = gsap.to(modelDivRef.current, {
+          opacity: 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: categoriesEl,
+            start: 'top 75%',
+            end:   'top 20%',
+            scrub: true,
+          },
+        })
+      }
+
+      return () => {
+        st.kill()
+        stFade?.scrollTrigger?.kill()
+      }
     }, 100)
     return () => clearTimeout(id)
   }, [loaderDone])
@@ -57,7 +78,7 @@ export default function Home() {
       <Loader onComplete={handleLoaderComplete} />
 
       {/* Fixed full-screen 3D background — same on mobile and desktop */}
-      <div style={{
+      <div ref={modelDivRef} style={{
         position: 'fixed',
         top: 0, right: 0, bottom: 0, left: 0,
         zIndex: 0,
