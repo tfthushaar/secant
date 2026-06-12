@@ -293,7 +293,7 @@ export default function WorkPage() {
                 <TiltedCard
                   imageSrc={cat.heroImage}
                   altText={cat.label}
-                  captionText={`${count} works`}
+                  captionText=""
                   containerWidth={`${CARD_W}px`}
                   containerHeight={`${CARD_H}px`}
                   imageWidth={`${CARD_W}px`}
@@ -315,14 +315,6 @@ export default function WorkPage() {
                     margin: 0, letterSpacing: '0.01em',
                   }}>
                     {cat.label}
-                  </p>
-                  <p style={{
-                    fontFamily: 'var(--font-sans), sans-serif',
-                    fontWeight: 300, fontSize: isMobile ? '10px' : '11px',
-                    letterSpacing: '0.35em', textTransform: 'uppercase',
-                    color: 'oklch(48% 0.007 74)', opacity: 0.7, margin: '6px 0 0',
-                  }}>
-                    {count} works
                   </p>
                 </div>
               </div>
