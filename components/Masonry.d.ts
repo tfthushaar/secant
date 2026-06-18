@@ -14,6 +14,7 @@ interface MasonryProps {
   scaleOnHover?: boolean
   hoverScale?: number
   blurToFocus?: boolean
+  scrollable?: boolean
 }
 
 declare const Masonry: React.ComponentType<MasonryProps>
