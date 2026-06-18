@@ -13,57 +13,94 @@ import { StudioIntro }  from '@/components/sections/StudioIntro'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/*
-  Scene3D is loaded AFTER the loader animation completes.
-  This prevents the Draco decompression from blocking the JS thread
-  and freezing the typed-text animation.
-  The model is 2MB + fast Draco decode → appears within ~0.3s of mount.
-*/
 const Scene3D = dynamic(
   () => import('@/components/Scene3D').then((m) => m.Scene3D),
   { ssr: false, loading: () => null }
 )
 
 export default function Home() {
-  const [loaderDone, setLoaderDone] = useState(false)
+  const [loaderDone, setLoaderDone]   = useState(false)
+  const [isMobile,   setIsMobile]     = useState(false)
   const progressRef  = useRef(0)
   const modelDivRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     document.body.classList.add('is-loading')
+    /* Detect portrait / narrow viewport once on mount */
+    setIsMobile(window.innerWidth < window.innerHeight || window.innerWidth < 640)
   }, [])
 
   useEffect(() => {
     if (!loaderDone) return
-    const id = setTimeout(() => {
-      const st = ScrollTrigger.create({
-        trigger:  document.documentElement,
-        start:    'top top',
-        end:      'bottom bottom',
-        onUpdate: (self) => { progressRef.current = self.progress },
-      })
 
-      /* Fade the 3D model out as the categories section enters the viewport */
-      const categoriesEl = document.getElementById('categories')
-      let stFade: ReturnType<typeof gsap.to> | undefined
-      if (categoriesEl && modelDivRef.current) {
-        stFade = gsap.to(modelDivRef.current, {
+    /* Fade model in (GSAP owns opacity — no CSS transition conflict) */
+    if (modelDivRef.current) {
+      gsap.to(modelDivRef.current, { opacity: 1, duration: 0.35, ease: 'power2.out' })
+    }
+
+    const id = setTimeout(() => {
+      const mobile = window.innerWidth < window.innerHeight || window.innerWidth < 640
+
+      if (mobile) {
+        /* ── Mobile: model lives for 3 × 100svh (hero + 2-screen spacer) ────
+           Progress 0→1 maps to those 3 screens → 3 camera stops in Scene3D.
+           Between 75 % and 100 % of the model section the canvas fades out,
+           revealing the StudioIntro content panels beneath.                  */
+        const modelEndPx = window.innerHeight * 3
+
+        const st = ScrollTrigger.create({
+          trigger: document.documentElement,
+          start:   'top top',
+          end:     `+=${modelEndPx}`,
+          onUpdate: (self) => { progressRef.current = self.progress },
+        })
+
+        const stFade = gsap.to(modelDivRef.current!, {
           opacity: 0,
-          ease: 'none',
+          ease:    'none',
           scrollTrigger: {
-            trigger: categoriesEl,
-            start: 'top 75%',
-            end:   'top 20%',
-            scrub: true,
+            trigger: document.documentElement,
+            start:   `top+=${Math.round(modelEndPx * 0.75)} top`,
+            end:     `top+=${modelEndPx} top`,
+            scrub:   true,
           },
         })
-      }
 
-      return () => {
-        st.kill()
-        stFade?.scrollTrigger?.kill()
+        return () => {
+          st.kill()
+          stFade.scrollTrigger?.kill()
+        }
+      } else {
+        /* ── Desktop: existing behaviour — full-page progress ────────────── */
+        const st = ScrollTrigger.create({
+          trigger:  document.documentElement,
+          start:    'top top',
+          end:      'bottom bottom',
+          onUpdate: (self) => { progressRef.current = self.progress },
+        })
+
+        const categoriesEl = document.getElementById('categories')
+        let stFade: ReturnType<typeof gsap.to> | undefined
+        if (categoriesEl && modelDivRef.current) {
+          stFade = gsap.to(modelDivRef.current, {
+            opacity: 0,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: categoriesEl,
+              start:   'top 75%',
+              end:     'top 20%',
+              scrub:   true,
+            },
+          })
+        }
+
+        return () => {
+          st.kill()
+          stFade?.scrollTrigger?.kill()
+        }
       }
     }, 100)
+
     return () => clearTimeout(id)
   }, [loaderDone])
 
@@ -77,14 +114,14 @@ export default function Home() {
     <>
       <Loader onComplete={handleLoaderComplete} />
 
-      {/* Fixed full-screen 3D background — same on mobile and desktop */}
+      {/* Fixed full-screen 3D canvas — GSAP owns opacity after loaderDone */}
       <div ref={modelDivRef} style={{
         position: 'fixed',
         top: 0, right: 0, bottom: 0, left: 0,
         zIndex: 0,
-        background: '#faf8f5', pointerEvents: 'none',
-        opacity: loaderDone ? 1 : 0,
-        transition: 'opacity 0.3s ease',
+        background: '#faf8f5',
+        pointerEvents: 'none',
+        opacity: 0,
       }}>
         {loaderDone && <Scene3D progressRef={progressRef} />}
       </div>
@@ -94,6 +131,13 @@ export default function Home() {
         <Navigator />
         <div style={{ position: 'relative', zIndex: 1 }}>
           <Hero loaderDone={loaderDone} />
+
+          {/* Mobile-only: 200 svh spacer — camera travels stops 2 & 3
+              before fading. Desktop collapses to nothing.              */}
+          {isMobile && (
+            <div style={{ height: '200svh', pointerEvents: 'none' }} aria-hidden="true" />
+          )}
+
           <StudioIntro />
         </div>
       </SmoothScroll>
