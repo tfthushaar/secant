@@ -18,9 +18,10 @@ export function CategoryDomeView({ config, items }: Props) {
   const { navigate } = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const catIdx  = CATEGORY_CONFIG.findIndex(c => c.slug === config.slug)
-  const prevCat = CATEGORY_CONFIG[(catIdx - 1 + CATEGORY_CONFIG.length) % CATEGORY_CONFIG.length]
-  const nextCat = CATEGORY_CONFIG[(catIdx + 1) % CATEGORY_CONFIG.length]
+  const catIdx   = CATEGORY_CONFIG.findIndex(c => c.slug === config.slug)
+  const prevCat  = CATEGORY_CONFIG[(catIdx - 1 + CATEGORY_CONFIG.length) % CATEGORY_CONFIG.length]
+  const nextCat  = CATEGORY_CONFIG[(catIdx + 1) % CATEGORY_CONFIG.length]
+  const scrollable = items.length > 12
 
   useEffect(() => {
     const el = containerRef.current
@@ -51,9 +52,10 @@ export function CategoryDomeView({ config, items }: Props) {
     <div
       ref={containerRef}
       style={{
-        width: '100vw', height: '100dvh',
+        width: '100vw',
+        ...(scrollable ? { minHeight: '100dvh' } : { height: '100dvh', overflow: 'hidden' }),
         background: '#ffffff',
-        overflow: 'hidden', position: 'relative',
+        position: 'relative',
         display: 'flex', flexDirection: 'column',
         opacity: 0,
       }}
@@ -64,7 +66,10 @@ export function CategoryDomeView({ config, items }: Props) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 clamp(1.2rem,4vw,2.5rem)',
         borderBottom: '1px solid oklch(90% 0.006 76)',
-        position: 'relative', zIndex: 10,
+        background: '#ffffff',
+        ...(scrollable
+          ? { position: 'sticky', top: 0, zIndex: 20 }
+          : { position: 'relative', zIndex: 10 }),
       }}>
         <a
           href="/work"
@@ -116,14 +121,18 @@ export function CategoryDomeView({ config, items }: Props) {
         <span />
       </header>
 
-      {/* Masonry gallery — fills remaining viewport */}
-      <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+      {/* Masonry gallery */}
+      <div style={scrollable
+        ? { position: 'relative' }
+        : { flex: 1, position: 'relative', minHeight: 0 }
+      }>
         <Masonry
           items={masonryItems}
           blurToFocus={true}
           scaleOnHover={true}
           hoverScale={0.97}
           stagger={0.055}
+          scrollable={scrollable}
         />
       </div>
 

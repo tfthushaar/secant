@@ -35,6 +35,7 @@ const Masonry = ({
   scaleOnHover = true,
   hoverScale = 0.97,
   blurToFocus = true,
+  scrollable = false,
 }) => {
   const { navigate } = useNavigate()
   const [containerRef, { width, height }] = useMeasure()
@@ -107,7 +108,8 @@ const Masonry = ({
   )
 
   const grid = useMemo(() => {
-    if (!width || !height || !ready) return []
+    if (!width || !ready) return []
+    if (!scrollable && !height) return []
     const colW = width / columns
     const cols = Array.from({ length: columns }, () => [])
     const colH = new Array(columns).fill(0)
@@ -120,7 +122,7 @@ const Masonry = ({
 
     const result = []
     for (let c = 0; c < columns; c++) {
-      const scale = colH[c] > 0 ? height / colH[c] : 1
+      const scale = scrollable ? 1 : (colH[c] > 0 ? height / colH[c] : 1)
       let y = 0
       cols[c].forEach(item => {
         const h = item.naturalH * scale
@@ -129,7 +131,11 @@ const Masonry = ({
       })
     }
     return result
-  }, [columns, items, width, height, ready, aspectRatios])
+  }, [columns, items, width, height, ready, aspectRatios, scrollable])
+
+  const totalH = scrollable && grid.length
+    ? Math.max(...grid.map(item => item.y + item.h))
+    : undefined
 
   /* Pile-up from bottom entrance */
   useLayoutEffect(() => {
@@ -142,10 +148,11 @@ const Masonry = ({
 
       if (!hasMounted.current) {
         const rank = ordered.findIndex(o => o.id === item.id)
+        const viewH = height || (typeof window !== 'undefined' ? window.innerHeight : 800)
         gsap.fromTo(sel,
           {
             opacity: 0, x: item.x,
-            y: item.y + Math.min(height * 0.6, 500),
+            y: item.y + Math.min(viewH * 0.6, 500),
             width: item.w, height: item.h,
             ...(blurToFocus && { filter: 'blur(6px)' }),
           },
@@ -173,7 +180,7 @@ const Masonry = ({
   }
 
   return (
-    <div ref={containerRef} className="masonry-list">
+    <div ref={containerRef} className="masonry-list" style={totalH ? { height: totalH } : undefined}>
       {grid.map(item => (
         <div
           key={item.id}

@@ -13,6 +13,27 @@ export interface WorkItem {
 export const workItems: WorkItem[] = [
   /* ── APARTMENTS ─────────────────────────────────────────────────────────── */
   {
+    id: 'apartment-anand',
+    title: 'Anand Apartments',
+    category: 'Apartments', kind: 'render',
+    image:       '/assets/web/small/apartment-anand.jpg',
+    detailImage: '/assets/web/originals/apartments/apartment-anand.jpg',
+  },
+  {
+    id: 'apartment-naksha-ec',
+    title: 'Naksha EC — Side Elevation',
+    category: 'Apartments', kind: 'render',
+    image:       '/assets/web/small/apartment-naksha-ec.jpg',
+    detailImage: '/assets/web/originals/apartments/apartment-naksha-ec.jpg',
+  },
+  {
+    id: 'apartment-sun-blossom',
+    title: 'Sun Blossom Apartments',
+    category: 'Apartments', kind: 'render',
+    image:       '/assets/web/small/apartment-sun-blossom.jpg',
+    detailImage: '/assets/web/originals/apartments/apartment-sun-blossom.jpg',
+  },
+  {
     id: 'apartment-himagiri',
     title: 'Himagiri View',
     category: 'Apartments', kind: 'render',
@@ -70,6 +91,48 @@ export const workItems: WorkItem[] = [
   },
 
   /* ── COMMERCIAL ───────────────────────────────────────────────────────────── */
+  {
+    id: 'commercial-c4',
+    title: 'Commercial Elevation III',
+    category: 'Commercial', kind: 'render',
+    image:       '/assets/web/small/commercial-c4.jpg',
+    detailImage: '/assets/web/originals/commercial/commercial-c4.jpg',
+  },
+  {
+    id: 'commercial-c5',
+    title: 'Commercial Elevation IV',
+    category: 'Commercial', kind: 'render',
+    image:       '/assets/web/small/commercial-c5.jpg',
+    detailImage: '/assets/web/originals/commercial/commercial-c5.jpg',
+  },
+  {
+    id: 'commercial-electronic-city',
+    title: 'Electronic City Block',
+    category: 'Commercial', kind: 'render',
+    image:       '/assets/web/small/commercial-electronic-city.jpg',
+    detailImage: '/assets/web/originals/commercial/commercial-electronic-city.jpg',
+  },
+  {
+    id: 'commercial-electronic',
+    title: 'Electronic Commercial',
+    category: 'Commercial', kind: 'render',
+    image:       '/assets/web/small/commercial-electronic.jpg',
+    detailImage: '/assets/web/originals/commercial/commercial-electronic.jpg',
+  },
+  {
+    id: 'commercial-keerti',
+    title: 'Keerti Properties',
+    category: 'Commercial', kind: 'render',
+    image:       '/assets/web/small/commercial-keerti.jpg',
+    detailImage: '/assets/web/originals/commercial/commercial-keerti.jpg',
+  },
+  {
+    id: 'commercial-narayan',
+    title: 'Narayan Commercial',
+    category: 'Commercial', kind: 'render',
+    image:       '/assets/web/small/commercial-narayan.jpg',
+    detailImage: '/assets/web/originals/commercial/commercial-narayan.jpg',
+  },
   {
     id: 'commercial-clouds-wood',
     title: 'Clouds Wood Technology',
@@ -159,6 +222,41 @@ export const workItems: WorkItem[] = [
 
   /* ── INTERIORS ────────────────────────────────────────────────────────────── */
   {
+    id: 'interior-11',
+    title: 'InteriorXI',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-11.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-11.jpg',
+  },
+  {
+    id: 'interior-12',
+    title: 'InteriorXII',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-12.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-12.jpg',
+  },
+  {
+    id: 'interior-13',
+    title: 'InteriorXIII',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-13.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-13.jpg',
+  },
+  {
+    id: 'interior-14',
+    title: 'InteriorXIV',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-14.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-14.jpg',
+  },
+  {
+    id: 'interior-15',
+    title: 'InteriorXV',
+    category: 'Interiors', kind: 'render',
+    image:       '/assets/web/small/interior-15.jpg',
+    detailImage: '/assets/web/originals/interiors/interior-15.jpg',
+  },
+  {
     id: 'interior-01',
     title: 'InteriorI',
     category: 'Interiors', kind: 'render',
@@ -230,6 +328,83 @@ export const workItems: WorkItem[] = [
   },
 
   /* ── RESIDENCES ───────────────────────────────────────────────────────────── */
+  {
+    id: 'villa-himagiri',
+    title: 'Himagiri Villa',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/villa-himagiri.jpg',
+    detailImage: '/assets/web/originals/residences/villa-himagiri.jpg',
+  },
+  {
+    id: 'villa-east-facing',
+    title: 'East Facing Villa',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/villa-east-facing.jpg',
+    detailImage: '/assets/web/originals/residences/villa-east-facing.jpg',
+  },
+  {
+    id: 'villa-group-housing',
+    title: 'Group Housing Villa',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/villa-group-housing.jpg',
+    detailImage: '/assets/web/originals/residences/villa-group-housing.jpg',
+  },
+  {
+    id: 'villa-view',
+    title: 'Villa Overview',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/villa-view.jpg',
+    detailImage: '/assets/web/originals/residences/villa-view.jpg',
+  },
+  {
+    id: 'residence-nagraj-b',
+    title: 'Nagraj Bungalow',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/residence-nagraj-b.jpg',
+    detailImage: '/assets/web/originals/residences/residence-nagraj-b.jpg',
+  },
+  {
+    id: 'residence-prakash',
+    title: 'Prakash Residence',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/residence-prakash.jpg',
+    detailImage: '/assets/web/originals/residences/residence-prakash.jpg',
+  },
+  {
+    id: 'residence-r1',
+    title: 'Residence Study I',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/residence-r1.jpg',
+    detailImage: '/assets/web/originals/residences/residence-r1.jpg',
+  },
+  {
+    id: 'residence-r4',
+    title: 'Residence Study II',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/residence-r4.jpg',
+    detailImage: '/assets/web/originals/residences/residence-r4.jpg',
+  },
+  {
+    id: 'residence-rajanna',
+    title: 'Rajanna Residence',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/residence-rajanna.jpg',
+    detailImage: '/assets/web/originals/residences/residence-rajanna.jpg',
+  },
+  {
+    id: 'residence-suresh-gowda',
+    title: 'Suresh Gowda Residence',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/residence-suresh-gowda.jpg',
+    detailImage: '/assets/web/originals/residences/residence-suresh-gowda.jpg',
+  },
+  {
+    id: 'residence-view-5',
+    title: 'Residence View',
+    category: 'Residences', kind: 'render',
+    image:       '/assets/web/small/residence-view-5.jpg',
+    detailImage: '/assets/web/originals/residences/residence-view-5.jpg',
+  },
   {
     id: 'bungalow-arshia-house-view',
     title: 'Arshia House',
